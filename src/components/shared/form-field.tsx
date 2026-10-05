@@ -1,6 +1,6 @@
 import { useId, type ComponentProps, type ReactNode } from "react"
 
-import { PasswordInput } from "@/components/auth/password-input"
+import { PasswordInput } from "@/components/shared/password-input"
 import {
   Field,
   FieldDescription,
@@ -9,20 +9,20 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 
-type AuthFieldProps = Omit<ComponentProps<"input">, "id" | "className"> & {
+type FormFieldProps = Omit<ComponentProps<"input">, "id" | "className"> & {
   name: string
   label: string
   description?: ReactNode
   error?: string
 }
 
-export function AuthField({
+export function FormField({
   label,
   description,
   error,
   type = "text",
   ...inputProps
-}: AuthFieldProps) {
+}: FormFieldProps) {
   const id = useId()
   const descriptionId = `${id}-description`
   const errorId = `${id}-error`

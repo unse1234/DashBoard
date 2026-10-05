@@ -1,8 +1,8 @@
 "use client"
 
-import { AuthField } from "@/components/auth/auth-field"
 import { AuthForm } from "@/components/auth/auth-form"
 import { useAuthForm } from "@/components/auth/use-auth-form"
+import { FormField } from "@/components/shared/form-field"
 import type { AuthFormAction } from "@/lib/auth/form-state"
 import {
   validateForgotPassword,
@@ -26,7 +26,7 @@ export function ForgotPasswordForm({ action }: ForgotPasswordFormProps) {
       submitLabel="Send reset link"
       pendingLabel="Sending link…"
     >
-      <AuthField
+      <FormField
         name="email"
         label="Email"
         type="email"

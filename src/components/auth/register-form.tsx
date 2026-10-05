@@ -1,8 +1,8 @@
 "use client"
 
-import { AuthField } from "@/components/auth/auth-field"
 import { AuthForm } from "@/components/auth/auth-form"
 import { useAuthForm } from "@/components/auth/use-auth-form"
+import { FormField } from "@/components/shared/form-field"
 import type { AuthFormAction } from "@/lib/auth/form-state"
 import {
   PASSWORD_HINT,
@@ -23,14 +23,14 @@ export function RegisterForm({ action }: RegisterFormProps) {
       submitLabel="Create account"
       pendingLabel="Creating account…"
     >
-      <AuthField
+      <FormField
         name="name"
         label="Name"
         autoComplete="name"
         required
         error={form.fieldErrors.name}
       />
-      <AuthField
+      <FormField
         name="email"
         label="Email"
         type="email"
@@ -38,7 +38,7 @@ export function RegisterForm({ action }: RegisterFormProps) {
         required
         error={form.fieldErrors.email}
       />
-      <AuthField
+      <FormField
         name="password"
         label="Password"
         type="password"
@@ -47,7 +47,7 @@ export function RegisterForm({ action }: RegisterFormProps) {
         description={PASSWORD_HINT}
         error={form.fieldErrors.password}
       />
-      <AuthField
+      <FormField
         name="confirmPassword"
         label="Confirm password"
         type="password"

@@ -2,10 +2,10 @@
 
 import { useId } from "react"
 
-import { AuthField } from "@/components/auth/auth-field"
 import { AuthForm } from "@/components/auth/auth-form"
 import { AuthLink } from "@/components/auth/auth-link"
 import { useAuthForm } from "@/components/auth/use-auth-form"
+import { FormField } from "@/components/shared/form-field"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldLabel } from "@/components/ui/field"
 import type { AuthFormAction } from "@/lib/auth/form-state"
@@ -22,7 +22,7 @@ export function LoginForm({ action }: LoginFormProps) {
 
   return (
     <AuthForm form={form} submitLabel="Log in" pendingLabel="Logging in…">
-      <AuthField
+      <FormField
         name="email"
         label="Email"
         type="email"
@@ -30,7 +30,7 @@ export function LoginForm({ action }: LoginFormProps) {
         required
         error={form.fieldErrors.email}
       />
-      <AuthField
+      <FormField
         name="password"
         label="Password"
         type="password"

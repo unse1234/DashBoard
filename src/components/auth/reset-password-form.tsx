@@ -2,9 +2,9 @@
 
 import Link from "next/link"
 
-import { AuthField } from "@/components/auth/auth-field"
 import { AuthForm, AuthFormMessage } from "@/components/auth/auth-form"
 import { useAuthForm } from "@/components/auth/use-auth-form"
+import { FormField } from "@/components/shared/form-field"
 import { buttonVariants } from "@/components/ui/button"
 import type { AuthFormAction } from "@/lib/auth/form-state"
 import {
@@ -44,7 +44,7 @@ export function ResetPasswordForm({ action }: ResetPasswordFormProps) {
       submitLabel="Reset password"
       pendingLabel="Resetting password…"
     >
-      <AuthField
+      <FormField
         name="password"
         label="New password"
         type="password"
@@ -53,7 +53,7 @@ export function ResetPasswordForm({ action }: ResetPasswordFormProps) {
         description={PASSWORD_HINT}
         error={form.fieldErrors.password}
       />
-      <AuthField
+      <FormField
         name="confirmPassword"
         label="Confirm new password"
         type="password"
