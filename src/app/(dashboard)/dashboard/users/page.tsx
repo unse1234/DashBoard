@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
+import { CreateUserDialog } from "@/components/users/create-user-dialog"
 import { UsersList } from "@/components/users/users-list"
 import { mockTotalUsers, mockUsers } from "@/lib/users/user.mock-data"
 
@@ -17,6 +18,7 @@ export default function UsersPage() {
           <p className="text-sm text-muted-foreground">
             Manage the people who can access the dashboard.
           </p>
+          <CreateUserDialog />
         </div>
         <UsersList users={mockUsers} totalRecords={mockTotalUsers} />
       </div>
