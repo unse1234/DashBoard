@@ -6,12 +6,6 @@ import { LoginForm } from "@/components/auth/login-form"
 import type { AuthFormAction } from "@/lib/auth/form-state"
 import type { LoginField } from "@/lib/auth/validation"
 
-vi.mock("next/link", () => ({
-  default: ({ href, ...props }: React.ComponentProps<"a"> & { href: string }) => (
-    <a href={href} {...props} />
-  ),
-}))
-
 describe("LoginForm", () => {
   it("shows field errors linked to their inputs and focuses the first one", async () => {
     const action = vi.fn<AuthFormAction<LoginField>>()

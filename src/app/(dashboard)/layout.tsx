@@ -19,7 +19,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <TooltipProvider>
       <SidebarProvider style={shellStyle}>
         <AppSidebar variant="inset" />
-        <SidebarInset>{children}</SidebarInset>
+        <SidebarInset className="min-w-0">{children}</SidebarInset>
       </SidebarProvider>
       <Toaster />
     </TooltipProvider>

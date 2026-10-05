@@ -18,8 +18,18 @@ type NavMainProps = {
   items: NavItem[]
 }
 
+// "/dashboard/users/USR-1" belongs to Users, not Dashboard, so the longest
+// matching url wins.
+function getActiveUrl(items: NavItem[], pathname: string) {
+  return items
+    .map((item) => item.url as string)
+    .filter((url) => pathname === url || pathname.startsWith(`${url}/`))
+    .sort((a, b) => b.length - a.length)[0]
+}
+
 export function NavMain({ items }: NavMainProps) {
   const pathname = usePathname()
+  const activeUrl = getActiveUrl(items, pathname)
 
   return (
     <SidebarGroup>
@@ -48,7 +58,7 @@ export function NavMain({ items }: NavMainProps) {
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 tooltip={item.title}
-                isActive={pathname === item.url}
+                isActive={item.url === activeUrl}
                 render={<Link href={item.url} />}
               >
                 {item.icon}
