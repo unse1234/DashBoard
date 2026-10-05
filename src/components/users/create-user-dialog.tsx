@@ -9,16 +9,14 @@ import { FormField } from "@/components/shared/form-field"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { FieldGroup } from "@/components/ui/field"
-import { Spinner } from "@/components/ui/spinner"
+import { UserFormFooter } from "@/components/users/user-form-footer"
 import {
   createUserSchema,
   type CreateUserValues,
@@ -86,21 +84,11 @@ function CreateUserForm({ onSubmit, onSuccess }: CreateUserFormProps) {
             {...form.register("email")}
           />
         </FieldGroup>
-        <DialogFooter>
-          <DialogClose render={<Button type="button" variant="outline" />}>
-            Cancel
-          </DialogClose>
-          <Button type="submit">
-            {isSubmitting ? (
-              <>
-                <Spinner aria-hidden="true" />
-                Creating…
-              </>
-            ) : (
-              "Create user"
-            )}
-          </Button>
-        </DialogFooter>
+        <UserFormFooter
+          isSubmitting={isSubmitting}
+          submitLabel="Create user"
+          submittingLabel="Creating…"
+        />
       </fieldset>
     </form>
   )

@@ -5,13 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 
 import { FormField } from "@/components/shared/form-field"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -23,8 +20,8 @@ import {
   FieldLegend,
   FieldSet,
 } from "@/components/ui/field"
-import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
+import { UserFormFooter } from "@/components/users/user-form-footer"
 import { PASSWORD_HINT } from "@/lib/auth/validation"
 import { USER_STATUS_LABELS } from "@/lib/users/user.constants"
 import { editUserSchema, type EditUserValues } from "@/lib/users/user.schemas"
@@ -159,21 +156,11 @@ function EditUserForm({ user, onSubmit, onSuccess }: EditUserFormProps) {
             </FieldGroup>
           </FieldSet>
         </FieldGroup>
-        <DialogFooter>
-          <DialogClose render={<Button type="button" variant="outline" />}>
-            Cancel
-          </DialogClose>
-          <Button type="submit">
-            {isSubmitting ? (
-              <>
-                <Spinner aria-hidden="true" />
-                Saving…
-              </>
-            ) : (
-              "Save changes"
-            )}
-          </Button>
-        </DialogFooter>
+        <UserFormFooter
+          isSubmitting={isSubmitting}
+          submitLabel="Save changes"
+          submittingLabel="Saving…"
+        />
       </fieldset>
     </form>
   )

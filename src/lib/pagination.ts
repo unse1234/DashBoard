@@ -4,7 +4,7 @@ export type PageSize = (typeof PAGE_SIZE_OPTIONS)[number]
 
 export const DEFAULT_PAGE_SIZE: PageSize = 10
 
-export type VisiblePage = number | "ellipsis-start" | "ellipsis-end"
+type VisiblePage = number | "ellipsis-start" | "ellipsis-end"
 
 export function getTotalPages(totalRecords: number, pageSize: number) {
   return Math.max(1, Math.ceil(totalRecords / pageSize))
