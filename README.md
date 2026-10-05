@@ -15,11 +15,12 @@ npm run test      # Vitest in watch mode (test:run for a single run)
 
 | Path               | Description                                  |
 | ------------------ | -------------------------------------------- |
-| `/`                | Redirects to `/login` (no dashboard yet)     |
+| `/`                | Redirects to `/login`                        |
 | `/login`           | Log in                                       |
 | `/register`        | Create an account                            |
 | `/forgot-password` | Request a password reset link                |
 | `/reset-password`  | Set a new password                           |
+| `/dashboard`       | Dashboard overview                           |
 
 Paths are defined once in `src/lib/routes.ts`. `typedRoutes` is enabled, so links to routes that don't exist fail type-checking.
 
@@ -30,16 +31,21 @@ src/
 ├── app/
 │   ├── layout.tsx           # root layout, fonts, title template
 │   ├── page.tsx             # "/" → redirect
-│   └── (auth)/              # route group sharing the auth layout
+│   ├── (auth)/              # route group sharing the auth layout
+│   │   ├── layout.tsx
+│   │   ├── login/
+│   │   ├── register/
+│   │   ├── forgot-password/
+│   │   └── reset-password/
+│   └── (dashboard)/         # route group sharing the sidebar shell
 │       ├── layout.tsx
-│       ├── login/
-│       ├── register/
-│       ├── forgot-password/
-│       └── reset-password/
+│       └── dashboard/
 ├── components/
 │   ├── ui/                  # shadcn/ui components
 │   ├── auth/                # auth shell, forms and form primitives
+│   ├── dashboard/           # sidebar, header and overview widgets
 │   └── shared/              # app-wide components (e.g. the logo)
+├── hooks/
 └── lib/
     ├── app.constants.ts
     ├── routes.ts
