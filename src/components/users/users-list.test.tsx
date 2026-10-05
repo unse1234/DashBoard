@@ -75,6 +75,22 @@ describe("UsersList row actions", () => {
     )
   })
 
+  it("opens the edit dialog for the chosen user", async () => {
+    renderList()
+    const user = userEvent.setup()
+
+    await user.click(
+      screen.getByRole("button", { name: "Actions for Mei Lin Tan" })
+    )
+    await user.click(await screen.findByRole("menuitem", { name: "Edit" }))
+
+    expect(
+      await screen.findByRole("dialog", { name: "Edit user" })
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText("Name")).toHaveValue("Mei Lin Tan")
+    expect(screen.getByRole("switch", { name: "Status" })).not.toBeChecked()
+  })
+
   it("offers Enable for an inactive user", async () => {
     renderList()
     const user = userEvent.setup()
