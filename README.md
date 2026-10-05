@@ -38,8 +38,10 @@ src/
 │       └── reset-password/
 ├── components/
 │   ├── ui/                  # shadcn/ui components
-│   └── auth/                # auth shell, forms and form primitives
+│   ├── auth/                # auth shell, forms and form primitives
+│   └── shared/              # app-wide components (e.g. the logo)
 └── lib/
+    ├── app.constants.ts
     ├── routes.ts
     └── auth/                # form state types and validation
 ```
