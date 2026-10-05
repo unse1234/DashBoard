@@ -1,6 +1,6 @@
 import type { Route } from "next"
 
-/** Single source of truth for app paths. Checked against real routes via `typedRoutes`. */
+/** App paths in one place; `typedRoutes` checks them against real routes. */
 export const routes = {
   home: "/",
   login: "/login",

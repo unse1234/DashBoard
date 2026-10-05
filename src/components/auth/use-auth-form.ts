@@ -1,4 +1,9 @@
-import { startTransition, useActionState, useState, type FormEvent } from "react"
+import {
+  startTransition,
+  useActionState,
+  useState,
+  type FormEvent,
+} from "react"
 
 import {
   hasFieldErrors,
@@ -27,7 +32,9 @@ export type AuthFormController<Field extends string> = {
 const noFieldErrors: FieldErrors<never> = {}
 
 // Used until a real action is connected: valid submissions simply settle.
-async function settleIdle<Field extends string>(): Promise<AuthFormState<Field>> {
+async function settleIdle<
+  Field extends string,
+>(): Promise<AuthFormState<Field>> {
   return initialAuthFormState
 }
 

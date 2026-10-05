@@ -16,7 +16,8 @@ export default function ForgotPasswordPage() {
       description="Enter the email address associated with your account and we'll send you a link to reset your password."
       footer={
         <>
-          Remember your password? <AuthLink href={routes.login}>Log in</AuthLink>
+          Remember your password?{" "}
+          <AuthLink href={routes.login}>Log in</AuthLink>
         </>
       }
     >

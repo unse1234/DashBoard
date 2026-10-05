@@ -16,7 +16,6 @@ type AuthFieldProps = Omit<ComponentProps<"input">, "id" | "className"> & {
   error?: string
 }
 
-/** Labelled input with its description and error wired up for assistive tech. */
 export function AuthField({
   label,
   description,

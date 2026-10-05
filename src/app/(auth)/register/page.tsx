@@ -16,7 +16,8 @@ export default function RegisterPage() {
       description="Enter your details below to get started."
       footer={
         <>
-          Already have an account? <AuthLink href={routes.login}>Log in</AuthLink>
+          Already have an account?{" "}
+          <AuthLink href={routes.login}>Log in</AuthLink>
         </>
       }
     >

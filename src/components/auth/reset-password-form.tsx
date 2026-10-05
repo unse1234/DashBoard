@@ -28,7 +28,10 @@ export function ResetPasswordForm({ action }: ResetPasswordFormProps) {
           status="success"
           message={form.message ?? "Your password has been reset."}
         />
-        <Link href={routes.login} className={buttonVariants({ size: "lg", className: "w-full" })}>
+        <Link
+          href={routes.login}
+          className={buttonVariants({ size: "lg", className: "w-full" })}
+        >
           Continue to log in
         </Link>
       </div>
@@ -36,7 +39,11 @@ export function ResetPasswordForm({ action }: ResetPasswordFormProps) {
   }
 
   return (
-    <AuthForm form={form} submitLabel="Reset password" pendingLabel="Resetting password…">
+    <AuthForm
+      form={form}
+      submitLabel="Reset password"
+      pendingLabel="Resetting password…"
+    >
       <AuthField
         name="password"
         label="New password"

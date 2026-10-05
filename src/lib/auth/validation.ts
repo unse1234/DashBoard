@@ -37,7 +37,9 @@ function validatePasswordConfirmation(password: string, confirmation: string) {
 export function validateLogin(formData: FormData): FieldErrors<LoginField> {
   return {
     email: validateEmail(getValue(formData, "email")),
-    password: getValue(formData, "password") ? undefined : "Enter your password.",
+    password: getValue(formData, "password")
+      ? undefined
+      : "Enter your password.",
   }
 }
 
