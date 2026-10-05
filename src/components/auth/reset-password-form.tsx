@@ -8,7 +8,7 @@ import { useAuthForm } from "@/components/auth/use-auth-form"
 import { buttonVariants } from "@/components/ui/button"
 import type { AuthFormAction } from "@/lib/auth/form-state"
 import {
-  PASSWORD_MIN_LENGTH,
+  PASSWORD_HINT,
   validateResetPassword,
   type ResetPasswordField,
 } from "@/lib/auth/validation"
@@ -43,7 +43,7 @@ export function ResetPasswordForm({ action }: ResetPasswordFormProps) {
         type="password"
         autoComplete="new-password"
         required
-        description={`Must be at least ${PASSWORD_MIN_LENGTH} characters.`}
+        description={PASSWORD_HINT}
         error={form.fieldErrors.password}
       />
       <AuthField

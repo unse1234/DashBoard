@@ -1,7 +1,9 @@
 export type FieldErrors<Field extends string> = Partial<Record<Field, string>>
 
+export type AuthFormStatus = "idle" | "error" | "success"
+
 export type AuthFormState<Field extends string> = {
-  status: "idle" | "error" | "success"
+  status: AuthFormStatus
   /** Form-level feedback, e.g. "Invalid email or password." */
   message?: string
   fieldErrors?: FieldErrors<Field>

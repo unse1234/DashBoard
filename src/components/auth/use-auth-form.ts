@@ -5,6 +5,7 @@ import {
   initialAuthFormState,
   type AuthFormAction,
   type AuthFormState,
+  type AuthFormStatus,
   type FieldErrors,
 } from "@/lib/auth/form-state"
 
@@ -17,7 +18,7 @@ type UseAuthFormOptions<Field extends string> = {
 export type AuthFormController<Field extends string> = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
   pending: boolean
-  status: AuthFormState<Field>["status"]
+  status: AuthFormStatus
   message?: string
   fieldErrors: FieldErrors<Field>
 }

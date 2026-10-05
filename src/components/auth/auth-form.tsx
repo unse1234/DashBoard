@@ -8,10 +8,10 @@ import { Alert, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { FieldGroup } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
-import type { AuthFormState } from "@/lib/auth/form-state"
+import type { AuthFormStatus } from "@/lib/auth/form-state"
 
 type AuthFormMessageProps = {
-  status: AuthFormState<string>["status"]
+  status: AuthFormStatus
   message?: string
 }
 

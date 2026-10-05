@@ -5,7 +5,7 @@ import { AuthForm } from "@/components/auth/auth-form"
 import { useAuthForm } from "@/components/auth/use-auth-form"
 import type { AuthFormAction } from "@/lib/auth/form-state"
 import {
-  PASSWORD_MIN_LENGTH,
+  PASSWORD_HINT,
   validateRegister,
   type RegisterField,
 } from "@/lib/auth/validation"
@@ -44,7 +44,7 @@ export function RegisterForm({ action }: RegisterFormProps) {
         type="password"
         autoComplete="new-password"
         required
-        description={`Must be at least ${PASSWORD_MIN_LENGTH} characters.`}
+        description={PASSWORD_HINT}
         error={form.fieldErrors.password}
       />
       <AuthField

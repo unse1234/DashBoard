@@ -1,6 +1,8 @@
 import type { FieldErrors } from "@/lib/auth/form-state"
 
-export const PASSWORD_MIN_LENGTH = 8
+const PASSWORD_MIN_LENGTH = 8
+
+export const PASSWORD_HINT = `Must be at least ${PASSWORD_MIN_LENGTH} characters.`
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
