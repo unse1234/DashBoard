@@ -7,6 +7,7 @@ export const routes = {
   users: "/dashboard/users",
   products: "/dashboard/products",
   newProduct: "/dashboard/products/new",
+  customers: "/dashboard/customers",
   imports: "/dashboard/imports",
   login: "/login",
   register: "/register",
@@ -25,6 +26,10 @@ export function getProductRoute(productId: string) {
 
 export function getEditProductRoute(productId: string) {
   return `${getProductRoute(productId)}/edit` as Route
+}
+
+export function getCustomerRoute(customerId: string) {
+  return `${routes.customers}/${encodeURIComponent(customerId)}` as Route
 }
 
 export function getImportRoute(jobId: string) {
