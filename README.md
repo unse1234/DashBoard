@@ -23,6 +23,10 @@ npm run test      # Vitest in watch mode (test:run for a single run)
 | `/dashboard`       | Dashboard overview                           |
 | `/dashboard/users` | User management list                         |
 | `/dashboard/users/[userId]` | User details                        |
+| `/dashboard/products` | Product management list                   |
+| `/dashboard/products/new` | Add a product                         |
+| `/dashboard/products/[productId]` | Product details               |
+| `/dashboard/products/[productId]/edit` | Edit a product           |
 
 Paths are defined once in `src/lib/routes.ts`. `typedRoutes` is enabled, so links to routes that don't exist fail type-checking.
 
@@ -42,12 +46,14 @@ src/
 │   └── (dashboard)/         # route group sharing the sidebar shell
 │       ├── layout.tsx
 │       └── dashboard/
-│           └── users/       # list and [userId] details
+│           ├── users/       # list and [userId] details
+│           └── products/    # list, new, [productId] details and edit
 ├── components/
 │   ├── ui/                  # shadcn/ui components
 │   ├── auth/                # auth shell, forms and form primitives
 │   ├── dashboard/           # sidebar, header and overview widgets
 │   ├── users/               # user management table, dialogs and details
+│   ├── products/            # product list, form and details
 │   └── shared/              # app-wide components (e.g. the logo)
 ├── hooks/
 └── lib/
@@ -55,8 +61,10 @@ src/
     ├── routes.ts
     ├── pagination.ts
     ├── format-date.ts
+    ├── format-number.ts
     ├── auth/                # form state types and validation
-    └── users/               # user types, zod schemas and mock data
+    ├── users/               # user types, zod schemas and mock data
+    └── products/            # product types, zod schema and mock data
 ```
 
 Auth forms are UI-only. Each accepts an optional `action` prop with the
@@ -73,3 +81,22 @@ held in `UsersList`; they do not change the rows yet. To connect an API, send th
 The create and edit dialogs use react-hook-form with the zod schemas in
 `src/lib/users/user.schemas.ts` and accept an optional `onSubmit`. Disable / Enable in the
 row menu is not wired up.
+
+## Product management
+
+The products module is UI-only and runs on mock data (`src/lib/products/product.mock-data.ts`).
+It follows the users module: search, the category and status filters and pagination are
+controlled by one `ProductsQuery` held in `ProductsList`, and they do not change the rows yet.
+To connect an API, send that query (or write it to the URL) and pass the returned `products`
+and `totalRecords` back in. Row selection is local to the list; Export and Delete in the bulk
+actions bar are not connected.
+
+A product's `status` is what an admin sets (`active` or `inactive`). "Out of Stock" is derived
+from `stock` by `getProductDisplayStatus`, so the two can't contradict each other; an inactive
+product shows as Inactive whatever its stock.
+
+Create and edit share `ProductForm`, which uses react-hook-form with `productFormSchema`.
+The amount fields are typed as text and the schema converts them to numbers, so
+`ProductFormValues` (the schema's output) is shaped like a product. `ProductForm` accepts an
+optional `onSubmit`; until one is passed, a valid submission only shows a "Nothing was saved"
+notice. The history on the details page and the Analytics tab placeholder are mock-only.
