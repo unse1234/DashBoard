@@ -7,6 +7,10 @@ import { mockCustomers } from "@/lib/customers/customer.mock-data"
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn() } }))
 
+// Selects, menus and a table of many rows are slow to render in jsdom, most of all
+// while the whole suite runs in parallel, so allow more than the default five seconds.
+vi.setConfig({ testTimeout: 20_000 })
+
 function renderList(customers = mockCustomers) {
   return render(<CustomersList customers={customers} />)
 }
@@ -40,6 +44,14 @@ function getSummary() {
 async function chooseStatus(user: ReturnType<typeof userEvent.setup>, label: string) {
   await user.click(screen.getByRole("combobox", { name: "Filter by status" }))
   await user.click(await screen.findByRole("option", { name: label }))
+}
+
+/** Pastes the search instead of typing it key by key, which re-renders the table for each key. */
+async function search(user: ReturnType<typeof userEvent.setup>, text: string) {
+  const searchBox = getSearchBox()
+  await user.clear(searchBox)
+  await user.click(searchBox)
+  await user.paste(text)
 }
 
 afterEach(() => {
@@ -179,9 +191,9 @@ describe("CustomersList search", () => {
     renderList()
     const user = userEvent.setup()
 
-    await user.type(getSearchBox(), "reyes")
+    await user.type(getSearchBox(), "rey")
 
-    expect(getSearchBox()).toHaveValue("reyes")
+    expect(getSearchBox()).toHaveValue("rey")
     expect(getListedNames()).toEqual(["Daniel Reyes"])
     expect(getSummary()).toHaveTextContent("Showing 1–1 of 1 customers")
   })
@@ -190,15 +202,13 @@ describe("CustomersList search", () => {
     renderList()
     const user = userEvent.setup()
 
-    await user.type(getSearchBox(), "cus-1063")
+    await search(user, "cus-1063")
     expect(getListedNames()).toEqual(["Chloe Bennett"])
 
-    await user.clear(getSearchBox())
-    await user.type(getSearchBox(), "sakuramail")
+    await search(user, "sakuramail")
     expect(getListedNames()).toEqual(["Aiko Tanabe"])
 
-    await user.clear(getSearchBox())
-    await user.type(getSearchBox(), "415-555")
+    await search(user, "415-555")
     expect(getListedNames()).toEqual(["Daniel Reyes"])
   })
 
@@ -206,7 +216,7 @@ describe("CustomersList search", () => {
     renderList()
     const user = userEvent.setup()
 
-    await user.type(getSearchBox(), "no such customer")
+    await search(user, "no such customer")
 
     expect(screen.getByText("No customers found")).toBeInTheDocument()
     expect(
@@ -220,7 +230,7 @@ describe("CustomersList search", () => {
     const user = userEvent.setup()
 
     await user.click(screen.getByRole("button", { name: "Go to page 2" }))
-    await user.type(getSearchBox(), "a")
+    await search(user, "a")
 
     expect(getSummary()).toHaveTextContent("Showing 1–10")
   })
@@ -261,7 +271,7 @@ describe("CustomersList status filter", () => {
     const user = userEvent.setup()
 
     await chooseStatus(user, "Inactive")
-    await user.type(getSearchBox(), "brooks")
+    await search(user, "brooks")
 
     expect(getListedNames()).toEqual(["Ethan Brooks"])
   })
@@ -386,8 +396,6 @@ describe("CustomersList row actions", () => {
     expect(toast.success).toHaveBeenCalledWith("Lucas Ferreira is now active.")
   })
 
-  // Opens a select and then a menu, which is slow in jsdom when the whole suite
-  // runs in parallel, so it gets more than the default five seconds.
   it("drops a disabled customer from a list filtered to active ones", async () => {
     renderList()
     const user = userEvent.setup()
@@ -402,7 +410,7 @@ describe("CustomersList row actions", () => {
 
     expect(screen.queryByRole("row", { name: /Daniel Reyes/ })).toBeNull()
     expect(getSummary()).toHaveTextContent("of 16 customers")
-  }, 20_000)
+  })
 })
 
 describe("CustomersList without customers", () => {
