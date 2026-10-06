@@ -27,6 +27,8 @@ npm run test      # Vitest in watch mode (test:run for a single run)
 | `/dashboard/products/new` | Add a product                         |
 | `/dashboard/products/[productId]` | Product details               |
 | `/dashboard/products/[productId]/edit` | Edit a product           |
+| `/dashboard/imports` | Product CSV import center              |
+| `/dashboard/imports/[jobId]` | Import job details              |
 
 Paths are defined once in `src/lib/routes.ts`. `typedRoutes` is enabled, so links to routes that don't exist fail type-checking.
 
@@ -47,13 +49,15 @@ src/
 │       ├── layout.tsx
 │       └── dashboard/
 │           ├── users/       # list and [userId] details
-│           └── products/    # list, new, [productId] details and edit
+│           ├── products/    # list, new, [productId] details and edit
+│           └── imports/     # import center and [jobId] details
 ├── components/
 │   ├── ui/                  # shadcn/ui components
 │   ├── auth/                # auth shell, forms and form primitives
 │   ├── dashboard/           # sidebar, header and overview widgets
 │   ├── users/               # user management table, dialogs and details
 │   ├── products/            # product list, form and details
+│   ├── imports/             # CSV upload, import job list and job details
 │   └── shared/              # app-wide components (e.g. the logo)
 ├── hooks/
 └── lib/
@@ -62,9 +66,12 @@ src/
     ├── pagination.ts
     ├── format-date.ts
     ├── format-number.ts
+    ├── format-duration.ts
+    ├── format-file-size.ts
     ├── auth/                # form state types and validation
     ├── users/               # user types, zod schemas and mock data
-    └── products/            # product types, zod schema and mock data
+    ├── products/            # product types, zod schema and mock data
+    └── imports/             # import job types, file validation and mock data
 ```
 
 Auth forms are UI-only. Each accepts an optional `action` prop with the
@@ -100,3 +107,23 @@ The amount fields are typed as text and the schema converts them to numbers, so
 `ProductFormValues` (the schema's output) is shaped like a product. `ProductForm` accepts an
 optional `onSubmit`; until one is passed, a valid submission only shows a "Nothing was saved"
 notice. The history on the details page and the Analytics tab placeholder are mock-only.
+
+## Product imports
+
+The imports module is UI-only and runs on mock data (`src/lib/imports/import.mock-data.ts`). It
+only handles product CSV files.
+
+`ImportUpload` lets an admin pick a file and checks it against `validateImportFile` (a `.csv`
+name, at most 10 MB). The chosen `File` stays in that component's state: nothing is uploaded or
+read. The job list is split into Processing, Queued, Completed and Failed tabs by
+`groupImportsByStatus`, and `/dashboard/imports/[jobId]` shows one job with its progress, failed
+rows, job information and timeline. Progress and duration are derived from the job's row counts
+and timestamps (`getImportProgress`, `getImportDurationSeconds`), and `ImportProgress` only
+displays the 0 to 100 value it is given. A failed job is one that finished with rows that could
+not be imported.
+
+To connect an API, pass the jobs and, for the details page, the failed rows in place of the mock
+data; the job list only needs `sampleErrors` per job. Every action that needs the backend (Cancel,
+Retry, Error Report, the downloads, Export Errors, Retry Failed and the CSV template) is an
+`ImportActionButton`. Without an `onAction` it shows a "Not available yet" notice instead of
+pretending to work. There is no submit step after choosing a file yet.
