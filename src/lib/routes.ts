@@ -7,6 +7,7 @@ export const routes = {
   users: "/dashboard/users",
   products: "/dashboard/products",
   newProduct: "/dashboard/products/new",
+  orders: "/dashboard/orders",
   customers: "/dashboard/customers",
   imports: "/dashboard/imports",
   login: "/login",
@@ -26,6 +27,10 @@ export function getProductRoute(productId: string) {
 
 export function getEditProductRoute(productId: string) {
   return `${getProductRoute(productId)}/edit` as Route
+}
+
+export function getOrderRoute(orderId: string) {
+  return `${routes.orders}/${encodeURIComponent(orderId)}` as Route
 }
 
 export function getCustomerRoute(customerId: string) {

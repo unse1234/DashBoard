@@ -6,6 +6,7 @@ import {
   PackageIcon,
   SearchIcon,
   Settings2Icon,
+  ShoppingCartIcon,
   UserRoundCogIcon,
   UsersRoundIcon,
 } from "lucide-react"
@@ -23,8 +24,8 @@ import {
 } from "@/components/ui/sidebar"
 import { routes } from "@/lib/routes"
 
-// Placeholder content: only Dashboard, Users, Products, Customers and Imports
-// point to real pages so far.
+// Placeholder content: only Dashboard, Users, Products, Orders, Customers and
+// Imports point to real pages so far.
 const user = {
   name: "Demo User",
   email: "demo@example.com",
@@ -34,6 +35,7 @@ const navMain: NavItem[] = [
   { title: "Dashboard", url: routes.dashboard, icon: <LayoutDashboardIcon /> },
   { title: "Users", url: routes.users, icon: <UserRoundCogIcon /> },
   { title: "Products", url: routes.products, icon: <PackageIcon /> },
+  { title: "Orders", url: routes.orders, icon: <ShoppingCartIcon /> },
   { title: "Customers", url: routes.customers, icon: <UsersRoundIcon /> },
   { title: "Imports", url: routes.imports, icon: <FileUpIcon /> },
 ]
