@@ -102,7 +102,7 @@ function ProductRow({ product, selected, onSelectChange }: ProductRowProps) {
   return (
     <TableRow
       data-state={selected ? "selected" : undefined}
-      className="group/row data-[state=selected]:bg-muted/50 data-[state=selected]:hover:bg-muted/50"
+      className="group/row [--row-tint:color-mix(in_oklab,var(--muted)_50%,var(--background))] hover:bg-(color:--row-tint) has-aria-expanded:bg-(color:--row-tint) data-[state=selected]:bg-(color:--row-tint)"
     >
       <TableCell className="pl-3">
         <Checkbox
@@ -141,10 +141,11 @@ function ProductRow({ product, selected, onSelectChange }: ProductRowProps) {
       <TableCell>
         <ProductStatusBadge status={getProductDisplayStatus(product)} />
       </TableCell>
-      {/* Pinned so the menu stays reachable when the table scrolls sideways; it
-          repeats the row's hover, menu-open and selected tint because it paints
-          over it. The selected tint is kept light enough for the muted text. */}
-      <TableCell className="sticky right-0 bg-background text-right group-hover/row:bg-muted/50 group-has-aria-expanded/row:bg-muted/50 group-data-[state=selected]/row:bg-muted/50">
+      {/* Pinned so the menu stays reachable when the table scrolls sideways. It
+          repeats the row's hover, menu-open and selected tint, which is opaque
+          so the cell hides what scrolls under it. The tint is light enough for
+          the muted text to keep its contrast. */}
+      <TableCell className="sticky right-0 bg-background text-right group-hover/row:bg-(color:--row-tint) group-has-aria-expanded/row:bg-(color:--row-tint) group-data-[state=selected]/row:bg-(color:--row-tint)">
         <ProductActions product={product} />
       </TableCell>
     </TableRow>
