@@ -8,6 +8,7 @@ import {
   FolderIcon,
   LayoutDashboardIcon,
   ListIcon,
+  PackageIcon,
   SearchIcon,
   Settings2Icon,
   UserRoundCogIcon,
@@ -31,7 +32,8 @@ import {
 } from "@/components/ui/sidebar"
 import { routes } from "@/lib/routes"
 
-// Placeholder content: only Dashboard and Users point to real pages so far.
+// Placeholder content: only Dashboard, Users and Products point to real pages
+// so far.
 const user = {
   name: "Demo User",
   email: "demo@example.com",
@@ -40,6 +42,7 @@ const user = {
 const navMain: NavItem[] = [
   { title: "Dashboard", url: routes.dashboard, icon: <LayoutDashboardIcon /> },
   { title: "Users", url: routes.users, icon: <UserRoundCogIcon /> },
+  { title: "Products", url: routes.products, icon: <PackageIcon /> },
   { title: "Lifecycle", url: "#", icon: <ListIcon /> },
   { title: "Analytics", url: "#", icon: <ChartBarIcon /> },
   { title: "Projects", url: "#", icon: <FolderIcon /> },
