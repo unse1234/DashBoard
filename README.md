@@ -113,17 +113,19 @@ notice. The history on the details page and the Analytics tab placeholder are mo
 The imports module is UI-only and runs on mock data (`src/lib/imports/import.mock-data.ts`). It
 only handles product CSV files.
 
-`ImportUpload` lets an admin pick a file and checks it against `validateImportFile` (a `.csv`
-name, at most 10 MB). The chosen `File` stays in that component's state: nothing is uploaded or
-read. The job list is split into Processing, Queued, Completed and Failed tabs by
-`groupImportsByStatus`, and `/dashboard/imports/[jobId]` shows one job with its progress, failed
-rows, job information and timeline. Progress and duration are derived from the job's row counts
-and timestamps (`getImportProgress`, `getImportDurationSeconds`), and `ImportProgress` only
-displays the 0 to 100 value it is given. A failed job is one that finished with rows that could
-not be imported.
+`ImportUpload` lets an admin pick a file or drop one on the box, and checks it against
+`validateImportFile` (a `.csv` name, at most 10 MB; dropping several files is refused). The chosen
+`File` stays in that component's state: nothing is uploaded or read. The job list is split into
+Processing, Queued, Completed and Failed tabs by `groupImportsByStatus`, and
+`/dashboard/imports/[jobId]` shows one job with its progress, failed rows, job information and
+timeline. Progress and duration are derived from the job's row counts and timestamps
+(`getImportProgress`, `getImportDurationSeconds`), and `ImportProgress` only displays the 0 to 100
+value it is given. A failed job is one that finished with rows that could not be imported.
 
 To connect an API, pass the jobs and, for the details page, the failed rows in place of the mock
 data; the job list only needs `sampleErrors` per job. Every action that needs the backend (Cancel,
-Retry, Error Report, the downloads, Export Errors, Retry Failed and the CSV template) is an
+Retry, Error Report, the downloads, Export Errors, Retry Failed, the CSV template and the Import
+button next to the file picker, which is only enabled once a valid file is chosen) is an
 `ImportActionButton`. Without an `onAction` it shows a "Not available yet" notice instead of
-pretending to work. There is no submit step after choosing a file yet.
+pretending to work. To start an import, give the Import button in `ImportUpload` the upload call;
+the chosen file is already in that component's state.
