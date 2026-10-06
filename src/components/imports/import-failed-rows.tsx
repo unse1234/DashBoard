@@ -1,6 +1,7 @@
 import { DownloadIcon, RotateCcwIcon } from "lucide-react"
 
 import { ImportActionButton } from "@/components/imports/import-action-button"
+import { TableScrollRegion } from "@/components/shared/table-scroll-region"
 import {
   Table,
   TableBody,
@@ -35,15 +36,7 @@ export function ImportFailedRows({ rows }: ImportFailedRowsProps) {
           </ImportActionButton>
         </div>
       </div>
-      {/* The table can be wider than the screen, and nothing inside it is
-          focusable, so the scrolling area is a named, focusable region itself.
-          The table's own wrapper must not scroll or this one never would. */}
-      <div
-        role="region"
-        aria-labelledby="import-failed-rows-heading"
-        tabIndex={0}
-        className="overflow-x-auto rounded-lg border outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 [&_[data-slot=table-container]]:overflow-visible"
-      >
+      <TableScrollRegion aria-labelledby="import-failed-rows-heading">
         <Table>
           <TableCaption className="sr-only">
             Rows that could not be imported, with the reason for each
@@ -79,7 +72,7 @@ export function ImportFailedRows({ rows }: ImportFailedRowsProps) {
             ))}
           </TableBody>
         </Table>
-      </div>
+      </TableScrollRegion>
     </div>
   )
 }
