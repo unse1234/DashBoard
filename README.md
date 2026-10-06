@@ -144,21 +144,16 @@ the chosen file is already in that component's state.
 ## Customer management
 
 The customers module is UI-only and runs on mock data (`src/lib/customers/customer.mock-data.ts`,
-and the latest orders in `customer-order.mock-data.ts`). Customers can be viewed, found and
-enabled or disabled; there is no creating, editing or deleting.
+and the latest orders in `customer-order.mock-data.ts`). Customers can be listed and viewed; there is
+no creating, editing, deleting, or enabling and disabling.
 
-Unlike users and products, the list is handed every customer and `CustomersList` runs
-`queryCustomers` (`customer.query.ts`) over them, so search (ID, name, email and phone, whatever the
-phone's formatting), the status filter, sorting and pagination work today. They are still driven by
-one `CustomersQuery` that maps to API or URL params. To connect an API, send that query and pass the
-returned `customers` and `totalRecords` in place of the `queryCustomers` call. The sort cycle and the
-sortable header are shared with users (`lib/sort.ts`, `components/shared/sortable-table-head.tsx`).
-
-Enable / Disable, in the row menu and in the details header, only changes the component's own state
-and says so in a toast. It is lost on reload, and the list and the details page don't share it. To
-connect the API, turn `changeStatus` in `CustomersList` and `toggleStatus` in `CustomerDetailsHeader`
-into the request. The status is shown once on the details page, in the header beside that button, so
-it can't disagree with it.
+It follows the users module: search, sorting and pagination are controlled by one `CustomersQuery`
+held in `CustomersList`, and they do not change the rows yet. `mockCustomers` stands in for one page
+of results (ten rows) and `mockTotalCustomers` for the total; the other mock customers only exist so
+their details pages open. To connect an API, send that query (or write it to the URL) and pass the
+returned `customers` and `totalRecords` back in. The sort cycle and the sortable header are shared
+with users (`lib/sort.ts`, `components/shared/sortable-table-head.tsx`). Customers have no status,
+so there is no status column, filter or toggle.
 
 A customer's `totalOrders`, `totalSpent` and `lastOrderAt` come with the customer, as the API will
 report them, and are not worked out from the orders on the details page. Those are a
@@ -177,7 +172,7 @@ The orders module is UI-only and runs on mock data (`src/lib/orders/order.mock-d
 be listed, found, filtered, sorted and opened; there is no creating, editing or deleting, and no
 payment, refund, shipping or invoice handling.
 
-Like customers, the list is handed every order and `OrdersList` runs `queryOrders` (`order.query.ts`)
+Unlike users, products and customers, the list is handed every order and `OrdersList` runs `queryOrders` (`order.query.ts`)
 over them, so search (order ID, customer name and email), the order and payment status filters,
 sorting and pagination work today. They are driven by one `OrdersQuery` that maps to API or URL
 params. To connect an API, send that query and pass the returned orders and `totalRecords` in place
@@ -196,7 +191,7 @@ works the item totals, subtotal and total out from the lines (`order.mock-data.t
 The order status can be changed from the details page (`OrderStatusControl`): choose a status and
 press Update. An order only moves forward (Pending, Processing, Shipped, Delivered) and can be
 cancelled until it is delivered; a Delivered or Cancelled order is final
-(`getAvailableOrderStatuses`). Like Enable / Disable for customers, it only changes the header's own
+(`getAvailableOrderStatuses`). It only changes the header's own
 state and says so in a toast, so it is lost on reload and the list does not see it. To connect the
 API, turn `changeStatus` in `OrderDetailsHeader` into the request. The payment status is shown, never
 changed.
