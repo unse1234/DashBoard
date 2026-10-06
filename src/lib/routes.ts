@@ -6,6 +6,7 @@ export const routes = {
   dashboard: "/dashboard",
   users: "/dashboard/users",
   products: "/dashboard/products",
+  newProduct: "/dashboard/products/new",
   login: "/login",
   register: "/register",
   forgotPassword: "/forgot-password",
