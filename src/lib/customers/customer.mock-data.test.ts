@@ -3,8 +3,12 @@ import {
   getMockCustomerAddresses,
   getMockCustomerById,
   mockCustomers,
+  mockOtherCustomers,
+  mockTotalCustomers,
 } from "@/lib/customers/customer.mock-data"
 import { getMockCustomerRecentOrders } from "@/lib/customers/customer-order.mock-data"
+
+const allCustomers = [...mockCustomers, ...mockOtherCustomers]
 
 // Amounts are compared in cents so adding them up can't drift.
 function toCents(amount: number) {
@@ -13,28 +17,29 @@ function toCents(amount: number) {
 
 describe("customer mock data", () => {
   it("has unique customer IDs that getMockCustomerById finds", () => {
-    const ids = mockCustomers.map((customer) => customer.id)
+    const ids = allCustomers.map((customer) => customer.id)
 
     expect(new Set(ids).size).toBe(ids.length)
-    for (const customer of mockCustomers) {
+    for (const customer of allCustomers) {
       expect(getMockCustomerById(customer.id)).toBe(customer)
     }
     expect(getMockCustomerById("CUS-0000")).toBeUndefined()
   })
 
   it("covers what the list has to show", () => {
-    const statuses = new Set(mockCustomers.map((customer) => customer.status))
-
-    expect(statuses).toEqual(new Set(["active", "inactive"]))
     expect(mockCustomers.some((customer) => customer.phone === null)).toBe(true)
-    expect(mockCustomers.some((customer) => customer.totalOrders === 0)).toBe(true)
-    // More than two pages at ten rows each.
-    expect(mockCustomers.length).toBeGreaterThan(20)
+    // One page of rows out of more than two pages at ten rows each.
+    expect(mockCustomers).toHaveLength(10)
+    expect(mockTotalCustomers).toBeGreaterThan(20)
+  })
+
+  it("includes a customer who has not ordered yet", () => {
+    expect(allCustomers.some((customer) => customer.totalOrders === 0)).toBe(true)
   })
 })
 
 describe("customer order mock data", () => {
-  it.each(mockCustomers)("agrees with the summary of $id", (customer) => {
+  it.each(allCustomers)("agrees with the summary of $id", (customer) => {
     const orders = getMockCustomerRecentOrders(customer.id)
 
     expect(orders).toHaveLength(
@@ -65,7 +70,7 @@ describe("customer order mock data", () => {
   })
 
   it("only has orders for customers that exist, with unique IDs", () => {
-    const orders = mockCustomers.flatMap((customer) =>
+    const orders = allCustomers.flatMap((customer) =>
       getMockCustomerRecentOrders(customer.id)
     )
     const ids = orders.map((order) => order.id)
@@ -79,7 +84,7 @@ describe("customer order mock data", () => {
 
 describe("customer address mock data", () => {
   it("belongs to existing customers and has at most one default per type", () => {
-    for (const customer of mockCustomers) {
+    for (const customer of allCustomers) {
       const addresses = getMockCustomerAddresses(customer.id)
 
       for (const type of ["shipping", "billing"] as const) {
@@ -90,7 +95,7 @@ describe("customer address mock data", () => {
       }
     }
 
-    const allIds = mockCustomers.flatMap((customer) =>
+    const allIds = allCustomers.flatMap((customer) =>
       getMockCustomerAddresses(customer.id).map((address) => address.id)
     )
     expect(new Set(allIds).size).toBe(allIds.length)

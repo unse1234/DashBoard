@@ -1,37 +1,21 @@
 import Link from "next/link"
-import {
-  EllipsisVerticalIcon,
-  EyeIcon,
-  UserRoundCheckIcon,
-  UserRoundXIcon,
-} from "lucide-react"
+import { EllipsisVerticalIcon, EyeIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import type {
-  Customer,
-  CustomerStatus,
-} from "@/lib/customers/customer.types"
-import { getToggledStatus } from "@/lib/customers/customer.utils"
+import type { Customer } from "@/lib/customers/customer.types"
 import { getCustomerRoute } from "@/lib/routes"
 
 type CustomerActionsProps = {
   customer: Customer
-  onStatusChange: (customer: Customer, status: CustomerStatus) => void
 }
 
-export function CustomerActions({
-  customer,
-  onStatusChange,
-}: CustomerActionsProps) {
-  const isActive = customer.status === "active"
-
+export function CustomerActions({ customer }: CustomerActionsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -49,15 +33,6 @@ export function CustomerActions({
         <DropdownMenuItem render={<Link href={getCustomerRoute(customer.id)} />}>
           <EyeIcon />
           View
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() =>
-            onStatusChange(customer, getToggledStatus(customer.status))
-          }
-        >
-          {isActive ? <UserRoundXIcon /> : <UserRoundCheckIcon />}
-          {isActive ? "Disable" : "Enable"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

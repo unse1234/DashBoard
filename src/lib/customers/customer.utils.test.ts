@@ -1,26 +1,4 @@
-import {
-  getAddressLines,
-  getStatusChangeMessage,
-  getToggledStatus,
-} from "@/lib/customers/customer.utils"
-
-describe("getToggledStatus", () => {
-  it("switches between active and inactive", () => {
-    expect(getToggledStatus("active")).toBe("inactive")
-    expect(getToggledStatus("inactive")).toBe("active")
-  })
-})
-
-describe("getStatusChangeMessage", () => {
-  it("names the customer and the status they now have", () => {
-    expect(getStatusChangeMessage("Daniel Reyes", "inactive")).toBe(
-      "Daniel Reyes is now inactive."
-    )
-    expect(getStatusChangeMessage("Daniel Reyes", "active")).toBe(
-      "Daniel Reyes is now active."
-    )
-  })
-})
+import { getAddressLines } from "@/lib/customers/customer.utils"
 
 describe("getAddressLines", () => {
   const address = {

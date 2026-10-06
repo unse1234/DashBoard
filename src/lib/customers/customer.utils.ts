@@ -1,16 +1,4 @@
-import { CUSTOMER_STATUS_LABELS } from "@/lib/customers/customer.constants"
-import type {
-  CustomerAddress,
-  CustomerStatus,
-} from "@/lib/customers/customer.types"
-
-export function getToggledStatus(status: CustomerStatus): CustomerStatus {
-  return status === "active" ? "inactive" : "active"
-}
-
-export function getStatusChangeMessage(name: string, status: CustomerStatus) {
-  return `${name} is now ${CUSTOMER_STATUS_LABELS[status].toLowerCase()}.`
-}
+import type { CustomerAddress } from "@/lib/customers/customer.types"
 
 /**
  * The lines of an address below the recipient: the street, the city line and

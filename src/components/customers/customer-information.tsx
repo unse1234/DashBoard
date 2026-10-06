@@ -7,8 +7,6 @@ type CustomerInformationProps = {
   customer: Customer
 }
 
-// The status is not repeated here: the page header shows it next to the
-// Enable / Disable button that changes it.
 export function CustomerInformation({ customer }: CustomerInformationProps) {
   return (
     <Card>

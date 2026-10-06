@@ -3,16 +3,17 @@ import type {
   CustomerAddress,
 } from "@/lib/customers/customer.types"
 
-// Placeholder data until the customers API exists. Every customer is here: the
-// list searches, filters, sorts and pages them itself (see `queryCustomers`).
-// Order totals and last order dates agree with `customer-order.mock-data.ts`.
+// Placeholder data until the customers API exists. `mockCustomers` stands in
+// for the page of results the list shows, as the API would return it; the
+// customers after it are not on that page but their details can still be
+// opened. Order totals and last order dates agree with
+// `customer-order.mock-data.ts`.
 export const mockCustomers: Customer[] = [
   {
     id: "CUS-1001",
     name: "Margaret Okafor-Williams",
     email: "margaret.okafor@brightwater.co.uk",
     phone: "+44 20 7946 0958",
-    status: "active",
     joinedAt: "2022-03-08T10:15:00Z",
     totalOrders: 41,
     totalSpent: 11486.35,
@@ -23,7 +24,6 @@ export const mockCustomers: Customer[] = [
     name: "Daniel Reyes",
     email: "daniel.reyes@gmail.com",
     phone: "+1 (415) 555-0132",
-    status: "active",
     joinedAt: "2022-05-19T16:42:00Z",
     totalOrders: 23,
     totalSpent: 6212.4,
@@ -34,7 +34,6 @@ export const mockCustomers: Customer[] = [
     name: "Aiko Tanabe",
     email: "aiko.tanabe@sakuramail.jp",
     phone: "+81 3 5550 1234",
-    status: "active",
     joinedAt: "2022-08-02T03:20:00Z",
     totalOrders: 14,
     totalSpent: 3894.1,
@@ -45,7 +44,6 @@ export const mockCustomers: Customer[] = [
     name: "Lucas Ferreira",
     email: "lucas.ferreira@outlook.com",
     phone: null,
-    status: "inactive",
     joinedAt: "2022-11-23T19:05:00Z",
     totalOrders: 9,
     totalSpent: 1276.35,
@@ -57,7 +55,6 @@ export const mockCustomers: Customer[] = [
     email:
       "priyanka.venkataraghavan.subramaniam@kavericonsulting-international.in",
     phone: "+91 98765 43210",
-    status: "active",
     joinedAt: "2023-01-17T05:48:00Z",
     totalOrders: 6,
     totalSpent: 2154,
@@ -68,7 +65,6 @@ export const mockCustomers: Customer[] = [
     name: "Tobias Lindqvist",
     email: "tobias@lindqvist.se",
     phone: "+46 8 555 012 34",
-    status: "active",
     joinedAt: "2023-03-05T09:30:00Z",
     totalOrders: 12,
     totalSpent: 2740.8,
@@ -79,7 +75,6 @@ export const mockCustomers: Customer[] = [
     name: "Amara Nwosu",
     email: "amara.nwosu@proton.me",
     phone: "+234 802 555 0147",
-    status: "inactive",
     joinedAt: "2023-04-28T12:12:00Z",
     totalOrders: 2,
     totalSpent: 189.98,
@@ -90,7 +85,6 @@ export const mockCustomers: Customer[] = [
     name: "Giulia Romano",
     email: "giulia.romano@studioromano.it",
     phone: "+39 06 5550 1982",
-    status: "active",
     joinedAt: "2023-06-14T08:56:00Z",
     totalOrders: 4,
     totalSpent: 1530.25,
@@ -101,7 +95,6 @@ export const mockCustomers: Customer[] = [
     name: "Wei Chen",
     email: "wei.chen@lotusgroup.sg",
     phone: "+65 6555 0148",
-    status: "active",
     joinedAt: "2023-07-30T02:34:00Z",
     totalOrders: 5,
     totalSpent: 842.5,
@@ -112,18 +105,19 @@ export const mockCustomers: Customer[] = [
     name: "Omar Haddad",
     email: "omar.haddad@haddadtrading.ae",
     phone: "+971 4 555 0176",
-    status: "active",
     joinedAt: "2023-09-09T14:08:00Z",
     totalOrders: 17,
     totalSpent: 5320,
     lastOrderAt: "2026-10-03T12:10:00Z",
   },
+];
+
+export const mockOtherCustomers: Customer[] = [
   {
     id: "CUS-1027",
     name: "Sophie Laurent",
     email: "sophie.laurent@laposte-mail.fr",
     phone: null,
-    status: "active",
     joinedAt: "2023-11-02T18:25:00Z",
     totalOrders: 3,
     totalSpent: 214.97,
@@ -134,7 +128,6 @@ export const mockCustomers: Customer[] = [
     name: "Ethan Brooks",
     email: "ethan.brooks@brooksandco.com",
     phone: "+1 (212) 555-0198",
-    status: "inactive",
     joinedAt: "2024-01-21T13:47:00Z",
     totalOrders: 4,
     totalSpent: 612.4,
@@ -145,7 +138,6 @@ export const mockCustomers: Customer[] = [
     name: "Fatou Diallo",
     email: "fatou.diallo@diallo-boutique.sn",
     phone: "+221 33 555 01 23",
-    status: "active",
     joinedAt: "2024-02-14T10:10:00Z",
     totalOrders: 2,
     totalSpent: 464.75,
@@ -156,7 +148,6 @@ export const mockCustomers: Customer[] = [
     name: "Henrik Andersen",
     email: "henrik.andersen@nordhavn.dk",
     phone: "+45 32 55 01 87",
-    status: "active",
     joinedAt: "2024-04-06T07:19:00Z",
     totalOrders: 1,
     totalSpent: 59.9,
@@ -167,7 +158,6 @@ export const mockCustomers: Customer[] = [
     name: "Isabella Fontaine",
     email: "isabella.fontaine@fontaine-and-daughters-boutique-hotels.com",
     phone: "+1 (604) 555-0163",
-    status: "active",
     joinedAt: "2024-05-27T21:03:00Z",
     totalOrders: 10,
     totalSpent: 4390.15,
@@ -178,7 +168,6 @@ export const mockCustomers: Customer[] = [
     name: "Kwame Mensah",
     email: "kwame.mensah@mensah.gh",
     phone: null,
-    status: "inactive",
     joinedAt: "2024-07-11T15:52:00Z",
     totalOrders: 0,
     totalSpent: 0,
@@ -189,7 +178,6 @@ export const mockCustomers: Customer[] = [
     name: "Yuki Nakamura",
     email: "yuki.nakamura@nakamura-design.jp",
     phone: "+81 90 5550 7766",
-    status: "active",
     joinedAt: "2024-09-03T01:28:00Z",
     totalOrders: 3,
     totalSpent: 498.45,
@@ -200,7 +188,6 @@ export const mockCustomers: Customer[] = [
     name: "Rafael Castillo",
     email: "rafael.castillo@castillo.mx",
     phone: "+52 55 5550 0134",
-    status: "active",
     joinedAt: "2025-01-15T17:41:00Z",
     totalOrders: 2,
     totalSpent: 336,
@@ -211,7 +198,6 @@ export const mockCustomers: Customer[] = [
     name: "Noah Fischer",
     email: "noah.fischer@fischer-gmbh.de",
     phone: "+49 30 5550 0191",
-    status: "inactive",
     joinedAt: "2025-05-30T11:15:00Z",
     totalOrders: 1,
     totalSpent: 129,
@@ -222,7 +208,6 @@ export const mockCustomers: Customer[] = [
     name: "Mia Johansson",
     email: "mia.johansson@gmail.com",
     phone: "+46 70 555 01 99",
-    status: "active",
     joinedAt: "2025-08-12T06:37:00Z",
     totalOrders: 4,
     totalSpent: 487.6,
@@ -233,7 +218,6 @@ export const mockCustomers: Customer[] = [
     name: "Chloe Bennett",
     email: "chloe.bennett@bennett.nz",
     phone: null,
-    status: "active",
     joinedAt: "2026-08-19T20:44:00Z",
     totalOrders: 1,
     totalSpent: 74.95,
@@ -244,7 +228,6 @@ export const mockCustomers: Customer[] = [
     name: "Liam O'Sullivan",
     email: "liam.osullivan@osullivan.ie",
     phone: "+353 1 555 0173",
-    status: "active",
     joinedAt: "2026-09-30T19:12:00Z",
     totalOrders: 0,
     totalSpent: 0,
@@ -252,8 +235,13 @@ export const mockCustomers: Customer[] = [
   },
 ]
 
+export const mockTotalCustomers =
+  mockCustomers.length + mockOtherCustomers.length
+
 export function getMockCustomerById(customerId: string) {
-  return mockCustomers.find((customer) => customer.id === customerId)
+  return [...mockCustomers, ...mockOtherCustomers].find(
+    (customer) => customer.id === customerId
+  )
 }
 
 // Not every customer has saved an address; the others show the empty state.

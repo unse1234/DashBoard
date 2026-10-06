@@ -42,7 +42,7 @@ export default async function CustomerDetailsPage({
       <PageContent>
         <BackLink href={routes.customers}>Back to Customers</BackLink>
         <div className="@container flex w-full max-w-6xl flex-col gap-4 md:gap-6">
-          <CustomerDetailsHeader key={customer.id} customer={customer} />
+          <CustomerDetailsHeader customer={customer} />
           <CustomerSummary customer={customer} />
           <div className="grid items-start gap-4 @3xl:grid-cols-[20rem_minmax(0,1fr)]">
             <CustomerInformation customer={customer} />

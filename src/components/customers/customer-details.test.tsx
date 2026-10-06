@@ -1,6 +1,4 @@
 import { render, screen, within } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { toast } from "sonner"
 
 import { CustomerAddresses } from "@/components/customers/customer-addresses"
 import { CustomerDetailsHeader } from "@/components/customers/customer-details-header"
@@ -13,8 +11,6 @@ import {
 } from "@/lib/customers/customer.mock-data"
 import { getMockCustomerRecentOrders } from "@/lib/customers/customer-order.mock-data"
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn() } }))
-
 function getCustomer(customerId: string) {
   return getMockCustomerById(customerId)!
 }
@@ -24,50 +20,15 @@ function getValue(label: string) {
   return term.nextElementSibling as HTMLElement
 }
 
-afterEach(() => {
-  vi.clearAllMocks()
-})
-
 describe("CustomerDetailsHeader", () => {
-  it("shows the name, customer ID and status", () => {
+  it("shows the name and customer ID", () => {
     render(<CustomerDetailsHeader customer={getCustomer("CUS-1002")} />)
 
     expect(
       screen.getByRole("heading", { level: 2, name: "Daniel Reyes" })
     ).toBeInTheDocument()
     expect(screen.getByText("CUS-1002")).toBeInTheDocument()
-    expect(screen.getByText("Active")).toBeInTheDocument()
-    expect(
-      screen.getByRole("button", { name: "Disable customer" })
-    ).toBeInTheDocument()
-  })
-
-  it("disables an active customer and says so", async () => {
-    render(<CustomerDetailsHeader customer={getCustomer("CUS-1002")} />)
-    const user = userEvent.setup()
-
-    await user.click(screen.getByRole("button", { name: "Disable customer" }))
-
-    expect(screen.getByText("Inactive")).toBeInTheDocument()
-    expect(screen.queryByText("Active")).toBeNull()
-    expect(
-      screen.getByRole("button", { name: "Enable customer" })
-    ).toBeInTheDocument()
-    expect(toast.success).toHaveBeenCalledWith("Daniel Reyes is now inactive.")
-  })
-
-  it("offers Enable for an inactive customer and enables them", async () => {
-    render(<CustomerDetailsHeader customer={getCustomer("CUS-1007")} />)
-    const user = userEvent.setup()
-
-    expect(screen.getByText("Inactive")).toBeInTheDocument()
-    await user.click(screen.getByRole("button", { name: "Enable customer" }))
-
-    expect(screen.getByText("Active")).toBeInTheDocument()
-    expect(
-      screen.getByRole("button", { name: "Disable customer" })
-    ).toBeInTheDocument()
-    expect(toast.success).toHaveBeenCalledWith("Lucas Ferreira is now active.")
+    expect(screen.queryByRole("button")).toBeNull()
   })
 })
 
@@ -111,12 +72,6 @@ describe("CustomerInformation", () => {
     render(<CustomerInformation customer={getCustomer("CUS-1007")} />)
 
     expect(getValue("Phone")).toHaveTextContent("Not provided")
-  })
-
-  it("leaves the status to the header, which owns the Enable / Disable button", () => {
-    render(<CustomerInformation customer={getCustomer("CUS-1007")} />)
-
-    expect(screen.queryByText("Status", { selector: "dt" })).toBeNull()
   })
 })
 

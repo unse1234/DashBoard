@@ -1,7 +1,6 @@
 import Link from "next/link"
 
 import { CustomerActions } from "@/components/customers/customer-actions"
-import { CustomerStatusBadge } from "@/components/customers/customer-status-badge"
 import { SortableTableHead } from "@/components/shared/sortable-table-head"
 import {
   Table,
@@ -15,13 +14,12 @@ import type {
   Customer,
   CustomerSort,
   CustomerSortColumn,
-  CustomerStatus,
 } from "@/lib/customers/customer.types"
 import { formatDate } from "@/lib/format-date"
 import { formatCurrency, formatInteger } from "@/lib/format-number"
 import { getCustomerRoute } from "@/lib/routes"
 
-const COLUMN_COUNT = 9
+const COLUMN_COUNT = 8
 
 // Phone is the widest column and the one scanned least, so it only appears once
 // the table has room for it; otherwise it would push Joined under the pinned
@@ -32,14 +30,12 @@ type CustomersTableProps = {
   customers: Customer[]
   sort: CustomerSort | null
   onSortChange: (column: CustomerSortColumn) => void
-  onStatusChange: (customer: Customer, status: CustomerStatus) => void
 }
 
 export function CustomersTable({
   customers,
   sort,
   onSortChange,
-  onStatusChange,
 }: CustomersTableProps) {
   function getSortProps(column: CustomerSortColumn) {
     return {
@@ -67,7 +63,6 @@ export function CustomersTable({
               align="end"
               {...getSortProps("totalSpent")}
             />
-            <SortableTableHead label="Status" {...getSortProps("status")} />
             <SortableTableHead label="Joined" {...getSortProps("joinedAt")} />
             <TableHead className="sticky right-0 bg-muted text-right">
               Actions
@@ -86,11 +81,7 @@ export function CustomersTable({
             </TableRow>
           ) : (
             customers.map((customer) => (
-              <CustomerRow
-                key={customer.id}
-                customer={customer}
-                onStatusChange={onStatusChange}
-              />
+              <CustomerRow key={customer.id} customer={customer} />
             ))
           )}
         </TableBody>
@@ -99,12 +90,7 @@ export function CustomersTable({
   )
 }
 
-type CustomerRowProps = {
-  customer: Customer
-  onStatusChange: (customer: Customer, status: CustomerStatus) => void
-}
-
-function CustomerRow({ customer, onStatusChange }: CustomerRowProps) {
+function CustomerRow({ customer }: { customer: Customer }) {
   return (
     <TableRow className="group/row [--row-tint:color-mix(in_oklab,var(--muted)_50%,var(--background))] hover:bg-(--row-tint) has-aria-expanded:bg-(--row-tint)">
       <TableCell className="font-mono text-xs text-muted-foreground">
@@ -136,16 +122,13 @@ function CustomerRow({ customer, onStatusChange }: CustomerRowProps) {
         {formatCurrency(customer.totalSpent)}
       </TableCell>
       <TableCell>
-        <CustomerStatusBadge status={customer.status} />
-      </TableCell>
-      <TableCell>
         <time dateTime={customer.joinedAt}>{formatDate(customer.joinedAt)}</time>
       </TableCell>
       {/* Pinned so the menu stays reachable when the table scrolls sideways. It
           repeats the row's hover and menu-open tint, which is opaque so the
           cell hides what scrolls under it. */}
       <TableCell className="sticky right-0 bg-background text-right group-hover/row:bg-(--row-tint) group-has-aria-expanded/row:bg-(--row-tint)">
-        <CustomerActions customer={customer} onStatusChange={onStatusChange} />
+        <CustomerActions customer={customer} />
       </TableCell>
     </TableRow>
   )

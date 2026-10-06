@@ -1,8 +1,6 @@
 import type { PageSize } from "@/lib/pagination"
 import type { Sort } from "@/lib/sort"
 
-export type CustomerStatus = "active" | "inactive"
-
 export type Customer = {
   /** Public identifier, also used in the details route. */
   id: string
@@ -10,7 +8,6 @@ export type Customer = {
   email: string
   /** As the customer typed it; null when none was given. */
   phone: string | null
-  status: CustomerStatus
   /** ISO 8601 timestamp. */
   joinedAt: string
   /** Orders placed, cancelled ones included. The API reports it; it is not counted from `CustomerOrderSummary`. */
@@ -62,8 +59,6 @@ export type CustomerOrderSummary = {
   createdAt: string
 }
 
-export type CustomerStatusFilter = CustomerStatus | "all"
-
 /** The columns the list can be sorted by. */
 export type CustomerSortColumn =
   | "id"
@@ -71,7 +66,6 @@ export type CustomerSortColumn =
   | "email"
   | "totalOrders"
   | "totalSpent"
-  | "status"
   | "joinedAt"
 
 export type CustomerSort = Sort<CustomerSortColumn>
@@ -79,7 +73,6 @@ export type CustomerSort = Sort<CustomerSortColumn>
 /** Everything that decides which customers are listed; maps 1:1 to future API or URL params. */
 export type CustomersQuery = {
   search: string
-  status: CustomerStatusFilter
   sort: CustomerSort | null
   page: number
   pageSize: PageSize
