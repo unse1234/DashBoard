@@ -6,9 +6,3 @@ export type NavItem = {
   url: Route
   icon: ReactNode
 }
-
-export type NavDocumentItem = {
-  name: string
-  url: Route
-  icon: ReactNode
-}
