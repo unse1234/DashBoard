@@ -1,6 +1,7 @@
 import type { ComponentProps } from "react"
 import {
   CircleHelpIcon,
+  FileUpIcon,
   LayoutDashboardIcon,
   PackageIcon,
   SearchIcon,
@@ -21,8 +22,8 @@ import {
 } from "@/components/ui/sidebar"
 import { routes } from "@/lib/routes"
 
-// Placeholder content: only Dashboard, Users and Products point to real pages
-// so far.
+// Placeholder content: only Dashboard, Users, Products and Imports point to
+// real pages so far.
 const user = {
   name: "Demo User",
   email: "demo@example.com",
@@ -32,6 +33,7 @@ const navMain: NavItem[] = [
   { title: "Dashboard", url: routes.dashboard, icon: <LayoutDashboardIcon /> },
   { title: "Users", url: routes.users, icon: <UserRoundCogIcon /> },
   { title: "Products", url: routes.products, icon: <PackageIcon /> },
+  { title: "Imports", url: routes.imports, icon: <FileUpIcon /> },
 ]
 
 const navSecondary: NavItem[] = [
