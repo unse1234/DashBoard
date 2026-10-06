@@ -1,4 +1,4 @@
-import { getNextSort } from "@/lib/users/user.query"
+import { getNextSort } from "@/lib/sort"
 
 describe("getNextSort", () => {
   it("starts a column ascending, then descending, then clears it", () => {

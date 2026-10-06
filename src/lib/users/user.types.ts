@@ -1,4 +1,5 @@
 import type { PageSize } from "@/lib/pagination"
+import type { Sort } from "@/lib/sort"
 
 export type UserStatus = "active" | "inactive"
 
@@ -17,12 +18,7 @@ export type UserStatusFilter = UserStatus | "all"
 
 export type UserSortColumn = keyof User
 
-export type SortDirection = "asc" | "desc"
-
-export type UserSort = {
-  column: UserSortColumn
-  direction: SortDirection
-}
+export type UserSort = Sort<UserSortColumn>
 
 /** Everything that decides which users are listed; maps 1:1 to future API or URL params. */
 export type UsersQuery = {

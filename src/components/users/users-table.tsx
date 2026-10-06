@@ -1,4 +1,4 @@
-import { SortableTableHead } from "@/components/users/sortable-table-head"
+import { SortableTableHead } from "@/components/shared/sortable-table-head"
 import { UserActions } from "@/components/users/user-actions"
 import { UserStatusBadge } from "@/components/users/user-status-badge"
 import {
