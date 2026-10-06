@@ -169,15 +169,15 @@ The Phone column only shows when the table is wide enough for it (a container qu
 ## Order management
 
 The orders module is UI-only and runs on mock data (`src/lib/orders/order.mock-data.ts`). Orders can
-be listed, found, filtered, sorted and opened; there is no creating, editing or deleting, and no
-payment, refund, shipping or invoice handling.
+be listed and opened; there is no creating, editing or deleting, and no payment, refund, shipping or
+invoice handling.
 
-Unlike users, products and customers, the list is handed every order and `OrdersList` runs `queryOrders` (`order.query.ts`)
-over them, so search (order ID, customer name and email), the order and payment status filters,
-sorting and pagination work today. They are driven by one `OrdersQuery` that maps to API or URL
-params. To connect an API, send that query and pass the returned orders and `totalRecords` in place
-of the `queryOrders` call. Statuses sort by how far along they are, not alphabetically, and the
-Items column counts units, not lines.
+It follows the users module: search, the order and payment status filters, sorting and pagination
+are controlled by one `OrdersQuery` held in `OrdersList`, and they do not change the rows yet.
+`mockOrders` stands in for one page of results (ten rows) and `mockTotalOrders` for the total; the
+other mock orders only exist so their details pages open. To connect an API, send that query (or
+write it to the URL) and pass the returned `orders` and `totalRecords` back in. The Items column
+counts units, not lines.
 
 An order is its own snapshot: `OrderCustomer`, the two `OrderAddress`es and each `OrderItem`'s name,
 SKU and price are copied onto it, as an API would store them, so the module does not import the
@@ -188,10 +188,8 @@ and every mock order is also one of that customer's recent orders in
 works the item totals, subtotal and total out from the lines (`order.mock-data.ts`), and
 `order.mock-data.test.ts` checks that they agree.
 
-The order status can be changed from the details page (`OrderStatusControl`): choose a status and
-press Update. An order only moves forward (Pending, Processing, Shipped, Delivered) and can be
-cancelled until it is delivered; a Delivered or Cancelled order is final
-(`getAvailableOrderStatuses`). It only changes the header's own
-state and says so in a toast, so it is lost on reload and the list does not see it. To connect the
-API, turn `changeStatus` in `OrderDetailsHeader` into the request. The payment status is shown, never
-changed.
+The details page has a status control (`OrderStatusControl`): choose a status and press Update. It
+offers every status, because which moves are allowed is for the API to decide, and nothing is saved.
+Without an `onStatusChange` the button shows a "Not available yet" notice instead of pretending the
+status changed. To connect the API, pass `onStatusChange` from `OrderDetailsHeader` (the page then
+gets the new status back from the server). The payment status is shown, never changed.
