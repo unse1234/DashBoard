@@ -102,7 +102,7 @@ function ProductRow({ product, selected, onSelectChange }: ProductRowProps) {
   return (
     <TableRow
       data-state={selected ? "selected" : undefined}
-      className="group/row data-[state=selected]:hover:bg-muted"
+      className="group/row data-[state=selected]:bg-muted/50 data-[state=selected]:hover:bg-muted/50"
     >
       <TableCell className="pl-3">
         <Checkbox
@@ -143,8 +143,8 @@ function ProductRow({ product, selected, onSelectChange }: ProductRowProps) {
       </TableCell>
       {/* Pinned so the menu stays reachable when the table scrolls sideways; it
           repeats the row's hover, menu-open and selected tint because it paints
-          over it. */}
-      <TableCell className="sticky right-0 bg-background text-right group-hover/row:bg-muted/50 group-has-aria-expanded/row:bg-muted/50 group-data-[state=selected]/row:bg-muted group-data-[state=selected]/row:group-hover/row:bg-muted">
+          over it. The selected tint is kept light enough for the muted text. */}
+      <TableCell className="sticky right-0 bg-background text-right group-hover/row:bg-muted/50 group-has-aria-expanded/row:bg-muted/50 group-data-[state=selected]/row:bg-muted/50">
         <ProductActions product={product} />
       </TableCell>
     </TableRow>

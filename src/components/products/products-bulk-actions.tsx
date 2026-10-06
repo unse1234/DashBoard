@@ -29,7 +29,14 @@ export function ProductsBulkActions({
           <DownloadIcon aria-hidden="true" />
           Export
         </Button>
-        <Button variant="destructive" size="sm">
+        {/* Not the destructive variant: red text on its red tint is below the AA
+            contrast ratio, so this stays on a plain background and only the
+            border reacts to hover. */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-destructive hover:border-destructive/50 hover:bg-background hover:text-destructive"
+        >
           <Trash2Icon aria-hidden="true" />
           Delete
         </Button>
