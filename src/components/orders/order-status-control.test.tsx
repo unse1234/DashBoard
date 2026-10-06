@@ -3,27 +3,26 @@ import userEvent from "@testing-library/user-event"
 import { toast } from "sonner"
 
 import { OrderDetailsHeader } from "@/components/orders/order-details-header"
+import { OrderStatusControl } from "@/components/orders/order-status-control"
 import { getMockOrderById } from "@/lib/orders/order.mock-data"
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn() } }))
+vi.mock("sonner", () => ({ toast: { info: vi.fn() } }))
 
-function getOrder(orderId: string) {
-  return getMockOrderById(orderId)!
-}
-
-function getValue(label: string) {
-  const term = screen.getByText(label, { selector: "dt" })
-  return term.nextElementSibling as HTMLElement
-}
+type User = ReturnType<typeof userEvent.setup>
 
 function getStatusSelect() {
   return screen.getByRole("combobox", { name: "Change status" })
 }
 
-async function openStatusOptions(user: ReturnType<typeof userEvent.setup>) {
+async function openStatusOptions(user: User) {
   await user.click(getStatusSelect())
   const listbox = await screen.findByRole("listbox")
   return within(listbox).getAllByRole("option")
+}
+
+async function choose(user: User, label: string) {
+  await openStatusOptions(user)
+  await user.click(screen.getByRole("option", { name: label }))
 }
 
 afterEach(() => {
@@ -31,21 +30,15 @@ afterEach(() => {
 })
 
 describe("OrderStatusControl", () => {
-  it("offers the current status, the stages after it and cancelled", async () => {
-    render(<OrderDetailsHeader order={getOrder("ORD-31620")} />)
-    const user = userEvent.setup()
+  it("starts on the order's status with Update disabled", () => {
+    render(<OrderStatusControl status="shipped" />)
 
-    const options = await openStatusOptions(user)
-
-    expect(options.map((option) => option.textContent)).toEqual([
-      "Shipped",
-      "Delivered",
-      "Cancelled",
-    ])
+    expect(getStatusSelect()).toHaveTextContent("Shipped")
+    expect(screen.getByRole("button", { name: "Update" })).toBeDisabled()
   })
 
-  it("offers every status for a pending order", async () => {
-    render(<OrderDetailsHeader order={getOrder("ORD-31640")} />)
+  it("offers every status, leaving the rules to the API", async () => {
+    render(<OrderStatusControl status="delivered" />)
     const user = userEvent.setup()
 
     const options = await openStatusOptions(user)
@@ -59,76 +52,54 @@ describe("OrderStatusControl", () => {
     ])
   })
 
-  it("keeps Update disabled until a different status is chosen", async () => {
-    render(<OrderDetailsHeader order={getOrder("ORD-31620")} />)
+  it("enables Update only while a different status is chosen", async () => {
+    render(<OrderStatusControl status="shipped" />)
     const user = userEvent.setup()
     const update = screen.getByRole("button", { name: "Update" })
 
-    expect(getStatusSelect()).toHaveTextContent("Shipped")
-    expect(update).toBeDisabled()
-
-    await openStatusOptions(user)
-    await user.click(screen.getByRole("option", { name: "Delivered" }))
-
+    await choose(user, "Delivered")
     expect(update).toBeEnabled()
-    // Choosing alone changes nothing.
-    expect(within(getValue("Order Status")).getByText("Shipped")).toBeInTheDocument()
-    expect(toast.success).not.toHaveBeenCalled()
 
-    await openStatusOptions(user)
-    await user.click(screen.getByRole("option", { name: "Shipped" }))
-
+    await choose(user, "Shipped")
     expect(update).toBeDisabled()
   })
 
-  it("updates the status shown and says so", async () => {
-    render(<OrderDetailsHeader order={getOrder("ORD-31620")} />)
+  it("sends the chosen status to onStatusChange", async () => {
+    const onStatusChange = vi.fn()
+    render(<OrderStatusControl status="shipped" onStatusChange={onStatusChange} />)
     const user = userEvent.setup()
 
-    await openStatusOptions(user)
-    await user.click(screen.getByRole("option", { name: "Delivered" }))
+    await choose(user, "Cancelled")
     await user.click(screen.getByRole("button", { name: "Update" }))
 
-    expect(within(getValue("Order Status")).getByText("Delivered")).toBeInTheDocument()
-    expect(toast.success).toHaveBeenCalledWith("Order ORD-31620 is now delivered.")
+    expect(onStatusChange).toHaveBeenCalledWith("cancelled")
+    expect(toast.info).not.toHaveBeenCalled()
   })
 
-  it("does not change the payment status", async () => {
-    render(<OrderDetailsHeader order={getOrder("ORD-31656")} />)
+  it("says it is not available yet instead of pretending to update", async () => {
+    render(<OrderStatusControl status="shipped" />)
     const user = userEvent.setup()
 
-    await openStatusOptions(user)
-    await user.click(screen.getByRole("option", { name: "Cancelled" }))
+    await choose(user, "Delivered")
     await user.click(screen.getByRole("button", { name: "Update" }))
 
-    expect(within(getValue("Order Status")).getByText("Cancelled")).toBeInTheDocument()
-    expect(within(getValue("Payment Status")).getByText("Paid")).toBeInTheDocument()
-  })
-
-  it("locks a status that is final once it is set", async () => {
-    render(<OrderDetailsHeader order={getOrder("ORD-31620")} />)
-    const user = userEvent.setup()
-
-    await openStatusOptions(user)
-    await user.click(screen.getByRole("option", { name: "Delivered" }))
-    await user.click(screen.getByRole("button", { name: "Update" }))
-
-    expect(getStatusSelect()).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Update" })).toBeDisabled()
-    expect(screen.getByText("Delivered orders can't be changed.")).toBeInTheDocument()
-  })
-
-  it.each([
-    ["ORD-31552", "Delivered"],
-    ["ORD-31224", "Cancelled"],
-  ])("cannot change %s, which is %s", (orderId, label) => {
-    render(<OrderDetailsHeader order={getOrder(orderId)} />)
-
-    expect(getStatusSelect()).toBeDisabled()
-    expect(getStatusSelect()).toHaveTextContent(label)
-    expect(screen.getByRole("button", { name: "Update" })).toBeDisabled()
-    expect(getStatusSelect()).toHaveAccessibleDescription(
-      `${label} orders can't be changed.`
+    expect(toast.info).toHaveBeenCalledWith(
+      "Not available yet",
+      expect.objectContaining({ description: expect.any(String) })
     )
+  })
+})
+
+describe("OrderDetailsHeader", () => {
+  it("keeps showing the order's status after Update, since nothing is saved", async () => {
+    render(<OrderDetailsHeader order={getMockOrderById("ORD-31620")!} />)
+    const user = userEvent.setup()
+
+    await choose(user, "Delivered")
+    await user.click(screen.getByRole("button", { name: "Update" }))
+
+    const status = screen.getByText("Order Status", { selector: "dt" })
+      .nextElementSibling as HTMLElement
+    expect(within(status).getByText("Shipped")).toBeInTheDocument()
   })
 })

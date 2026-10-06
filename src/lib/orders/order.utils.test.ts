@@ -1,9 +1,7 @@
-import type { OrderItem, OrderStatus } from "@/lib/orders/order.types"
+import type { OrderItem } from "@/lib/orders/order.types"
 import {
-  getAvailableOrderStatuses,
   getOrderAddressLines,
   getOrderItemCount,
-  getStatusChangeMessage,
 } from "@/lib/orders/order.utils"
 
 function createItem(quantity: number): OrderItem {
@@ -27,28 +25,6 @@ describe("getOrderItemCount", () => {
 
   it("is zero without items", () => {
     expect(getOrderItemCount({ items: [] })).toBe(0)
-  })
-})
-
-describe("getAvailableOrderStatuses", () => {
-  const cases: [OrderStatus, OrderStatus[]][] = [
-    ["pending", ["pending", "processing", "shipped", "delivered", "cancelled"]],
-    ["processing", ["processing", "shipped", "delivered", "cancelled"]],
-    ["shipped", ["shipped", "delivered", "cancelled"]],
-    ["delivered", ["delivered"]],
-    ["cancelled", ["cancelled"]],
-  ]
-
-  it.each(cases)("offers %s orders %j", (current, expected) => {
-    expect(getAvailableOrderStatuses(current)).toEqual(expected)
-  })
-})
-
-describe("getStatusChangeMessage", () => {
-  it("names the order and the new status", () => {
-    expect(getStatusChangeMessage("ORD-31656", "shipped")).toBe(
-      "Order ORD-31656 is now shipped."
-    )
   })
 })
 

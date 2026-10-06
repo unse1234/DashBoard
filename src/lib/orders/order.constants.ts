@@ -13,18 +13,6 @@ export const ORDER_STATUS_LABELS = {
   cancelled: "Cancelled",
 } as const satisfies Record<OrderStatus, string>
 
-/**
- * In the order an order moves through them. Cancelled comes last because it can
- * end an order from any stage before it is delivered.
- */
-export const ORDER_STATUSES = [
-  "pending",
-  "processing",
-  "shipped",
-  "delivered",
-  "cancelled",
-] as const satisfies readonly OrderStatus[]
-
 export const ORDER_STATUS_OPTIONS = [
   { value: "pending", label: ORDER_STATUS_LABELS.pending },
   { value: "processing", label: ORDER_STATUS_LABELS.processing },
@@ -43,13 +31,6 @@ export const PAYMENT_STATUS_LABELS = {
   paid: "Paid",
   refunded: "Refunded",
 } as const satisfies Record<PaymentStatus, string>
-
-/** In the order a payment normally moves through them. */
-export const PAYMENT_STATUSES = [
-  "pending",
-  "paid",
-  "refunded",
-] as const satisfies readonly PaymentStatus[]
 
 export const PAYMENT_STATUS_FILTER_OPTIONS = [
   { value: "all", label: "All" },

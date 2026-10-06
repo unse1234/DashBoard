@@ -37,7 +37,7 @@ export default async function OrderDetailsPage({
       <PageContent>
         <BackLink href={routes.orders}>Back to Orders</BackLink>
         <div className="@container flex w-full max-w-6xl flex-col gap-4 md:gap-6">
-          <OrderDetailsHeader key={order.id} order={order} />
+          <OrderDetailsHeader order={order} />
           <div className="grid items-start gap-4 @3xl:grid-cols-[minmax(0,1fr)_20rem]">
             <OrderItemsTable items={order.items} />
             <div className="flex min-w-0 flex-col gap-4">

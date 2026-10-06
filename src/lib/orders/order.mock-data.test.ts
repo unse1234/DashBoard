@@ -1,4 +1,11 @@
-import { getMockOrderById, mockOrders } from "@/lib/orders/order.mock-data"
+import {
+  getMockOrderById,
+  mockOrders,
+  mockOtherOrders,
+  mockTotalOrders,
+} from "@/lib/orders/order.mock-data"
+
+const allOrders = [...mockOrders, ...mockOtherOrders]
 
 function toCents(amount: number) {
   return Math.round(amount * 100)
@@ -6,15 +13,15 @@ function toCents(amount: number) {
 
 describe("mockOrders", () => {
   it("has unique order IDs, newest first", () => {
-    const ids = mockOrders.map(({ id }) => id)
-    const dates = mockOrders.map(({ createdAt }) => Date.parse(createdAt))
+    const ids = allOrders.map(({ id }) => id)
+    const dates = allOrders.map(({ createdAt }) => Date.parse(createdAt))
 
     expect(new Set(ids).size).toBe(ids.length)
     expect(dates).toEqual([...dates].sort((a, b) => b - a))
   })
 
   it("has line totals that equal quantity × unit price", () => {
-    for (const order of mockOrders) {
+    for (const order of allOrders) {
       for (const item of order.items) {
         expect(toCents(item.total), `${order.id} ${item.id}`).toBe(
           toCents(item.quantity * item.unitPrice)
@@ -24,7 +31,7 @@ describe("mockOrders", () => {
   })
 
   it("has a subtotal that adds up the lines and a total that adds up the breakdown", () => {
-    for (const order of mockOrders) {
+    for (const order of allOrders) {
       const itemsTotal = order.items.reduce(
         (sum, item) => sum + toCents(item.total),
         0
@@ -41,14 +48,14 @@ describe("mockOrders", () => {
   })
 
   it("has at least one item per order and a unique ID per item", () => {
-    const itemIds = mockOrders.flatMap(({ items }) => items.map(({ id }) => id))
+    const itemIds = allOrders.flatMap(({ items }) => items.map(({ id }) => id))
 
-    expect(mockOrders.every(({ items }) => items.length > 0)).toBe(true)
+    expect(allOrders.every(({ items }) => items.length > 0)).toBe(true)
     expect(new Set(itemIds).size).toBe(itemIds.length)
   })
 
   it("pairs each order status with a payment status that makes sense", () => {
-    for (const order of mockOrders) {
+    for (const order of allOrders) {
       if (order.status === "cancelled") {
         expect(["pending", "refunded"], order.id).toContain(order.paymentStatus)
       } else if (order.status === "shipped" || order.status === "delivered") {
@@ -60,14 +67,22 @@ describe("mockOrders", () => {
   })
 
   it("covers every order status, every payment status and single and multi-item orders", () => {
-    expect(new Set(mockOrders.map(({ status }) => status))).toEqual(
+    expect(new Set(allOrders.map(({ status }) => status))).toEqual(
       new Set(["pending", "processing", "shipped", "delivered", "cancelled"])
     )
-    expect(new Set(mockOrders.map(({ paymentStatus }) => paymentStatus))).toEqual(
+    expect(new Set(allOrders.map(({ paymentStatus }) => paymentStatus))).toEqual(
       new Set(["pending", "paid", "refunded"])
     )
-    expect(mockOrders.some(({ items }) => items.length === 1)).toBe(true)
-    expect(mockOrders.some(({ items }) => items.length > 1)).toBe(true)
+    expect(allOrders.some(({ items }) => items.length === 1)).toBe(true)
+    expect(allOrders.some(({ items }) => items.length > 1)).toBe(true)
+  })
+})
+
+describe("mock order pages", () => {
+  it("lists one page of rows out of more orders than that", () => {
+    expect(mockOrders).toHaveLength(10)
+    expect(mockTotalOrders).toBe(allOrders.length)
+    expect(mockTotalOrders).toBeGreaterThan(mockOrders.length)
   })
 })
 
@@ -76,6 +91,10 @@ describe("getMockOrderById", () => {
     expect(getMockOrderById("ORD-31656")?.customer.name).toBe(
       "Margaret Okafor-Williams"
     )
+  })
+
+  it("also finds the orders that are not on the listed page", () => {
+    expect(getMockOrderById("ORD-31224")?.status).toBe("cancelled")
   })
 
   it("returns undefined for an unknown ID", () => {

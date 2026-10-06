@@ -2,12 +2,10 @@ import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import { OrdersList } from "@/components/orders/orders-list"
-import { mockOrders } from "@/lib/orders/order.mock-data"
-
-type User = ReturnType<typeof userEvent.setup>
+import { mockOrders, mockTotalOrders } from "@/lib/orders/order.mock-data"
 
 function renderList(orders = mockOrders) {
-  return render(<OrdersList orders={orders} />)
+  return render(<OrdersList orders={orders} totalRecords={mockTotalOrders} />)
 }
 
 function getHeader(name: string) {
@@ -32,23 +30,8 @@ function getSearchBox() {
   })
 }
 
-function getSummary() {
-  return screen.getByText(/^Showing/)
-}
-
-// Pastes rather than types: one change per search keeps the longer tests fast.
-async function search(user: User, term: string) {
-  await user.clear(getSearchBox())
-  await user.paste(term)
-}
-
-async function choose(user: User, filter: string, option: string) {
-  await user.click(screen.getByRole("combobox", { name: filter }))
-  await user.click(await screen.findByRole("option", { name: option }))
-}
-
 describe("OrdersList table", () => {
-  it("shows the columns in order, with one row per order on the first page", () => {
+  it("shows the columns in order, with one row per order it is given", () => {
     renderList()
 
     expect(
@@ -65,8 +48,7 @@ describe("OrdersList table", () => {
       "Status",
       "Actions",
     ])
-    expect(screen.getAllByRole("row")).toHaveLength(10 + 1)
-    expect(getListedIds()[0]).toBe("ORD-31656")
+    expect(screen.getAllByRole("row")).toHaveLength(mockOrders.length + 1)
   })
 
   it("links each order ID to the order's details page", () => {
@@ -107,6 +89,12 @@ describe("OrdersList table", () => {
     expect(pending.getAllByText("Pending")).toHaveLength(2)
   })
 
+  it("shows the empty state when there are no orders", () => {
+    renderList([])
+
+    expect(screen.getByText("No orders found")).toBeInTheDocument()
+  })
+
   it("right-aligns the numeric columns and leaves Actions unsortable", () => {
     renderList()
 
@@ -122,17 +110,14 @@ describe("OrdersList sorting", () => {
     renderList()
     const user = userEvent.setup()
 
-    await user.click(within(getHeader("Order ID")).getByRole("button"))
-    expect(getHeader("Order ID")).toHaveAttribute("aria-sort", "ascending")
-    expect(getListedIds()[0]).toBe("ORD-31224")
+    await user.click(within(getHeader("Total")).getByRole("button"))
+    expect(getHeader("Total")).toHaveAttribute("aria-sort", "ascending")
 
-    await user.click(within(getHeader("Order ID")).getByRole("button"))
-    expect(getHeader("Order ID")).toHaveAttribute("aria-sort", "descending")
-    expect(getListedIds()[0]).toBe("ORD-31656")
+    await user.click(within(getHeader("Total")).getByRole("button"))
+    expect(getHeader("Total")).toHaveAttribute("aria-sort", "descending")
 
-    await user.click(within(getHeader("Order ID")).getByRole("button"))
-    expect(getHeader("Order ID")).toHaveAttribute("aria-sort", "none")
-    expect(getListedIds()[0]).toBe("ORD-31656")
+    await user.click(within(getHeader("Total")).getByRole("button"))
+    expect(getHeader("Total")).toHaveAttribute("aria-sort", "none")
   })
 
   it("only ever marks one column as sorted", async () => {
@@ -146,74 +131,15 @@ describe("OrdersList sorting", () => {
     expect(getHeader("Customer")).toHaveAttribute("aria-sort", "ascending")
   })
 
-  it("sorts by customer name", async () => {
+  it("does not reorder the rows it was given", async () => {
     renderList()
     const user = userEvent.setup()
+    const before = getListedIds()
 
+    await user.click(within(getHeader("Total")).getByRole("button"))
     await user.click(within(getHeader("Customer")).getByRole("button"))
 
-    // Aiko Tanabe, then Chloe Bennett.
-    expect(getListedIds().slice(0, 2)).toEqual(["ORD-31588", "ORD-31416"])
-  })
-
-  it("sorts the totals by value, across every page", async () => {
-    renderList()
-    const user = userEvent.setup()
-
-    // ORD-31344 is on the second page until the totals are sorted.
-    expect(getListedIds()).not.toContain("ORD-31344")
-    await user.click(within(getHeader("Total")).getByRole("button"))
-    await user.click(within(getHeader("Total")).getByRole("button"))
-
-    expect(getListedIds().slice(0, 3)).toEqual([
-      "ORD-31604",
-      "ORD-31640",
-      "ORD-31344",
-    ])
-  })
-
-  it("sorts by date, oldest first when ascending", async () => {
-    renderList()
-    const user = userEvent.setup()
-
-    await user.click(within(getHeader("Date")).getByRole("button"))
-
-    expect(getListedIds()[0]).toBe("ORD-31224")
-  })
-
-  it("sorts by the number of items", async () => {
-    renderList()
-    const user = userEvent.setup()
-
-    await user.click(within(getHeader("Items")).getByRole("button"))
-    await user.click(within(getHeader("Items")).getByRole("button"))
-
-    // Three orders have three items; ties keep the newest first.
-    expect(getListedIds()[0]).toBe("ORD-31624")
-  })
-
-  it("sorts statuses by how far along the orders are", async () => {
-    renderList()
-    const user = userEvent.setup()
-
-    await user.click(within(getHeader("Status")).getByRole("button"))
-
-    expect(getListedIds().slice(0, 2)).toEqual(["ORD-31640", "ORD-31656"])
-
-    await user.click(within(getHeader("Status")).getByRole("button"))
-
-    expect(getListedIds()[0]).toBe("ORD-31224")
-  })
-
-  it("sorts payment statuses as pending, paid, refunded", async () => {
-    renderList()
-    const user = userEvent.setup()
-
-    await user.click(within(getHeader("Payment")).getByRole("button"))
-    expect(getListedIds()[0]).toBe("ORD-31640")
-
-    await user.click(within(getHeader("Payment")).getByRole("button"))
-    expect(getListedIds()[0]).toBe("ORD-31224")
+    expect(getListedIds()).toEqual(before)
   })
 
   it("returns to the first page when the sort changes", async () => {
@@ -223,65 +149,23 @@ describe("OrdersList sorting", () => {
     await user.click(screen.getByRole("button", { name: "Go to page 2" }))
     await user.click(within(getHeader("Total")).getByRole("button"))
 
-    expect(getSummary()).toHaveTextContent("Showing 1–10")
+    expect(screen.getByText("1–10")).toBeInTheDocument()
   })
 })
 
-describe("OrdersList search", () => {
-  it("narrows the list as the search is typed", async () => {
+describe("OrdersList toolbar", () => {
+  it("keeps the typed search text without filtering the rows", async () => {
     renderList()
     const user = userEvent.setup()
+    const before = getListedIds()
 
-    await user.type(getSearchBox(), "rey")
+    await user.type(getSearchBox(), "no such order")
 
-    expect(getSearchBox()).toHaveValue("rey")
-    expect(getListedIds()).toEqual(["ORD-31620", "ORD-31516"])
-    expect(getSummary()).toHaveTextContent("Showing 1–2 of 2 orders")
+    expect(getSearchBox()).toHaveValue("no such order")
+    expect(getListedIds()).toEqual(before)
   })
 
-  it("finds orders by order ID, customer name and email", async () => {
-    renderList()
-    const user = userEvent.setup()
-
-    await search(user, "ord-31588")
-    expect(getListedIds()).toEqual(["ORD-31588"])
-
-    await search(user, "31588")
-    expect(getListedIds()).toEqual(["ORD-31588"])
-
-    await search(user, "Aiko Tanabe")
-    expect(getListedIds()).toEqual(["ORD-31588"])
-
-    await search(user, "sakuramail")
-    expect(getListedIds()).toEqual(["ORD-31588"])
-  })
-
-  it("shows the empty state when nothing matches", async () => {
-    renderList()
-    const user = userEvent.setup()
-
-    await search(user, "no such order")
-
-    expect(screen.getByText("No orders found")).toBeInTheDocument()
-    expect(
-      screen.getByText("Try adjusting your search or filters.")
-    ).toBeInTheDocument()
-    expect(getSummary()).toHaveTextContent("Showing 0–0 of 0 orders")
-  })
-
-  it("starts again from the first page", async () => {
-    renderList()
-    const user = userEvent.setup()
-
-    await user.click(screen.getByRole("button", { name: "Go to page 2" }))
-    await search(user, "a")
-
-    expect(getSummary()).toHaveTextContent("Showing 1–10")
-  })
-})
-
-describe("OrdersList filters", () => {
-  it("defaults to every order and payment status", () => {
+  it("defaults both filters to All", () => {
     renderList()
 
     expect(
@@ -292,108 +176,72 @@ describe("OrdersList filters", () => {
     ).toHaveTextContent("All")
   })
 
-  it("lists only the orders with the chosen order status", async () => {
+  it("lets both filters be changed without filtering the rows", async () => {
     renderList()
     const user = userEvent.setup()
+    const before = getListedIds()
 
-    await choose(user, "Filter by order status", "Shipped")
+    await user.click(
+      screen.getByRole("combobox", { name: "Filter by order status" })
+    )
+    await user.click(await screen.findByRole("option", { name: "Shipped" }))
+    await user.click(
+      screen.getByRole("combobox", { name: "Filter by payment status" })
+    )
+    await user.click(await screen.findByRole("option", { name: "Refunded" }))
 
-    expect(getListedIds()).toEqual(["ORD-31624", "ORD-31620"])
-    expect(getSummary()).toHaveTextContent("Showing 1–2 of 2 orders")
-
-    await choose(user, "Filter by order status", "Cancelled")
-    expect(getListedIds()).toEqual(["ORD-31224"])
-
-    await choose(user, "Filter by order status", "All")
-    expect(getSummary()).toHaveTextContent(`of ${mockOrders.length} orders`)
-  })
-
-  it("lists only the orders with the chosen payment status", async () => {
-    renderList()
-    const user = userEvent.setup()
-
-    await choose(user, "Filter by payment status", "Refunded")
-    expect(getListedIds()).toEqual(["ORD-31224"])
-
-    await choose(user, "Filter by payment status", "Pending")
-    expect(getListedIds()).toEqual(["ORD-31640"])
-
-    await choose(user, "Filter by payment status", "Paid")
-    expect(getSummary()).toHaveTextContent("of 14 orders")
-  })
-
-  it("combines both filters with the search", async () => {
-    renderList()
-    const user = userEvent.setup()
-
-    await choose(user, "Filter by order status", "Delivered")
-    expect(getSummary()).toHaveTextContent("of 11 orders")
-
-    await choose(user, "Filter by payment status", "Refunded")
-    expect(screen.getByText("No orders found")).toBeInTheDocument()
-
-    await choose(user, "Filter by payment status", "Paid")
-    await search(user, "tobias")
-    expect(getListedIds()).toEqual(["ORD-31396"])
-  })
-
-  it("starts again from the first page", async () => {
-    renderList()
-    const user = userEvent.setup()
-
-    await user.click(screen.getByRole("button", { name: "Go to page 2" }))
-    await choose(user, "Filter by order status", "Delivered")
-
-    expect(getSummary()).toHaveTextContent("Showing 1–10 of 11 orders")
+    expect(
+      screen.getByRole("combobox", { name: "Filter by order status" })
+    ).toHaveTextContent("Shipped")
+    expect(
+      screen.getByRole("combobox", { name: "Filter by payment status" })
+    ).toHaveTextContent("Refunded")
+    expect(getListedIds()).toEqual(before)
   })
 })
 
 describe("OrdersList pagination", () => {
-  it("reports the visible range and total", () => {
+  it("reports the visible range and the total it is given", () => {
     renderList()
 
-    expect(getSummary()).toHaveTextContent(
-      `Showing 1–10 of ${mockOrders.length} orders`
-    )
+    expect(screen.getByText("1–10")).toBeInTheDocument()
+    expect(screen.getByText(String(mockTotalOrders))).toBeInTheDocument()
     expect(
       screen.getByRole("navigation", { name: "orders pagination" })
     ).toBeInTheDocument()
   })
 
-  it("moves between pages and shows the short last page", async () => {
+  it("moves between pages without changing the rows", async () => {
     renderList()
     const user = userEvent.setup()
+    const before = getListedIds()
     const previous = screen.getByRole("button", { name: "Go to previous page" })
-    const next = screen.getByRole("button", { name: "Go to next page" })
 
     expect(previous).toBeDisabled()
 
-    await user.click(next)
-    expect(getSummary()).toHaveTextContent(
-      `Showing 11–${mockOrders.length} of ${mockOrders.length} orders`
-    )
-    expect(getListedIds()).toHaveLength(mockOrders.length - 10)
-    expect(previous).toBeEnabled()
-    expect(next).toBeDisabled()
+    await user.click(screen.getByRole("button", { name: "Go to next page" }))
 
-    await user.click(screen.getByRole("button", { name: "Go to page 1" }))
-    expect(getListedIds()[0]).toBe("ORD-31656")
+    expect(screen.getByRole("button", { name: "Go to page 2" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    )
+    expect(previous).toBeEnabled()
+    expect(getListedIds()).toEqual(before)
   })
 
-  it("shows more rows when the page size grows", async () => {
+  it("lets the page size be changed", async () => {
     renderList()
     const user = userEvent.setup()
 
     await user.click(screen.getByRole("combobox", { name: "Rows per page" }))
     await user.click(await screen.findByRole("option", { name: "20" }))
 
-    expect(screen.getAllByRole("row")).toHaveLength(mockOrders.length + 1)
-    expect(getSummary()).toHaveTextContent(`Showing 1–${mockOrders.length}`)
+    expect(screen.getByText(`1–${mockTotalOrders}`)).toBeInTheDocument()
   })
 })
 
 describe("OrdersList row actions", () => {
-  it("links View to the order's details page", async () => {
+  it("links View to the order's details page and offers nothing else", async () => {
     renderList()
     const user = userEvent.setup()
 
@@ -405,25 +253,6 @@ describe("OrdersList row actions", () => {
       "href",
       "/dashboard/orders/ORD-31588"
     )
-  })
-
-  it("offers nothing that changes the order", async () => {
-    renderList()
-    const user = userEvent.setup()
-
-    await user.click(
-      screen.getByRole("button", { name: "Actions for order ORD-31588" })
-    )
-
-    expect(await screen.findAllByRole("menuitem")).toHaveLength(1)
-  })
-})
-
-describe("OrdersList without orders", () => {
-  it("shows the empty state", () => {
-    renderList([])
-
-    expect(screen.getByText("No orders found")).toBeInTheDocument()
-    expect(getSummary()).toHaveTextContent("Showing 0–0 of 0 orders")
+    expect(screen.getAllByRole("menuitem")).toHaveLength(1)
   })
 })

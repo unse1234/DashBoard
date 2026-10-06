@@ -5,32 +5,31 @@ import { useState } from "react"
 import { OrdersTable } from "@/components/orders/orders-table"
 import { OrdersTableToolbar } from "@/components/orders/orders-table-toolbar"
 import { TablePagination } from "@/components/shared/table-pagination"
-import { defaultOrdersQuery, queryOrders } from "@/lib/orders/order.query"
+import { defaultOrdersQuery } from "@/lib/orders/order.query"
 import type { Order, OrdersQuery } from "@/lib/orders/order.types"
 import { getNextSort } from "@/lib/sort"
 
 type OrdersListProps = {
-  /** Every order; there is no API to ask for one page at a time yet. */
+  /** The rows for the current query, as the server would return them. */
   orders: Order[]
+  totalRecords: number
 }
 
 /**
- * Owns the list controls' state. Until the API exists it also searches,
- * filters, sorts and pages `orders` with `queryOrders`. With the API, `query`
- * is what gets sent to it (or written to the URL) and the rows and
- * `totalRecords` come back for that query.
+ * Owns the list controls' state. It does not search, filter, sort or page
+ * `orders` itself: once the API exists, `query` is what gets sent to it (or
+ * written to the URL) and `orders` / `totalRecords` come back for that query.
  */
-export function OrdersList({ orders }: OrdersListProps) {
+export function OrdersList({ orders, totalRecords }: OrdersListProps) {
   const [query, setQuery] = useState<OrdersQuery>(defaultOrdersQuery)
-  const { orders: rows, totalRecords, page } = queryOrders(orders, query)
 
   // Anything that changes which orders are listed starts again from page one.
   function updateQuery(changes: Partial<Omit<OrdersQuery, "page">>) {
     setQuery((current) => ({ ...current, ...changes, page: 1 }))
   }
 
-  function goToPage(nextPage: number) {
-    setQuery((current) => ({ ...current, page: nextPage }))
+  function goToPage(page: number) {
+    setQuery((current) => ({ ...current, page }))
   }
 
   return (
@@ -46,7 +45,7 @@ export function OrdersList({ orders }: OrdersListProps) {
         }
       />
       <OrdersTable
-        orders={rows}
+        orders={orders}
         sort={query.sort}
         onSortChange={(column) =>
           updateQuery({ sort: getNextSort(query.sort, column) })
@@ -54,7 +53,7 @@ export function OrdersList({ orders }: OrdersListProps) {
       />
       <TablePagination
         resourceName="orders"
-        page={page}
+        page={query.page}
         pageSize={query.pageSize}
         totalRecords={totalRecords}
         onPageChange={goToPage}
