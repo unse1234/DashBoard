@@ -26,3 +26,7 @@ export function getProductRoute(productId: string) {
 export function getEditProductRoute(productId: string) {
   return `${getProductRoute(productId)}/edit` as Route
 }
+
+export function getImportRoute(jobId: string) {
+  return `${routes.imports}/${encodeURIComponent(jobId)}` as Route
+}
