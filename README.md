@@ -27,6 +27,8 @@ npm run test      # Vitest in watch mode (test:run for a single run)
 | `/dashboard/products/new` | Add a product                         |
 | `/dashboard/products/[productId]` | Product details               |
 | `/dashboard/products/[productId]/edit` | Edit a product           |
+| `/dashboard/customers` | Customer list                        |
+| `/dashboard/customers/[customerId]` | Customer details        |
 | `/dashboard/imports` | Product CSV import center              |
 | `/dashboard/imports/[jobId]` | Import job details              |
 
@@ -50,6 +52,7 @@ src/
 │       └── dashboard/
 │           ├── users/       # list and [userId] details
 │           ├── products/    # list, new, [productId] details and edit
+│           ├── customers/   # list and [customerId] details
 │           └── imports/     # import center and [jobId] details
 ├── components/
 │   ├── ui/                  # shadcn/ui components
@@ -57,6 +60,7 @@ src/
 │   ├── dashboard/           # sidebar, header and overview widgets
 │   ├── users/               # user management table, dialogs and details
 │   ├── products/            # product list, form and details
+│   ├── customers/           # customer list, details, addresses and recent orders
 │   ├── imports/             # CSV upload, import job list and job details
 │   └── shared/              # app-wide components (e.g. the logo)
 ├── hooks/
@@ -64,6 +68,7 @@ src/
     ├── app.constants.ts
     ├── routes.ts
     ├── pagination.ts
+    ├── sort.ts
     ├── format-date.ts
     ├── format-number.ts
     ├── format-duration.ts
@@ -71,6 +76,7 @@ src/
     ├── auth/                # form state types and validation
     ├── users/               # user types, zod schemas and mock data
     ├── products/            # product types, zod schema and mock data
+    ├── customers/           # customer types, query helper and mock data
     └── imports/             # import job types, file validation and mock data
 ```
 
@@ -129,3 +135,33 @@ button next to the file picker, which is only enabled once a valid file is chose
 `ImportActionButton`. Without an `onAction` it shows a "Not available yet" notice instead of
 pretending to work. To start an import, give the Import button in `ImportUpload` the upload call;
 the chosen file is already in that component's state.
+
+## Customer management
+
+The customers module is UI-only and runs on mock data (`src/lib/customers/customer.mock-data.ts`,
+and the latest orders in `customer-order.mock-data.ts`). Customers can be viewed, found and
+enabled or disabled; there is no creating, editing or deleting.
+
+Unlike users and products, the list is handed every customer and `CustomersList` runs
+`queryCustomers` (`customer.query.ts`) over them, so search (ID, name, email and phone, whatever the
+phone's formatting), the status filter, sorting and pagination work today. They are still driven by
+one `CustomersQuery` that maps to API or URL params. To connect an API, send that query and pass the
+returned `customers` and `totalRecords` in place of the `queryCustomers` call. The sort cycle and the
+sortable header are shared with users (`lib/sort.ts`, `components/shared/sortable-table-head.tsx`).
+
+Enable / Disable, in the row menu and in the details header, only changes the component's own state
+and says so in a toast. It is lost on reload, and the list and the details page don't share it. To
+connect the API, turn `changeStatus` in `CustomersList` and `toggleStatus` in `CustomerDetailsHeader`
+into the request. The status is shown once on the details page, in the header beside that button, so
+it can't disagree with it.
+
+A customer's `totalOrders`, `totalSpent` and `lastOrderAt` come with the customer, as the API will
+report them, and are not worked out from the orders on the details page. Those are a
+`CustomerOrderSummary`, the few fields the page needs, for the latest `RECENT_ORDERS_LIMIT` orders;
+the Orders module can replace it with its own order type. Order IDs are plain text until there is an
+order details route to link to. Cancelled orders count towards `totalOrders` but not `totalSpent`,
+and a test (`customer.mock-data.test.ts`) keeps each customer's summary in step with their listed
+orders. Addresses are read-only, grouped as shipping and billing.
+
+The Phone column only shows when the table is wide enough for it (a container query in
+`CustomersTable`), so the table fits common laptop screens without scrolling sideways.
