@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 
-import { UsersPagination } from "@/components/users/users-pagination"
+import { TablePagination } from "@/components/shared/table-pagination"
 import { UsersTable } from "@/components/users/users-table"
 import { UsersTableToolbar } from "@/components/users/users-table-toolbar"
 import { defaultUsersQuery, getNextSort } from "@/lib/users/user.query"
@@ -46,7 +46,8 @@ export function UsersList({ users, totalRecords }: UsersListProps) {
           updateQuery({ sort: getNextSort(query.sort, column) })
         }
       />
-      <UsersPagination
+      <TablePagination
+        resourceName="users"
         page={query.page}
         pageSize={query.pageSize}
         totalRecords={totalRecords}

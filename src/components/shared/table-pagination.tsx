@@ -1,3 +1,4 @@
+import { useId } from "react"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -33,7 +34,9 @@ function toPageSize(value: string | null) {
   return PAGE_SIZE_OPTIONS.find((size) => String(size) === value)
 }
 
-type UsersPaginationProps = {
+type TablePaginationProps = {
+  /** Plural, lowercase name of the listed records, e.g. "users". */
+  resourceName: string
   page: number
   pageSize: PageSize
   totalRecords: number
@@ -41,13 +44,15 @@ type UsersPaginationProps = {
   onPageSizeChange: (pageSize: PageSize) => void
 }
 
-export function UsersPagination({
+export function TablePagination({
+  resourceName,
   page,
   pageSize,
   totalRecords,
   onPageChange,
   onPageSizeChange,
-}: UsersPaginationProps) {
+}: TablePaginationProps) {
+  const pageSizeId = useId()
   const totalPages = getTotalPages(totalRecords, pageSize)
   const { from, to } = getRecordRange(page, pageSize, totalRecords)
 
@@ -59,11 +64,11 @@ export function UsersPagination({
           {from}–{to}
         </span>{" "}
         of <span className="font-medium text-foreground">{totalRecords}</span>{" "}
-        users
+        {resourceName}
       </p>
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 lg:justify-end">
         <div className="flex items-center gap-2">
-          <Label htmlFor="users-page-size" className="text-sm font-medium">
+          <Label htmlFor={pageSizeId} className="text-sm font-medium">
             Rows per page
           </Label>
           <Select
@@ -74,7 +79,7 @@ export function UsersPagination({
               if (next) onPageSizeChange(next)
             }}
           >
-            <SelectTrigger size="sm" className="w-20" id="users-page-size">
+            <SelectTrigger size="sm" className="w-20" id={pageSizeId}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent side="top">
@@ -88,7 +93,7 @@ export function UsersPagination({
             </SelectContent>
           </Select>
         </div>
-        <Pagination aria-label="Users pagination" className="mx-0 w-auto">
+        <Pagination aria-label={`${resourceName} pagination`} className="mx-0 w-auto">
           <PaginationContent className="gap-1">
             <PaginationItem>
               <Button

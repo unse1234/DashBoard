@@ -1,5 +1,4 @@
-import type { ReactNode } from "react"
-
+import { DetailItem } from "@/components/shared/detail-item"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { UserStatusBadge } from "@/components/users/user-status-badge"
 import { formatDateTime } from "@/lib/format-date"
@@ -44,19 +43,5 @@ export function UserDetailsCard({ user }: UserDetailsCardProps) {
         </dl>
       </CardContent>
     </Card>
-  )
-}
-
-type DetailItemProps = {
-  label: string
-  children: ReactNode
-}
-
-function DetailItem({ label, children }: DetailItemProps) {
-  return (
-    <div className="flex min-w-0 flex-col gap-1">
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-sm font-medium wrap-anywhere">{children}</dd>
-    </div>
   )
 }
