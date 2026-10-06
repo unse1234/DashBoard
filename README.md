@@ -27,6 +27,8 @@ npm run test      # Vitest in watch mode (test:run for a single run)
 | `/dashboard/products/new` | Add a product                         |
 | `/dashboard/products/[productId]` | Product details               |
 | `/dashboard/products/[productId]/edit` | Edit a product           |
+| `/dashboard/orders` | Order list                              |
+| `/dashboard/orders/[orderId]` | Order details                 |
 | `/dashboard/customers` | Customer list                        |
 | `/dashboard/customers/[customerId]` | Customer details        |
 | `/dashboard/imports` | Product CSV import center              |
@@ -52,6 +54,7 @@ src/
 │       └── dashboard/
 │           ├── users/       # list and [userId] details
 │           ├── products/    # list, new, [productId] details and edit
+│           ├── orders/      # list and [orderId] details
 │           ├── customers/   # list and [customerId] details
 │           └── imports/     # import center and [jobId] details
 ├── components/
@@ -60,6 +63,7 @@ src/
 │   ├── dashboard/           # sidebar, header and overview widgets
 │   ├── users/               # user management table, dialogs and details
 │   ├── products/            # product list, form and details
+│   ├── orders/              # order list, status control and details
 │   ├── customers/           # customer list, details, addresses and recent orders
 │   ├── imports/             # CSV upload, import job list and job details
 │   └── shared/              # app-wide components (e.g. the logo)
@@ -76,6 +80,7 @@ src/
     ├── auth/                # form state types and validation
     ├── users/               # user types, zod schemas and mock data
     ├── products/            # product types, zod schema and mock data
+    ├── orders/              # order types, query helper and mock data
     ├── customers/           # customer types, query helper and mock data
     └── imports/             # import job types, file validation and mock data
 ```
@@ -165,3 +170,33 @@ orders. Addresses are read-only, grouped as shipping and billing.
 
 The Phone column only shows when the table is wide enough for it (a container query in
 `CustomersTable`), so the table fits common laptop screens without scrolling sideways.
+
+## Order management
+
+The orders module is UI-only and runs on mock data (`src/lib/orders/order.mock-data.ts`). Orders can
+be listed, found, filtered, sorted and opened; there is no creating, editing or deleting, and no
+payment, refund, shipping or invoice handling.
+
+Like customers, the list is handed every order and `OrdersList` runs `queryOrders` (`order.query.ts`)
+over them, so search (order ID, customer name and email), the order and payment status filters,
+sorting and pagination work today. They are driven by one `OrdersQuery` that maps to API or URL
+params. To connect an API, send that query and pass the returned orders and `totalRecords` in place
+of the `queryOrders` call. Statuses sort by how far along they are, not alphabetically, and the
+Items column counts units, not lines.
+
+An order is its own snapshot: `OrderCustomer`, the two `OrderAddress`es and each `OrderItem`'s name,
+SKU and price are copied onto it, as an API would store them, so the module does not import the
+Customers or Products types. The IDs are the same, though. The customer's name on the details page
+links to `/dashboard/customers/[customerId]` and each product to `/dashboard/products/[productId]`,
+and every mock order is also one of that customer's recent orders in
+`lib/customers/customer-order.mock-data.ts`, with the same date, status and total. The mock data
+works the item totals, subtotal and total out from the lines (`order.mock-data.ts`), and
+`order.mock-data.test.ts` checks that they agree.
+
+The order status can be changed from the details page (`OrderStatusControl`): choose a status and
+press Update. An order only moves forward (Pending, Processing, Shipped, Delivered) and can be
+cancelled until it is delivered; a Delivered or Cancelled order is final
+(`getAvailableOrderStatuses`). Like Enable / Disable for customers, it only changes the header's own
+state and says so in a toast, so it is lost on reload and the list does not see it. To connect the
+API, turn `changeStatus` in `OrderDetailsHeader` into the request. The payment status is shown, never
+changed.
