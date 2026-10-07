@@ -1,6 +1,5 @@
 import { DownloadIcon, RotateCcwIcon } from "lucide-react"
 
-import { ImportActionButton } from "@/components/imports/import-action-button"
 import { TableScrollRegion } from "@/components/shared/table-scroll-region"
 import {
   Table,
@@ -12,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import type { ImportFailedRow } from "@/lib/imports/import.types"
+import { ImportActionButton } from "@/screens/imports/components/import-action-button"
 
 type ImportFailedRowsProps = {
   rows: ImportFailedRow[]

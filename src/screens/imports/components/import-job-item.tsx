@@ -1,9 +1,6 @@
 import Link from "next/link"
 import { FileWarningIcon, RotateCcwIcon } from "lucide-react"
 
-import { ImportActionButton } from "@/components/imports/import-action-button"
-import { ImportProgress } from "@/components/imports/import-progress"
-import { ImportStatusBadge } from "@/components/imports/import-status-badge"
 import { DetailItem } from "@/components/shared/detail-item"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -13,6 +10,9 @@ import type { ImportJob } from "@/lib/imports/import.types"
 import { getImportProgress } from "@/lib/imports/import.utils"
 import { getImportRoute } from "@/lib/routes"
 import { cn } from "@/lib/utils"
+import { ImportActionButton } from "@/screens/imports/components/import-action-button"
+import { ImportProgress } from "@/screens/imports/components/import-progress"
+import { ImportStatusBadge } from "@/screens/imports/components/import-status-badge"
 
 type ImportJobItemProps = {
   job: ImportJob

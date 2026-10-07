@@ -1,6 +1,6 @@
-import { ImportJobItem } from "@/components/imports/import-job-item"
 import { IMPORT_EMPTY_STATES } from "@/lib/imports/import.constants"
 import type { ImportJob, ImportStatus } from "@/lib/imports/import.types"
+import { ImportJobItem } from "@/screens/imports/components/import-job-item"
 
 type ImportJobListProps = {
   /** The status every job in `jobs` has; it decides the empty state. */

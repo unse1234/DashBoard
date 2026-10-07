@@ -2,16 +2,16 @@ import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { toast } from "sonner"
 
-import { ImportDetailsHeader } from "@/components/imports/import-details-header"
-import { ImportFailedRows } from "@/components/imports/import-failed-rows"
-import { ImportJobInfo } from "@/components/imports/import-job-info"
-import { ImportProgressCard } from "@/components/imports/import-progress-card"
-import { ImportTimeline } from "@/components/imports/import-timeline"
 import {
   getMockImportFailedRows,
   getMockImportJobById,
 } from "@/lib/imports/import.mock-data"
 import { getImportTimeline } from "@/lib/imports/import.utils"
+import { ImportDetailsHeader } from "@/screens/imports/details/components/import-details-header"
+import { ImportFailedRows } from "@/screens/imports/details/components/import-failed-rows"
+import { ImportJobInfo } from "@/screens/imports/details/components/import-job-info"
+import { ImportProgressCard } from "@/screens/imports/details/components/import-progress-card"
+import { ImportTimeline } from "@/screens/imports/details/components/import-timeline"
 
 vi.mock("sonner", () => ({ toast: { info: vi.fn() } }))
 

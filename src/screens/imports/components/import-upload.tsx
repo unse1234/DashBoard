@@ -9,8 +9,6 @@ import {
 } from "react"
 import { DownloadIcon, FileTextIcon, UploadIcon, XIcon } from "lucide-react"
 
-import { ImportActionButton } from "@/components/imports/import-action-button"
-import { ImportGuidelinesDialog } from "@/components/imports/import-guidelines-dialog"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -26,6 +24,8 @@ import {
   IMPORT_MAX_FILE_SIZE_LABEL,
 } from "@/lib/imports/import.constants"
 import { validateImportFile } from "@/lib/imports/import.validation"
+import { ImportActionButton } from "@/screens/imports/components/import-action-button"
+import { ImportGuidelinesDialog } from "@/screens/imports/components/import-guidelines-dialog"
 
 function isDraggingFiles(event: DragEvent) {
   return Array.from(event.dataTransfer.types).includes("Files")

@@ -1,9 +1,9 @@
-import { ImportStatusBadge } from "@/components/imports/import-status-badge"
 import { DetailItem } from "@/components/shared/detail-item"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatDuration } from "@/lib/format-duration"
 import type { ImportJob } from "@/lib/imports/import.types"
 import { getImportDurationSeconds } from "@/lib/imports/import.utils"
+import { ImportStatusBadge } from "@/screens/imports/components/import-status-badge"
 
 type ImportJobInfoProps = {
   job: ImportJob

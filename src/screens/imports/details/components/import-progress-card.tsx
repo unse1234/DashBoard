@@ -1,10 +1,10 @@
-import { ImportProgress } from "@/components/imports/import-progress"
-import { ImportStatusBadge } from "@/components/imports/import-status-badge"
 import { DetailItem } from "@/components/shared/detail-item"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatInteger } from "@/lib/format-number"
 import type { ImportJob } from "@/lib/imports/import.types"
 import { getImportProgress } from "@/lib/imports/import.utils"
+import { ImportProgress } from "@/screens/imports/components/import-progress"
+import { ImportStatusBadge } from "@/screens/imports/components/import-status-badge"
 
 type ImportProgressCardProps = {
   job: ImportJob

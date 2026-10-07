@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react"
 
-import { ImportProgress } from "@/components/imports/import-progress"
-import { ImportStatusBadge } from "@/components/imports/import-status-badge"
+import { ImportProgress } from "@/screens/imports/components/import-progress"
+import { ImportStatusBadge } from "@/screens/imports/components/import-status-badge"
 
 describe("ImportProgress", () => {
   it("shows whatever value it is given, with its label", () => {

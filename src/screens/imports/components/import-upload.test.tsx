@@ -2,8 +2,8 @@ import { createEvent, fireEvent, render, screen, within } from "@testing-library
 import userEvent from "@testing-library/user-event"
 import { toast } from "sonner"
 
-import { ImportUpload } from "@/components/imports/import-upload"
 import { IMPORT_MAX_FILE_SIZE_BYTES } from "@/lib/imports/import.constants"
+import { ImportUpload } from "@/screens/imports/components/import-upload"
 
 vi.mock("sonner", () => ({ toast: { info: vi.fn() } }))
 

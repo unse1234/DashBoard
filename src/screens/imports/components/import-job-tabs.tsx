@@ -1,4 +1,3 @@
-import { ImportJobList } from "@/components/imports/import-job-list"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   IMPORT_STATUSES,
@@ -6,6 +5,7 @@ import {
 } from "@/lib/imports/import.constants"
 import type { ImportJob } from "@/lib/imports/import.types"
 import { groupImportsByStatus } from "@/lib/imports/import.utils"
+import { ImportJobList } from "@/screens/imports/components/import-job-list"
 
 type ImportJobTabsProps = {
   /** All jobs; they are split into tabs by status here. */
