@@ -1,8 +1,8 @@
 import { DetailItem } from "@/components/shared/detail-item"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { UserStatusBadge } from "@/components/users/user-status-badge"
 import { formatDateTime } from "@/lib/format-date"
 import type { User } from "@/lib/users/user.types"
+import { UserStatusBadge } from "@/screens/users/components/user-status-badge"
 
 type UserDetailsCardProps = {
   user: User

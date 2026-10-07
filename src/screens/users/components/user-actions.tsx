@@ -18,9 +18,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { EditUserDialog } from "@/components/users/edit-user-dialog"
 import { getUserRoute } from "@/lib/routes"
 import type { User } from "@/lib/users/user.types"
+import { EditUserDialog } from "@/screens/users/components/edit-user-dialog"
 
 type UserActionsProps = {
   user: User

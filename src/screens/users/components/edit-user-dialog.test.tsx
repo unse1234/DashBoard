@@ -2,8 +2,8 @@ import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
-import { EditUserDialog } from "@/components/users/edit-user-dialog"
 import type { User } from "@/lib/users/user.types"
+import { EditUserDialog } from "@/screens/users/components/edit-user-dialog"
 
 const activeUser: User = {
   uid: "USR-1",

@@ -16,11 +16,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { FieldGroup } from "@/components/ui/field"
-import { UserFormFooter } from "@/components/users/user-form-footer"
 import {
   createUserSchema,
   type CreateUserValues,
 } from "@/lib/users/user.schemas"
+import { UserFormFooter } from "@/screens/users/components/user-form-footer"
 
 type CreateUserDialogProps = {
   /** Called with the validated values; the dialog closes once it resolves. */

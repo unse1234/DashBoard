@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
-import { CreateUserDialog } from "@/components/users/create-user-dialog"
+import { CreateUserDialog } from "@/screens/users/components/create-user-dialog"
 
 async function openDialog(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole("button", { name: "Create User" }))

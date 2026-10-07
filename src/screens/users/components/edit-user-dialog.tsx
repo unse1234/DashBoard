@@ -21,11 +21,11 @@ import {
   FieldSet,
 } from "@/components/ui/field"
 import { Switch } from "@/components/ui/switch"
-import { UserFormFooter } from "@/components/users/user-form-footer"
 import { PASSWORD_HINT } from "@/lib/auth/validation"
 import { USER_STATUS_LABELS } from "@/lib/users/user.constants"
 import { editUserSchema, type EditUserValues } from "@/lib/users/user.schemas"
 import type { User } from "@/lib/users/user.types"
+import { UserFormFooter } from "@/screens/users/components/user-form-footer"
 
 type EditUserDialogProps = {
   user: User

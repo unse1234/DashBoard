@@ -1,6 +1,4 @@
 import { SortableTableHead } from "@/components/shared/sortable-table-head"
-import { UserActions } from "@/components/users/user-actions"
-import { UserStatusBadge } from "@/components/users/user-status-badge"
 import {
   Table,
   TableBody,
@@ -16,6 +14,8 @@ import type {
   UserSort,
   UserSortColumn,
 } from "@/lib/users/user.types"
+import { UserActions } from "@/screens/users/components/user-actions"
+import { UserStatusBadge } from "@/screens/users/components/user-status-badge"
 
 const COLUMN_COUNT = USER_COLUMNS.length + 1
 

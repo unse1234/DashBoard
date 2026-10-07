@@ -3,11 +3,11 @@
 import { useState } from "react"
 
 import { TablePagination } from "@/components/shared/table-pagination"
-import { UsersTable } from "@/components/users/users-table"
-import { UsersTableToolbar } from "@/components/users/users-table-toolbar"
 import { getNextSort } from "@/lib/sort"
 import { defaultUsersQuery } from "@/lib/users/user.query"
 import type { User, UsersQuery } from "@/lib/users/user.types"
+import { UsersTable } from "@/screens/users/components/users-table"
+import { UsersTableToolbar } from "@/screens/users/components/users-table-toolbar"
 
 type UsersListProps = {
   /** The rows for the current query, as the server would return them. */
