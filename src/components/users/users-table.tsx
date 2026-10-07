@@ -65,7 +65,7 @@ export function UsersTable({ users, sort, onSortChange }: UsersTableProps) {
 
 function UserRow({ user }: { user: User }) {
   return (
-    <TableRow className="group/row">
+    <TableRow className="group/row [--row-tint:color-mix(in_oklab,var(--muted)_50%,var(--background))] hover:bg-(--row-tint) has-aria-expanded:bg-(--row-tint)">
       <TableCell className="font-mono text-xs text-muted-foreground">
         {user.uid}
       </TableCell>
@@ -94,9 +94,10 @@ function UserRow({ user }: { user: User }) {
           <span className="text-muted-foreground">Never</span>
         )}
       </TableCell>
-      {/* Pinned so the menu stays reachable when the table scrolls sideways; it
-          repeats the row's hover and menu-open tint because it paints over it. */}
-      <TableCell className="sticky right-0 bg-background text-right group-hover/row:bg-muted/50 group-has-aria-expanded/row:bg-muted/50">
+      {/* Pinned so the menu stays reachable when the table scrolls sideways. It
+          repeats the row's hover and menu-open tint, which is opaque so the
+          cell hides what scrolls under it. */}
+      <TableCell className="sticky right-0 bg-background text-right group-hover/row:bg-(--row-tint) group-has-aria-expanded/row:bg-(--row-tint)">
         <UserActions user={user} />
       </TableCell>
     </TableRow>
