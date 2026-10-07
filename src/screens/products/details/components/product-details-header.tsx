@@ -1,11 +1,11 @@
 import Link from "next/link"
 import { PencilIcon } from "lucide-react"
 
-import { ProductStatusBadge } from "@/components/products/product-status-badge"
 import { buttonVariants } from "@/components/ui/button"
 import type { Product } from "@/lib/products/product.types"
 import { getProductDisplayStatus } from "@/lib/products/product.utils"
 import { getEditProductRoute } from "@/lib/routes"
+import { ProductStatusBadge } from "@/screens/products/components/product-status-badge"
 
 type ProductDetailsHeaderProps = {
   product: Product

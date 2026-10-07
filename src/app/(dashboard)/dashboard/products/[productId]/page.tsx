@@ -1,16 +1,11 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
-import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { PageContent } from "@/components/dashboard/page-content"
-import { ProductDetailsHeader } from "@/components/products/product-details-header"
-import { ProductDetailsTabs } from "@/components/products/product-details-tabs"
-import { BackLink } from "@/components/shared/back-link"
 import {
   getMockProductById,
   getMockProductHistory,
 } from "@/lib/products/product.mock-data"
-import { routes } from "@/lib/routes"
+import { ProductDetailsScreen } from "@/screens/products/details"
 
 type ProductDetailsPageProps = PageProps<"/dashboard/products/[productId]">
 
@@ -31,16 +26,9 @@ export default async function ProductDetailsPage({
   if (!product) notFound()
 
   return (
-    <>
-      <DashboardHeader title="Product details" />
-      <PageContent narrow>
-        <BackLink href={routes.products}>Back to Products</BackLink>
-        <ProductDetailsHeader product={product} />
-        <ProductDetailsTabs
-          product={product}
-          history={getMockProductHistory(product.id)}
-        />
-      </PageContent>
-    </>
+    <ProductDetailsScreen
+      product={product}
+      history={getMockProductHistory(product.id)}
+    />
   )
 }

@@ -2,8 +2,8 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { toast } from "sonner"
 
-import { ProductForm } from "@/components/products/product-form"
 import { getMockProductById } from "@/lib/products/product.mock-data"
+import { ProductForm } from "@/screens/products/components/product-form"
 
 vi.mock("sonner", () => ({ toast: { info: vi.fn() } }))
 

@@ -1,12 +1,12 @@
 import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
-import { ProductDetailsHeader } from "@/components/products/product-details-header"
-import { ProductDetailsTabs } from "@/components/products/product-details-tabs"
 import {
   getMockProductById,
   getMockProductHistory,
 } from "@/lib/products/product.mock-data"
+import { ProductDetailsHeader } from "@/screens/products/details/components/product-details-header"
+import { ProductDetailsTabs } from "@/screens/products/details/components/product-details-tabs"
 
 function renderTabs(productId: string) {
   const product = getMockProductById(productId)!

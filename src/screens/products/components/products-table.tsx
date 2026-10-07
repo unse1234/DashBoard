@@ -1,7 +1,5 @@
 import Link from "next/link"
 
-import { ProductActions } from "@/components/products/product-actions"
-import { ProductStatusBadge } from "@/components/products/product-status-badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Table,
@@ -16,6 +14,8 @@ import { getProductDisplayStatus } from "@/lib/products/product.utils"
 import type { Product } from "@/lib/products/product.types"
 import { getProductRoute } from "@/lib/routes"
 import { cn } from "@/lib/utils"
+import { ProductActions } from "@/screens/products/components/product-actions"
+import { ProductStatusBadge } from "@/screens/products/components/product-status-badge"
 
 const COLUMN_COUNT = 9
 

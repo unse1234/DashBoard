@@ -1,7 +1,3 @@
-import { ProductHistory } from "@/components/products/product-history"
-import { ProductInformation } from "@/components/products/product-information"
-import { ProductInventory } from "@/components/products/product-inventory"
-import { ProductPricing } from "@/components/products/product-pricing"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Tabs,
@@ -10,6 +6,10 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 import type { Product, ProductHistoryEntry } from "@/lib/products/product.types"
+import { ProductHistory } from "@/screens/products/details/components/product-history"
+import { ProductInformation } from "@/screens/products/details/components/product-information"
+import { ProductInventory } from "@/screens/products/details/components/product-inventory"
+import { ProductPricing } from "@/screens/products/details/components/product-pricing"
 
 type ProductDetailsTabsProps = {
   product: Product

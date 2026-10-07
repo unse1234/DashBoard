@@ -2,12 +2,12 @@
 
 import { useState } from "react"
 
-import { ProductsBulkActions } from "@/components/products/products-bulk-actions"
-import { ProductsTable } from "@/components/products/products-table"
-import { ProductsTableToolbar } from "@/components/products/products-table-toolbar"
 import { TablePagination } from "@/components/shared/table-pagination"
 import { defaultProductsQuery } from "@/lib/products/product.query"
 import type { Product, ProductsQuery } from "@/lib/products/product.types"
+import { ProductsBulkActions } from "@/screens/products/components/products-bulk-actions"
+import { ProductsTable } from "@/screens/products/components/products-table"
+import { ProductsTableToolbar } from "@/screens/products/components/products-table-toolbar"
 
 type ProductsListProps = {
   /** The rows for the current query, as the server would return them. */
