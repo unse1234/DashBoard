@@ -2,9 +2,9 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
-import { LoginForm } from "@/components/auth/login-form"
 import type { AuthFormAction } from "@/lib/auth/form-state"
 import type { LoginField } from "@/lib/auth/validation"
+import { LoginForm } from "@/screens/auth/login/components/login-form"
 
 describe("LoginForm", () => {
   it("shows field errors linked to their inputs and focuses the first one", async () => {
