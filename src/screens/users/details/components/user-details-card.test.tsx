@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react"
 
-import { UserDetailsCard } from "@/components/users/user-details-card"
 import { getMockUserByUid } from "@/lib/users/user.mock-data"
+import { UserDetailsCard } from "@/screens/users/details/components/user-details-card"
 
 function getValue(label: string) {
   const term = screen.getByText(label, { selector: "dt" })
