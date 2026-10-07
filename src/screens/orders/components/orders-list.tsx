@@ -2,12 +2,12 @@
 
 import { useState } from "react"
 
-import { OrdersTable } from "@/components/orders/orders-table"
-import { OrdersTableToolbar } from "@/components/orders/orders-table-toolbar"
 import { TablePagination } from "@/components/shared/table-pagination"
 import { defaultOrdersQuery } from "@/lib/orders/order.query"
 import type { Order, OrdersQuery } from "@/lib/orders/order.types"
 import { getNextSort } from "@/lib/sort"
+import { OrdersTable } from "@/screens/orders/components/orders-table"
+import { OrdersTableToolbar } from "@/screens/orders/components/orders-table-toolbar"
 
 type OrdersListProps = {
   /** The rows for the current query, as the server would return them. */

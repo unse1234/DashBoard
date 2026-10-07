@@ -1,6 +1,6 @@
-import { OrderStatusControl } from "@/components/orders/order-status-control"
-import { OrderSummary } from "@/components/orders/order-summary"
 import type { Order } from "@/lib/orders/order.types"
+import { OrderStatusControl } from "@/screens/orders/details/components/order-status-control"
+import { OrderSummary } from "@/screens/orders/details/components/order-summary"
 
 type OrderDetailsHeaderProps = {
   order: Order

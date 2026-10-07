@@ -1,8 +1,8 @@
 import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
-import { OrdersList } from "@/components/orders/orders-list"
 import { mockOrders, mockTotalOrders } from "@/lib/orders/order.mock-data"
+import { OrdersList } from "@/screens/orders/components/orders-list"
 
 function renderList(orders = mockOrders) {
   return render(<OrdersList orders={orders} totalRecords={mockTotalOrders} />)

@@ -1,8 +1,5 @@
 import Link from "next/link"
 
-import { OrderActions } from "@/components/orders/order-actions"
-import { OrderStatusBadge } from "@/components/orders/order-status-badge"
-import { PaymentStatusBadge } from "@/components/orders/payment-status-badge"
 import { SortableTableHead } from "@/components/shared/sortable-table-head"
 import {
   Table,
@@ -21,6 +18,9 @@ import type {
 } from "@/lib/orders/order.types"
 import { getOrderItemCount } from "@/lib/orders/order.utils"
 import { getOrderRoute } from "@/lib/routes"
+import { OrderActions } from "@/screens/orders/components/order-actions"
+import { OrderStatusBadge } from "@/screens/orders/components/order-status-badge"
+import { PaymentStatusBadge } from "@/screens/orders/components/payment-status-badge"
 
 const COLUMN_COUNT = 8
 

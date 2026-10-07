@@ -1,11 +1,11 @@
 import { render, screen, within } from "@testing-library/react"
 
-import { OrderAddresses } from "@/components/orders/order-addresses"
-import { OrderCustomerInformation } from "@/components/orders/order-customer-information"
-import { OrderDetailsHeader } from "@/components/orders/order-details-header"
-import { OrderItemsTable } from "@/components/orders/order-items-table"
-import { OrderPriceBreakdown } from "@/components/orders/order-price-breakdown"
 import { getMockOrderById } from "@/lib/orders/order.mock-data"
+import { OrderAddresses } from "@/screens/orders/details/components/order-addresses"
+import { OrderCustomerInformation } from "@/screens/orders/details/components/order-customer-information"
+import { OrderDetailsHeader } from "@/screens/orders/details/components/order-details-header"
+import { OrderItemsTable } from "@/screens/orders/details/components/order-items-table"
+import { OrderPriceBreakdown } from "@/screens/orders/details/components/order-price-breakdown"
 
 function getOrder(orderId: string) {
   return getMockOrderById(orderId)!

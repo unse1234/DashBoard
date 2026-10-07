@@ -1,10 +1,10 @@
-import { OrderStatusBadge } from "@/components/orders/order-status-badge"
-import { PaymentStatusBadge } from "@/components/orders/payment-status-badge"
 import { DetailItem } from "@/components/shared/detail-item"
 import { Card, CardContent } from "@/components/ui/card"
 import { formatDateTime } from "@/lib/format-date"
 import { formatCurrency } from "@/lib/format-number"
 import type { Order, OrderStatus } from "@/lib/orders/order.types"
+import { OrderStatusBadge } from "@/screens/orders/components/order-status-badge"
+import { PaymentStatusBadge } from "@/screens/orders/components/payment-status-badge"
 
 type OrderSummaryProps = {
   order: Pick<Order, "paymentStatus" | "total" | "createdAt">

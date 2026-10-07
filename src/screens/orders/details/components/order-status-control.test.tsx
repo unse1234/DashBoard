@@ -2,9 +2,9 @@ import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { toast } from "sonner"
 
-import { OrderDetailsHeader } from "@/components/orders/order-details-header"
-import { OrderStatusControl } from "@/components/orders/order-status-control"
 import { getMockOrderById } from "@/lib/orders/order.mock-data"
+import { OrderDetailsHeader } from "@/screens/orders/details/components/order-details-header"
+import { OrderStatusControl } from "@/screens/orders/details/components/order-status-control"
 
 vi.mock("sonner", () => ({ toast: { info: vi.fn() } }))
 
