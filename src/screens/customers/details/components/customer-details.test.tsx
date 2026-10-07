@@ -1,15 +1,15 @@
 import { render, screen, within } from "@testing-library/react"
 
-import { CustomerAddresses } from "@/components/customers/customer-addresses"
-import { CustomerDetailsHeader } from "@/components/customers/customer-details-header"
-import { CustomerInformation } from "@/components/customers/customer-information"
-import { CustomerRecentOrders } from "@/components/customers/customer-recent-orders"
-import { CustomerSummary } from "@/components/customers/customer-summary"
 import {
   getMockCustomerAddresses,
   getMockCustomerById,
 } from "@/lib/customers/customer.mock-data"
 import { getMockCustomerRecentOrders } from "@/lib/customers/customer-order.mock-data"
+import { CustomerAddresses } from "@/screens/customers/details/components/customer-addresses"
+import { CustomerDetailsHeader } from "@/screens/customers/details/components/customer-details-header"
+import { CustomerInformation } from "@/screens/customers/details/components/customer-information"
+import { CustomerRecentOrders } from "@/screens/customers/details/components/customer-recent-orders"
+import { CustomerSummary } from "@/screens/customers/details/components/customer-summary"
 
 function getCustomer(customerId: string) {
   return getMockCustomerById(customerId)!

@@ -1,6 +1,5 @@
 import Link from "next/link"
 
-import { CustomerActions } from "@/components/customers/customer-actions"
 import { SortableTableHead } from "@/components/shared/sortable-table-head"
 import {
   Table,
@@ -18,6 +17,7 @@ import type {
 import { formatDate } from "@/lib/format-date"
 import { formatCurrency, formatInteger } from "@/lib/format-number"
 import { getCustomerRoute } from "@/lib/routes"
+import { CustomerActions } from "@/screens/customers/components/customer-actions"
 
 const COLUMN_COUNT = 8
 

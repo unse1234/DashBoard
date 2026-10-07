@@ -1,4 +1,3 @@
-import { CustomerOrderStatusBadge } from "@/components/customers/customer-order-status-badge"
 import { TableScrollRegion } from "@/components/shared/table-scroll-region"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -13,6 +12,7 @@ import {
 import type { CustomerOrderSummary } from "@/lib/customers/customer.types"
 import { formatDate } from "@/lib/format-date"
 import { formatCurrency, formatInteger } from "@/lib/format-number"
+import { CustomerOrderStatusBadge } from "@/screens/customers/details/components/customer-order-status-badge"
 
 // On a narrow card the date moves under the order ID instead of taking a column
 // of its own, so Status isn't pushed out of view.

@@ -2,12 +2,12 @@
 
 import { useState } from "react"
 
-import { CustomersTable } from "@/components/customers/customers-table"
-import { CustomersTableToolbar } from "@/components/customers/customers-table-toolbar"
 import { TablePagination } from "@/components/shared/table-pagination"
 import { defaultCustomersQuery } from "@/lib/customers/customer.query"
 import type { Customer, CustomersQuery } from "@/lib/customers/customer.types"
 import { getNextSort } from "@/lib/sort"
+import { CustomersTable } from "@/screens/customers/components/customers-table"
+import { CustomersTableToolbar } from "@/screens/customers/components/customers-table-toolbar"
 
 type CustomersListProps = {
   /** The rows for the current query, as the server would return them. */

@@ -1,11 +1,11 @@
 import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
-import { CustomersList } from "@/components/customers/customers-list"
 import {
   mockCustomers,
   mockTotalCustomers,
 } from "@/lib/customers/customer.mock-data"
+import { CustomersList } from "@/screens/customers/components/customers-list"
 
 function renderList(customers = mockCustomers) {
   return render(
