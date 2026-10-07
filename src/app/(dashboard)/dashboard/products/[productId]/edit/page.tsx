@@ -1,12 +1,8 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
-import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { PageContent } from "@/components/dashboard/page-content"
-import { BackLink } from "@/components/shared/back-link"
 import { getMockProductById } from "@/lib/products/product.mock-data"
-import { getProductRoute } from "@/lib/routes"
-import { ProductForm } from "@/screens/products/components/product-form"
+import { EditProductScreen } from "@/screens/products/edit"
 
 type EditProductPageProps = PageProps<"/dashboard/products/[productId]/edit">
 
@@ -27,13 +23,5 @@ export default async function EditProductPage({
 
   if (!product) notFound()
 
-  return (
-    <>
-      <DashboardHeader title="Edit product" />
-      <PageContent narrow>
-        <BackLink href={getProductRoute(product.id)}>Back to Product</BackLink>
-        <ProductForm product={product} />
-      </PageContent>
-    </>
-  )
+  return <EditProductScreen product={product} />
 }
