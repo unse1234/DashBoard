@@ -109,7 +109,7 @@ describe("editUserSchema", () => {
 
   it("enforces the minimum password length", () => {
     expect(getErrors(parse("short", "short"))).toEqual({
-      newPassword: "Password must be at least 8 characters.",
+      newPassword: "Password must be at least 12 characters.",
     })
   })
 
