@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { CirclePlusIcon, MailIcon } from "lucide-react"
 
 import type { NavItem } from "@/components/dashboard/nav.types"
+import { getVisibleNavItems } from "@/components/dashboard/nav.utils"
 import { Button } from "@/components/ui/button"
 import {
   SidebarGroup,
@@ -13,6 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/hooks/use-auth"
 
 type NavMainProps = {
   items: NavItem[]
@@ -27,8 +29,10 @@ function getActiveUrl(items: NavItem[], pathname: string) {
     .sort((a, b) => b.length - a.length)[0]
 }
 
-export function NavMain({ items }: NavMainProps) {
+export function NavMain({ items: allItems }: NavMainProps) {
   const pathname = usePathname()
+  const { user } = useAuth()
+  const items = getVisibleNavItems(allItems, user?.role)
   const activeUrl = getActiveUrl(items, pathname)
 
   return (
