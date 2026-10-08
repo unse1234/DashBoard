@@ -2,7 +2,6 @@ import { hasFieldErrors } from "@/lib/auth/form-state"
 import {
   validateForgotPassword,
   validateLogin,
-  validateRegister,
   validateResetPassword,
 } from "@/lib/auth/validation"
 
@@ -24,19 +23,6 @@ describe("auth validation", () => {
     expect(
       hasFieldErrors(validateLogin(formData({ email: " ada@example.com ", password: "x" })))
     ).toBe(false)
-  })
-
-  it("enforces password length and confirmation when registering", () => {
-    const errors = validateRegister(
-      formData({ name: " ", email: "ada@example.com", password: "short", confirmPassword: "other" })
-    )
-
-    expect(errors).toEqual({
-      name: "Enter your name.",
-      email: undefined,
-      password: "Password must be at least 8 characters.",
-      confirmPassword: "Passwords do not match.",
-    })
   })
 
   it("accepts valid forgot and reset password submissions", () => {

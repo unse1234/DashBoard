@@ -7,7 +7,6 @@ export const PASSWORD_HINT = `Must be at least ${PASSWORD_MIN_LENGTH} characters
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export type LoginField = "email" | "password"
-export type RegisterField = "name" | "email" | "password" | "confirmPassword"
 export type ForgotPasswordField = "email"
 export type ResetPasswordField = "password" | "confirmPassword"
 
@@ -40,22 +39,6 @@ export function validateLogin(formData: FormData): FieldErrors<LoginField> {
     password: getValue(formData, "password")
       ? undefined
       : "Enter your password.",
-  }
-}
-
-export function validateRegister(
-  formData: FormData
-): FieldErrors<RegisterField> {
-  const password = getValue(formData, "password")
-
-  return {
-    name: getValue(formData, "name").trim() ? undefined : "Enter your name.",
-    email: validateEmail(getValue(formData, "email")),
-    password: validateNewPassword(password),
-    confirmPassword: validatePasswordConfirmation(
-      password,
-      getValue(formData, "confirmPassword")
-    ),
   }
 }
 
