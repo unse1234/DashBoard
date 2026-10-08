@@ -2,23 +2,20 @@ import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
+import { ApiError } from "@/lib/api/api-error"
 import type { User } from "@/lib/users/user.types"
 import { EditUserDialog } from "@/screens/users/components/edit-user-dialog"
+import { createUser } from "@/test-utils/user-fixtures"
 
-const activeUser: User = {
-  uid: "USR-1",
-  name: "Ada Lovelace",
-  email: "ada@example.com",
-  status: "active",
-  createdAt: "2025-01-01T00:00:00Z",
-  lastLoginAt: null,
-}
-
-const inactiveUser: User = { ...activeUser, uid: "USR-2", status: "inactive" }
+const activeUser = createUser({ name: "Ada Lovelace", email: "ada@example.com" })
+const inactiveUser = createUser({ status: "inactive" })
 
 function renderDialog(
   user: User = activeUser,
-  onSubmit?: (values: unknown) => void | Promise<void>
+  options: {
+    onSubmit?: (values: unknown) => void | Promise<void>
+    isCurrentUser?: boolean
+  } = {}
 ) {
   const onOpenChange = vi.fn()
   render(
@@ -26,7 +23,8 @@ function renderDialog(
       user={user}
       open
       onOpenChange={onOpenChange}
-      onSubmit={onSubmit}
+      onSubmit={options.onSubmit}
+      isCurrentUser={options.isCurrentUser}
     />
   )
   return { onOpenChange, user: userEvent.setup() }
@@ -44,9 +42,20 @@ describe("EditUserDialog", () => {
       await screen.findByRole("dialog", { name: "Edit user" })
     ).toBeInTheDocument()
     expect(screen.getByLabelText("Name")).toHaveValue("Ada Lovelace")
-    expect(screen.getByLabelText("Email")).toHaveValue("ada@example.com")
-    expect(screen.getByLabelText("New password")).toHaveValue("")
-    expect(screen.getByLabelText("Confirm password")).toHaveValue("")
+    expect(screen.getByRole("combobox", { name: "Role" })).toHaveTextContent(
+      "Staff"
+    )
+  })
+
+  it("shows the email as read-only and offers no password fields", async () => {
+    renderDialog()
+    await screen.findByRole("dialog")
+
+    const email = screen.getByLabelText("Email")
+    expect(email).toHaveValue("ada@example.com")
+    expect(email).toHaveAttribute("readonly")
+    expect(email).toHaveAccessibleDescription("Email addresses can't be changed.")
+    expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument()
   })
 
   it("reflects the user's status in the switch", async () => {
@@ -58,13 +67,15 @@ describe("EditUserDialog", () => {
     unmount()
 
     render(<EditUserDialog user={inactiveUser} open onOpenChange={vi.fn()} />)
-    expect(await screen.findByRole("switch", { name: "Status" })).not.toBeChecked()
+    expect(
+      await screen.findByRole("switch", { name: "Status" })
+    ).not.toBeChecked()
     expect(screen.getByText("Inactive")).toBeInTheDocument()
   })
 
-  it("submits the profile with the password left empty", async () => {
+  it("submits the unchanged profile", async () => {
     const onSubmit = vi.fn()
-    const { user, onOpenChange } = renderDialog(activeUser, onSubmit)
+    const { user, onOpenChange } = renderDialog(activeUser, { onSubmit })
     await screen.findByRole("dialog")
 
     await save(user)
@@ -72,96 +83,76 @@ describe("EditUserDialog", () => {
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false))
     expect(onSubmit).toHaveBeenCalledWith({
       name: "Ada Lovelace",
-      email: "ada@example.com",
+      role: "STAFF",
       isActive: true,
-      newPassword: "",
-      confirmPassword: "",
     })
   })
 
-  it("submits the changed status and a matching new password", async () => {
+  it("submits a new name, role and status", async () => {
     const onSubmit = vi.fn()
-    const { user } = renderDialog(activeUser, onSubmit)
+    const { user } = renderDialog(activeUser, { onSubmit })
     await screen.findByRole("dialog")
 
+    await user.clear(screen.getByLabelText("Name"))
+    await user.type(screen.getByLabelText("Name"), "  Ada King ")
+    await user.click(screen.getByRole("combobox", { name: "Role" }))
+    await user.click(await screen.findByRole("option", { name: "Admin" }))
     await user.click(screen.getByRole("switch", { name: "Status" }))
-    await user.type(screen.getByLabelText("New password"), "long-enough-1")
-    await user.type(screen.getByLabelText("Confirm password"), "long-enough-1")
     await save(user)
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
-    expect(onSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        isActive: false,
-        newPassword: "long-enough-1",
-        confirmPassword: "long-enough-1",
-      })
-    )
+    expect(onSubmit).toHaveBeenCalledWith({
+      name: "Ada King",
+      role: "ADMIN",
+      isActive: false,
+    })
   })
 
-  it("asks for confirmation when only the new password is filled", async () => {
+  it("keeps the dialog open and shows errors for an invalid name", async () => {
     const onSubmit = vi.fn()
-    const { user } = renderDialog(activeUser, onSubmit)
-    await screen.findByRole("dialog")
-
-    await user.type(screen.getByLabelText("New password"), "long-enough-1")
-    await save(user)
-
-    expect(screen.getByLabelText("Confirm password")).toHaveAccessibleDescription(
-      "Confirm the new password."
-    )
-    expect(onSubmit).not.toHaveBeenCalled()
-  })
-
-  it("asks for the new password when only the confirmation is filled", async () => {
-    const { user } = renderDialog()
-    await screen.findByRole("dialog")
-
-    await user.type(screen.getByLabelText("Confirm password"), "long-enough-1")
-    await save(user)
-
-    expect(screen.getByLabelText("New password")).toHaveAccessibleDescription(
-      "Enter a new password."
-    )
-  })
-
-  it("flags passwords that do not match", async () => {
-    const { user } = renderDialog()
-    await screen.findByRole("dialog")
-
-    await user.type(screen.getByLabelText("New password"), "long-enough-1")
-    await user.type(screen.getByLabelText("Confirm password"), "long-enough-2")
-    await save(user)
-
-    expect(screen.getByLabelText("Confirm password")).toHaveAccessibleDescription(
-      "Passwords do not match."
-    )
-  })
-
-  it("lets each password field be shown and hidden", async () => {
-    const { user } = renderDialog()
-    await screen.findByRole("dialog")
-    const [showNew] = screen.getAllByRole("button", { name: "Show password" })
-
-    expect(screen.getByLabelText("New password")).toHaveAttribute("type", "password")
-    await user.click(showNew)
-
-    expect(screen.getByLabelText("New password")).toHaveAttribute("type", "text")
-    expect(screen.getByLabelText("Confirm password")).toHaveAttribute(
-      "type",
-      "password"
-    )
-  })
-
-  it("keeps the dialog open and shows errors for an invalid profile", async () => {
-    const { user, onOpenChange } = renderDialog()
+    const { user, onOpenChange } = renderDialog(activeUser, { onSubmit })
     await screen.findByRole("dialog")
 
     await user.clear(screen.getByLabelText("Name"))
     await save(user)
 
-    expect(screen.getByLabelText("Name")).toHaveAccessibleDescription("Enter a name.")
+    expect(screen.getByLabelText("Name")).toHaveAccessibleDescription(
+      "Enter a name."
+    )
     expect(screen.getByLabelText("Name")).toHaveFocus()
+    expect(onSubmit).not.toHaveBeenCalled()
     expect(onOpenChange).not.toHaveBeenCalled()
+  })
+
+  it("explains why role and status are locked on your own account", async () => {
+    renderDialog(activeUser, { isCurrentUser: true })
+    await screen.findByRole("dialog")
+
+    expect(screen.getByRole("combobox", { name: "Role" })).toBeDisabled()
+    // Base UI exposes a disabled switch through aria-disabled, not `disabled`.
+    expect(screen.getByRole("switch", { name: "Status" })).toHaveAttribute(
+      "aria-disabled",
+      "true"
+    )
+    expect(
+      screen.getByText("You can't change your own role or status.")
+    ).toBeVisible()
+    expect(screen.getByLabelText("Name")).toBeEnabled()
+  })
+
+  it("shows the error and stays open when saving fails", async () => {
+    const onSubmit = vi
+      .fn()
+      .mockRejectedValue(new ApiError(409, ["At least one active admin is required"]))
+    const { user, onOpenChange } = renderDialog(activeUser, { onSubmit })
+    await screen.findByRole("dialog")
+
+    await save(user)
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "At least one active admin is required"
+    )
+    expect(onOpenChange).not.toHaveBeenCalled()
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeEnabled()
   })
 })

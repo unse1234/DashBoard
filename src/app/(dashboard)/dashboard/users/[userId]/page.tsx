@@ -1,26 +1,17 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
 
-import { getMockUserByUid } from "@/lib/users/user.mock-data"
 import { UserDetailsScreen } from "@/screens/users/details"
 
-type UserDetailsPageProps = PageProps<"/dashboard/users/[userId]">
-
-export async function generateMetadata({
-  params,
-}: UserDetailsPageProps): Promise<Metadata> {
-  const { userId } = await params
-
-  return { title: getMockUserByUid(userId)?.name ?? "User not found" }
+// The user is loaded in the browser (the API needs the signed-in token), so
+// the title cannot include their name.
+export const metadata: Metadata = {
+  title: "User details",
 }
 
 export default async function UserDetailsPage({
   params,
-}: UserDetailsPageProps) {
+}: PageProps<"/dashboard/users/[userId]">) {
   const { userId } = await params
-  const user = getMockUserByUid(userId)
 
-  if (!user) notFound()
-
-  return <UserDetailsScreen user={user} />
+  return <UserDetailsScreen userId={userId} />
 }

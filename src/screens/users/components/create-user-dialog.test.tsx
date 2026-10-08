@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
+import { ApiError } from "@/lib/api/api-error"
 import { CreateUserDialog } from "@/screens/users/components/create-user-dialog"
 
 async function openDialog(user: ReturnType<typeof userEvent.setup>) {
@@ -10,7 +11,7 @@ async function openDialog(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("CreateUserDialog", () => {
-  it("opens an accessible dialog with the name and email fields", async () => {
+  it("opens an accessible dialog with name, email and role fields", async () => {
     render(<CreateUserDialog />)
     const user = userEvent.setup()
 
@@ -19,6 +20,11 @@ describe("CreateUserDialog", () => {
     expect(dialog).toBeInTheDocument()
     expect(screen.getByLabelText("Name")).toBeInTheDocument()
     expect(screen.getByLabelText("Email")).toBeInTheDocument()
+    // Staff is the safe default; there is no password field (the invitee sets it).
+    expect(screen.getByRole("combobox", { name: "Role" })).toHaveTextContent(
+      "Staff"
+    )
+    expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument()
   })
 
   it("shows errors tied to their fields and focuses the first one", async () => {
@@ -53,7 +59,7 @@ describe("CreateUserDialog", () => {
     )
   })
 
-  it("submits trimmed values and closes", async () => {
+  it("submits trimmed values with the default role and closes", async () => {
     const onSubmit = vi.fn()
     render(<CreateUserDialog onSubmit={onSubmit} />)
     const user = userEvent.setup()
@@ -67,7 +73,67 @@ describe("CreateUserDialog", () => {
     expect(onSubmit).toHaveBeenCalledWith({
       name: "Ada Lovelace",
       email: "ada@example.com",
+      role: "STAFF",
     })
+  })
+
+  it("lets an administrator be invited by choosing the Admin role", async () => {
+    const onSubmit = vi.fn()
+    render(<CreateUserDialog onSubmit={onSubmit} />)
+    const user = userEvent.setup()
+    await openDialog(user)
+
+    await user.type(screen.getByLabelText("Name"), "Grace Hopper")
+    await user.type(screen.getByLabelText("Email"), "grace@example.com")
+    await user.click(screen.getByRole("combobox", { name: "Role" }))
+    await user.click(await screen.findByRole("option", { name: "Admin" }))
+    await user.click(screen.getByRole("button", { name: "Create user" }))
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ role: "ADMIN" })
+    )
+  })
+
+  it("shows a taken email on the email field and stays open", async () => {
+    const onSubmit = vi
+      .fn()
+      .mockRejectedValue(
+        new ApiError(409, ["A user with this email already exists"])
+      )
+    render(<CreateUserDialog onSubmit={onSubmit} />)
+    const user = userEvent.setup()
+    await openDialog(user)
+
+    await user.type(screen.getByLabelText("Name"), "Ada Lovelace")
+    await user.type(screen.getByLabelText("Email"), "ada@example.com")
+    await user.click(screen.getByRole("button", { name: "Create user" }))
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Email")).toHaveAccessibleDescription(
+        "A user with this email already exists"
+      )
+    )
+    expect(screen.getByRole("dialog")).toBeInTheDocument()
+    expect(screen.getByLabelText("Name")).toHaveValue("Ada Lovelace")
+  })
+
+  it("shows other failures as a form message and stays open", async () => {
+    const onSubmit = vi
+      .fn()
+      .mockRejectedValue(new ApiError(403, ["Insufficient permissions"]))
+    render(<CreateUserDialog onSubmit={onSubmit} />)
+    const user = userEvent.setup()
+    await openDialog(user)
+
+    await user.type(screen.getByLabelText("Name"), "Ada Lovelace")
+    await user.type(screen.getByLabelText("Email"), "ada@example.com")
+    await user.click(screen.getByRole("button", { name: "Create user" }))
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Insufficient permissions"
+    )
+    expect(screen.getByRole("dialog")).toBeInTheDocument()
   })
 
   it("shows a loading state and locks the fields while submitting", async () => {
@@ -83,7 +149,9 @@ describe("CreateUserDialog", () => {
     await user.type(screen.getByLabelText("Email"), "ada@example.com")
     await user.click(screen.getByRole("button", { name: "Create user" }))
 
-    expect(await screen.findByRole("button", { name: "Creating…" })).toBeDisabled()
+    expect(
+      await screen.findByRole("button", { name: "Creating…" })
+    ).toBeDisabled()
     expect(screen.getByLabelText("Name")).toBeDisabled()
 
     finish()
