@@ -3,6 +3,7 @@
 import { AuthForm } from "@/components/auth/auth-form"
 import { useAuthForm } from "@/components/auth/use-auth-form"
 import { FormField } from "@/components/shared/form-field"
+import { forgotPasswordAction } from "@/lib/auth/auth.actions"
 import type { AuthFormAction } from "@/lib/auth/form-state"
 import {
   validateForgotPassword,
@@ -17,7 +18,9 @@ type ForgotPasswordFormProps = {
  * On success the form stays visible with the confirmation message above it,
  * so the user can correct the address or request another link.
  */
-export function ForgotPasswordForm({ action }: ForgotPasswordFormProps) {
+export function ForgotPasswordForm({
+  action = forgotPasswordAction,
+}: ForgotPasswordFormProps) {
   const form = useAuthForm({ action, validate: validateForgotPassword })
 
   return (

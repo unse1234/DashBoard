@@ -4,8 +4,18 @@ import { ResetPasswordScreen } from "@/screens/auth/reset-password"
 
 export const metadata: Metadata = {
   title: "Reset password",
+  // The link carries a secret token; keep it out of the Referer header.
+  referrer: "no-referrer",
 }
 
-export default function ResetPasswordPage() {
-  return <ResetPasswordScreen />
+export default async function ResetPasswordPage({
+  searchParams,
+}: PageProps<"/reset-password">) {
+  const { token } = await searchParams
+
+  return (
+    <ResetPasswordScreen
+      token={typeof token === "string" ? token : undefined}
+    />
+  )
 }

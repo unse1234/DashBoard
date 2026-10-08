@@ -4,6 +4,8 @@ import { VerifyEmailScreen } from "@/screens/auth/verify-email"
 
 export const metadata: Metadata = {
   title: "Verify email",
+  // The link carries a secret token; keep it out of the Referer header.
+  referrer: "no-referrer",
 }
 
 export default async function VerifyEmailPage({

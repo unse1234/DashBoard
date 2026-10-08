@@ -1,11 +1,13 @@
 "use client"
 
+import { useMemo } from "react"
 import Link from "next/link"
 
 import { AuthForm, AuthFormMessage } from "@/components/auth/auth-form"
 import { useAuthForm } from "@/components/auth/use-auth-form"
 import { FormField } from "@/components/shared/form-field"
 import { buttonVariants } from "@/components/ui/button"
+import { createResetPasswordAction } from "@/lib/auth/auth.actions"
 import type { AuthFormAction } from "@/lib/auth/form-state"
 import {
   PASSWORD_HINT,
@@ -15,11 +17,20 @@ import {
 import { routes } from "@/lib/routes"
 
 type ResetPasswordFormProps = {
+  /** From the emailed link; used to build the default action. */
+  token?: string
   action?: AuthFormAction<ResetPasswordField>
 }
 
-export function ResetPasswordForm({ action }: ResetPasswordFormProps) {
-  const form = useAuthForm({ action, validate: validateResetPassword })
+export function ResetPasswordForm({ token, action }: ResetPasswordFormProps) {
+  const tokenAction = useMemo(
+    () => (token ? createResetPasswordAction(token) : undefined),
+    [token]
+  )
+  const form = useAuthForm({
+    action: action ?? tokenAction,
+    validate: validateResetPassword,
+  })
 
   if (form.status === "success") {
     return (
