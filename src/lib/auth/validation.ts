@@ -1,8 +1,10 @@
 import type { FieldErrors } from "@/lib/auth/form-state"
 
-export const PASSWORD_MIN_LENGTH = 8
+// Mirrors the API's password policy; the server remains the source of truth.
+export const PASSWORD_MIN_LENGTH = 12
+export const PASSWORD_MAX_LENGTH = 128
 
-export const PASSWORD_HINT = `Must be at least ${PASSWORD_MIN_LENGTH} characters.`
+export const PASSWORD_HINT = `At least ${PASSWORD_MIN_LENGTH} characters, with a lowercase letter, an uppercase letter and a number.`
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -21,11 +23,21 @@ function validateEmail(value: string) {
   if (!EMAIL_PATTERN.test(email)) return "Enter a valid email address."
 }
 
-function validateNewPassword(password: string) {
+export function validateNewPassword(password: string) {
   if (!password) return "Enter a password."
   if (password.length < PASSWORD_MIN_LENGTH) {
     return `Password must be at least ${PASSWORD_MIN_LENGTH} characters.`
   }
+  if (password.length > PASSWORD_MAX_LENGTH) {
+    return `Password must be ${PASSWORD_MAX_LENGTH} characters or fewer.`
+  }
+  if (!/[a-z]/.test(password)) {
+    return "Password must contain a lowercase letter."
+  }
+  if (!/[A-Z]/.test(password)) {
+    return "Password must contain an uppercase letter."
+  }
+  if (!/\d/.test(password)) return "Password must contain a number."
 }
 
 function validatePasswordConfirmation(password: string, confirmation: string) {
