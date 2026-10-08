@@ -4,7 +4,9 @@ import { useId } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 
+import { AuthFormMessage } from "@/components/auth/auth-form"
 import { FormField } from "@/components/shared/form-field"
+import { FormSelectField } from "@/components/shared/form-select-field"
 import {
   Dialog,
   DialogContent,
@@ -17,26 +19,27 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSet,
 } from "@/components/ui/field"
 import { Switch } from "@/components/ui/switch"
-import { PASSWORD_HINT } from "@/lib/auth/validation"
-import { USER_STATUS_LABELS } from "@/lib/users/user.constants"
+import { describeApiError } from "@/lib/api/api-error"
+import { USER_ROLE_OPTIONS, USER_STATUS_LABELS } from "@/lib/users/user.constants"
 import { editUserSchema, type EditUserValues } from "@/lib/users/user.schemas"
 import type { User } from "@/lib/users/user.types"
 import { UserFormFooter } from "@/screens/users/components/user-form-footer"
 
 type EditUserDialogProps = {
   user: User
+  /** The API does not let you change your own role or status. */
+  isCurrentUser?: boolean
   open: boolean
   onOpenChange: (open: boolean) => void
-  /** Called with the validated values; the dialog closes once it resolves. */
+  /** Called with the validated values; the dialog closes once it resolves, and shows the error if it rejects. */
   onSubmit?: (values: EditUserValues) => void | Promise<void>
 }
 
 export function EditUserDialog({
   user,
+  isCurrentUser = false,
   open,
   onOpenChange,
   onSubmit,
@@ -52,6 +55,7 @@ export function EditUserDialog({
         </DialogHeader>
         <EditUserForm
           user={user}
+          isCurrentUser={isCurrentUser}
           onSubmit={onSubmit}
           onSuccess={() => onOpenChange(false)}
         />
@@ -60,23 +64,29 @@ export function EditUserDialog({
   )
 }
 
-type EditUserFormProps = Pick<EditUserDialogProps, "user" | "onSubmit"> & {
+type EditUserFormProps = Pick<
+  EditUserDialogProps,
+  "user" | "isCurrentUser" | "onSubmit"
+> & {
   onSuccess: () => void
 }
 
 function getDefaultValues(user: User): EditUserValues {
   return {
     name: user.name,
-    email: user.email,
+    role: user.role,
     isActive: user.status === "active",
-    newPassword: "",
-    confirmPassword: "",
   }
 }
 
 // Mounted only while the dialog is open, so every opening starts from the
 // user's current details.
-function EditUserForm({ user, onSubmit, onSuccess }: EditUserFormProps) {
+function EditUserForm({
+  user,
+  isCurrentUser,
+  onSubmit,
+  onSuccess,
+}: EditUserFormProps) {
   const statusId = useId()
   const statusTextId = `${statusId}-text`
   const form = useForm<EditUserValues>({
@@ -86,13 +96,18 @@ function EditUserForm({ user, onSubmit, onSuccess }: EditUserFormProps) {
   const { errors, isSubmitting } = form.formState
 
   async function submit(values: EditUserValues) {
-    await onSubmit?.(values)
-    onSuccess()
+    try {
+      await onSubmit?.(values)
+      onSuccess()
+    } catch (error) {
+      form.setError("root", { message: describeApiError(error) })
+    }
   }
 
   return (
     <form onSubmit={form.handleSubmit(submit)} noValidate>
       <fieldset disabled={isSubmitting} className="flex min-w-0 flex-col gap-6">
+        <AuthFormMessage status="error" message={errors.root?.message} />
         <FieldGroup>
           <FormField
             label="Name"
@@ -102,12 +117,31 @@ function EditUserForm({ user, onSubmit, onSuccess }: EditUserFormProps) {
             {...form.register("name")}
           />
           <FormField
+            name="email"
             label="Email"
             type="email"
             autoComplete="off"
-            required
-            error={errors.email?.message}
-            {...form.register("email")}
+            readOnly
+            defaultValue={user.email}
+            description="Email addresses can't be changed."
+          />
+          <Controller
+            control={form.control}
+            name="role"
+            render={({ field, fieldState }) => (
+              <FormSelectField
+                name={field.name}
+                label="Role"
+                options={USER_ROLE_OPTIONS}
+                value={field.value}
+                onValueChange={field.onChange}
+                onBlur={field.onBlur}
+                ref={field.ref}
+                error={fieldState.error?.message}
+                disabled={isCurrentUser}
+                required
+              />
+            )}
           />
           <Controller
             control={form.control}
@@ -127,34 +161,17 @@ function EditUserForm({ user, onSubmit, onSuccess }: EditUserFormProps) {
                     aria-describedby={statusTextId}
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    disabled={isCurrentUser}
                   />
                 </div>
               </Field>
             )}
           />
-          <FieldSet>
-            <FieldLegend variant="label">Change password</FieldLegend>
+          {isCurrentUser && (
             <FieldDescription>
-              Leave both fields empty to keep the current password.{" "}
-              {PASSWORD_HINT}
+              You can&apos;t change your own role or status.
             </FieldDescription>
-            <FieldGroup>
-              <FormField
-                label="New password"
-                type="password"
-                autoComplete="new-password"
-                error={errors.newPassword?.message}
-                {...form.register("newPassword")}
-              />
-              <FormField
-                label="Confirm password"
-                type="password"
-                autoComplete="new-password"
-                error={errors.confirmPassword?.message}
-                {...form.register("confirmPassword")}
-              />
-            </FieldGroup>
-          </FieldSet>
+          )}
         </FieldGroup>
         <UserFormFooter
           isSubmitting={isSubmitting}

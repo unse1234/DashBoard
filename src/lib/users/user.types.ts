@@ -1,5 +1,7 @@
 import type { PageSize } from "@/lib/pagination"
-import type { Sort } from "@/lib/sort"
+import type { UserRole } from "@/lib/auth/auth.types"
+
+export type { UserRole }
 
 export type UserStatus = "active" | "inactive"
 
@@ -8,6 +10,7 @@ export type User = {
   uid: string
   name: string
   email: string
+  role: UserRole
   status: UserStatus
   /** ISO 8601 timestamps; `lastLoginAt` is null until the first login. */
   createdAt: string
@@ -16,15 +19,13 @@ export type User = {
 
 export type UserStatusFilter = UserStatus | "all"
 
-export type UserSortColumn = keyof User
-
-export type UserSort = Sort<UserSortColumn>
-
-/** Everything that decides which users are listed; maps 1:1 to future API or URL params. */
+/**
+ * Everything that decides which users are listed; sent to the API as query
+ * parameters. The API always returns the newest users first.
+ */
 export type UsersQuery = {
   search: string
   status: UserStatusFilter
-  sort: UserSort | null
   page: number
   pageSize: PageSize
 }
