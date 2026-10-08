@@ -13,6 +13,7 @@ export const routes = {
   login: "/login",
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
+  verifyEmail: "/verify-email",
 } as const satisfies Record<string, Route>
 
 // A dynamic segment can't be checked statically, hence the cast.

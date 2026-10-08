@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react"
 
+import { RequireAuth } from "@/components/auth/require-auth"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
@@ -16,12 +17,14 @@ type DashboardLayoutProps = {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <TooltipProvider>
-      <SidebarProvider style={shellStyle}>
-        <AppSidebar variant="inset" />
-        <SidebarInset className="min-w-0">{children}</SidebarInset>
-      </SidebarProvider>
-      <Toaster />
-    </TooltipProvider>
+    <RequireAuth>
+      <TooltipProvider>
+        <SidebarProvider style={shellStyle}>
+          <AppSidebar variant="inset" />
+          <SidebarInset className="min-w-0">{children}</SidebarInset>
+        </SidebarProvider>
+        <Toaster />
+      </TooltipProvider>
+    </RequireAuth>
   )
 }

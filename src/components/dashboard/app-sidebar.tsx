@@ -26,14 +26,14 @@ import { routes } from "@/lib/routes"
 
 // Placeholder content: only Dashboard, Users, Products, Orders, Customers and
 // Imports point to real pages so far.
-const user = {
-  name: "Demo User",
-  email: "demo@example.com",
-}
-
 const navMain: NavItem[] = [
   { title: "Dashboard", url: routes.dashboard, icon: <LayoutDashboardIcon /> },
-  { title: "Users", url: routes.users, icon: <UserRoundCogIcon /> },
+  {
+    title: "Users",
+    url: routes.users,
+    icon: <UserRoundCogIcon />,
+    requiredRole: "ADMIN",
+  },
   { title: "Products", url: routes.products, icon: <PackageIcon /> },
   { title: "Orders", url: routes.orders, icon: <ShoppingCartIcon /> },
   { title: "Customers", url: routes.customers, icon: <UsersRoundIcon /> },
@@ -57,7 +57,7 @@ export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   )

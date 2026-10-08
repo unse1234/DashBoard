@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 
 import { routes } from "@/lib/routes"
 
-// Authentication is UI-only for now, so the app starts at the login screen.
+// The dashboard guard sends visitors without a session on to the login screen.
 export default function HomePage() {
-  redirect(routes.login)
+  redirect(routes.dashboard)
 }

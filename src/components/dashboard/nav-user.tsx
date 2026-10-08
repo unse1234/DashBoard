@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import {
   BellIcon,
   CircleUserRoundIcon,
@@ -8,6 +7,7 @@ import {
   EllipsisVerticalIcon,
   LogOutIcon,
 } from "lucide-react"
+import { toast } from "sonner"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -25,14 +25,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { routes } from "@/lib/routes"
-
-type NavUserProps = {
-  user: {
-    name: string
-    email: string
-  }
-}
+import { useAuth } from "@/hooks/use-auth"
+import { describeApiError } from "@/lib/api/api-error"
+import { signOut } from "@/lib/auth/auth-store"
 
 function getInitials(name: string) {
   return name
@@ -43,8 +38,22 @@ function getInitials(name: string) {
     .join("")
 }
 
-export function NavUser({ user }: NavUserProps) {
+// Signing out clears the local session at once (which returns the user to the
+// login screen), so only a failed server call needs reporting.
+async function handleLogOut() {
+  try {
+    await signOut()
+  } catch (error) {
+    toast.error(`${describeApiError(error)} Your session may still be active.`)
+  }
+}
+
+export function NavUser() {
   const { isMobile } = useSidebar()
+  const { user } = useAuth()
+
+  if (!user) return null
+
   const initials = getInitials(user.name)
 
   return (
@@ -106,7 +115,7 @@ export function NavUser({ user }: NavUserProps) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem render={<Link href={routes.login} />}>
+            <DropdownMenuItem onClick={handleLogOut}>
               <LogOutIcon />
               Log out
             </DropdownMenuItem>

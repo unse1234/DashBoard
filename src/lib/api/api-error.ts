@@ -39,3 +39,21 @@ export function parseErrorMessages(body: unknown): string[] {
   }
   return []
 }
+
+const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again."
+
+/**
+ * Message safe to show to users. Rate limiting and server faults get friendly
+ * text; other API messages (e.g. "Invalid email or password") are already
+ * written for end users.
+ */
+export function describeApiError(error: unknown): string {
+  if (!(error instanceof ApiError)) return GENERIC_ERROR_MESSAGE
+  if (error.status === 429) {
+    return "Too many attempts. Please wait a minute and try again."
+  }
+  if (error.status >= 500) {
+    return "Something went wrong on our side. Please try again shortly."
+  }
+  return error.message
+}
