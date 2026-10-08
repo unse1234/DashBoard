@@ -11,7 +11,6 @@ export const routes = {
   customers: "/dashboard/customers",
   imports: "/dashboard/imports",
   login: "/login",
-  register: "/register",
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
 } as const satisfies Record<string, Route>

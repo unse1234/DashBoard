@@ -36,6 +36,16 @@ describe("LoginForm", () => {
     expect(password).toHaveAttribute("type", "password")
   })
 
+  it("has no remember-me option, because sessions are always persistent", () => {
+    render(<LoginForm />)
+
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Forgot password?" })).toHaveAttribute(
+      "href",
+      "/forgot-password"
+    )
+  })
+
   it("submits valid data to the action and renders its error message", async () => {
     const action = vi.fn<AuthFormAction<LoginField>>(async () => ({
       status: "error",
@@ -45,7 +55,6 @@ describe("LoginForm", () => {
 
     await userEvent.type(screen.getByLabelText("Email"), "ada@example.com")
     await userEvent.type(screen.getByLabelText("Password"), "secret")
-    await userEvent.click(screen.getByRole("checkbox", { name: "Remember me" }))
     await userEvent.click(screen.getByRole("button", { name: "Log in" }))
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
@@ -54,7 +63,6 @@ describe("LoginForm", () => {
     const formData = action.mock.calls[0][1]
     expect(formData.get("email")).toBe("ada@example.com")
     expect(formData.get("password")).toBe("secret")
-    expect(formData.get("remember")).not.toBeNull()
     // Inputs keep their values after an error response.
     expect(screen.getByLabelText("Email")).toHaveValue("ada@example.com")
   })
