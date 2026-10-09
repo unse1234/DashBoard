@@ -11,11 +11,9 @@ import type {
 // page of results the list shows, newest first as the API would return them;
 // the orders after it are not on that page but their details can still be
 // opened. Orders keep a snapshot of their customer, address and product
-// names and prices, so none of it is read from the Customers or Products mock
-// data. The IDs are the same, though: each order here is also one of the
-// customer's recent orders in `customer-order.mock-data.ts`, with the same
-// customer, date, status and total. Product IDs and SKUs are those of the
-// Products mock data, so the order items link to real product pages.
+// names and prices, so none of it is read from the Customers API or the
+// Products mock data. Product IDs and SKUs are those of the Products mock data,
+// so the order items link to real product pages.
 
 type CatalogItem = Pick<
   OrderItem,
