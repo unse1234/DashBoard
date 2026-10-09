@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SessionRestorer } from "@/components/auth/session-restorer"
+import { QueryProvider } from "@/components/shared/query-provider"
 import { APP_NAME } from "@/lib/app.constants";
 import "./globals.css";
 
@@ -29,8 +30,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SessionRestorer />
-        {children}
+        <QueryProvider>
+          <SessionRestorer />
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );
