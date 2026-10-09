@@ -1,38 +1,17 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
 
-import {
-  getMockCustomerAddresses,
-  getMockCustomerById,
-} from "@/lib/customers/customer.mock-data"
-import { getMockCustomerRecentOrders } from "@/lib/customers/customer-order.mock-data"
 import { CustomerDetailsScreen } from "@/screens/customers/details"
 
-type CustomerDetailsPageProps = PageProps<"/dashboard/customers/[customerId]">
-
-export async function generateMetadata({
-  params,
-}: CustomerDetailsPageProps): Promise<Metadata> {
-  const { customerId } = await params
-
-  return {
-    title: getMockCustomerById(customerId)?.name ?? "Customer not found",
-  }
+// The customer is loaded in the browser (the API needs the signed-in token), so
+// the title cannot include their name.
+export const metadata: Metadata = {
+  title: "Customer details",
 }
 
 export default async function CustomerDetailsPage({
   params,
-}: CustomerDetailsPageProps) {
+}: PageProps<"/dashboard/customers/[customerId]">) {
   const { customerId } = await params
-  const customer = getMockCustomerById(customerId)
 
-  if (!customer) notFound()
-
-  return (
-    <CustomerDetailsScreen
-      customer={customer}
-      recentOrders={getMockCustomerRecentOrders(customer.id)}
-      addresses={getMockCustomerAddresses(customer.id)}
-    />
-  )
+  return <CustomerDetailsScreen customerId={customerId} />
 }
