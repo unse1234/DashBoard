@@ -4,13 +4,13 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { resendVerification } from "@/lib/auth/account.api"
+import { resendVerification } from "@/lib/auth/auth.api"
 import { signOut } from "@/lib/auth/auth-store"
 import { VerificationNotice } from "@/screens/auth/verify-email/components/verification-notice"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 
 vi.mock("@/hooks/use-auth")
-vi.mock("@/lib/auth/account.api")
+vi.mock("@/lib/auth/auth.api")
 vi.mock("@/lib/auth/auth-store")
 
 const unverified = createAuthUser({ emailVerifiedAt: null })

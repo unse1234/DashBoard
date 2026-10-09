@@ -1,4 +1,5 @@
 import { ApiError, isApiError } from "@/lib/api/api-error"
+import { attachSessionHandlers } from "@/lib/api/axios"
 import * as authApi from "@/lib/auth/auth.api"
 import type { AuthResponse, AuthUser } from "@/lib/auth/auth.types"
 
@@ -45,6 +46,16 @@ function startSession({ accessToken: value, expiresIn, user }: AuthResponse) {
 export function clearSession() {
   accessToken = null
   setState({ status: "unauthenticated", user: null })
+}
+
+/**
+ * Applies a change to the signed-in user's own account (e.g. a new name) so
+ * the rest of the app shows it without waiting for the next token refresh.
+ * Ignored unless it is the current user.
+ */
+export function updateSessionUser(user: AuthUser) {
+  if (state.status !== "authenticated" || state.user?.id !== user.id) return
+  setState({ status: "authenticated", user })
 }
 
 // --- external store API (see `useAuth`) ---
@@ -140,6 +151,11 @@ export async function getAccessToken() {
   }
   return accessToken.value
 }
+
+// The API client attaches the token to authenticated requests and, on a 401,
+// asks for a refresh through these. They are registered here rather than
+// imported by the client because this module calls the auth API through it.
+attachSessionHandlers({ getAccessToken, refreshSession, clearSession })
 
 /** Test helper: forgets everything, as if the page had just loaded. */
 export function resetAuthStore() {

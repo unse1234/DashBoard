@@ -213,6 +213,45 @@ describe("auth store", () => {
     })
   })
 
+  describe("updateSessionUser", () => {
+    it("applies a change to the signed-in user and notifies subscribers", async () => {
+      const { store, api } = await loadModules()
+      api.login.mockResolvedValue(authResponse())
+      await store.signIn("ada@example.com", "secret")
+      const listener = vi.fn()
+      store.subscribeToAuth(listener)
+
+      store.updateSessionUser({ ...user, name: "Ada King" })
+
+      expect(store.getAuthState()).toEqual({
+        status: "authenticated",
+        user: { ...user, name: "Ada King" },
+      })
+      expect(listener).toHaveBeenCalledTimes(1)
+      // The token is untouched: no refresh was needed to show the change.
+      await expect(store.getAccessToken()).resolves.toBe("token-1")
+      expect(api.refresh).not.toHaveBeenCalled()
+    })
+
+    it("ignores a different account", async () => {
+      const { store, api } = await loadModules()
+      api.login.mockResolvedValue(authResponse())
+      await store.signIn("ada@example.com", "secret")
+
+      store.updateSessionUser({ ...user, id: "someone-else", name: "Other" })
+
+      expect(store.getAuthState().user).toEqual(user)
+    })
+
+    it("does nothing without a session", async () => {
+      const { store } = await loadModules()
+
+      store.updateSessionUser(user)
+
+      expect(store.getAuthState()).toEqual({ status: "loading", user: null })
+    })
+  })
+
   describe("signOut", () => {
     it("clears the session and ends it on the server", async () => {
       const { store, api } = await loadModules()

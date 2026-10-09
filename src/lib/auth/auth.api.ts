@@ -1,47 +1,76 @@
-import { apiRequest } from "@/lib/api/http"
+import type { AxiosRequestConfig } from "axios"
+
+import { apiClient } from "@/lib/api/axios"
 import type { AuthResponse, MessageResponse } from "@/lib/auth/auth.types"
 
-// Calls that need no signed-in user. Authenticated calls go through
-// `authenticatedRequest`, which attaches and renews the access token.
+/** Browsers only send this header cross-origin after a CORS preflight; the API requires it on cookie endpoints. */
+const CSRF_HEADER = "X-CSRF-Protection"
 
-export function login(email: string, password: string) {
-  return apiRequest<AuthResponse>("/auth/login", {
-    method: "POST",
-    body: { email, password },
-    withCookies: true,
-  })
+/** Endpoints that read or set the HttpOnly refresh cookie. They run before a token exists, hence no bearer token. */
+const cookieEndpoint = {
+  skipAuth: true,
+  withCredentials: true,
+  headers: { [CSRF_HEADER]: "1" },
+} satisfies AxiosRequestConfig
+
+const publicEndpoint = { skipAuth: true } satisfies AxiosRequestConfig
+
+export async function login(email: string, password: string) {
+  const { data } = await apiClient.post<AuthResponse>(
+    "/auth/login",
+    { email, password },
+    cookieEndpoint
+  )
+  return data
 }
 
 /** Exchanges the HttpOnly refresh cookie for a new access token. */
-export function refresh() {
-  return apiRequest<AuthResponse>("/auth/refresh", {
-    method: "POST",
-    withCookies: true,
-  })
+export async function refresh() {
+  const { data } = await apiClient.post<AuthResponse>(
+    "/auth/refresh",
+    undefined,
+    cookieEndpoint
+  )
+  return data
 }
 
-export function logout() {
-  return apiRequest("/auth/logout", { method: "POST", withCookies: true })
+export async function logout() {
+  await apiClient.post("/auth/logout", undefined, cookieEndpoint)
 }
 
-export function forgotPassword(email: string) {
-  return apiRequest<MessageResponse>("/auth/forgot-password", {
-    method: "POST",
-    body: { email },
-  })
+export async function forgotPassword(email: string) {
+  const { data } = await apiClient.post<MessageResponse>(
+    "/auth/forgot-password",
+    { email },
+    publicEndpoint
+  )
+  return data
 }
 
 /** Also completes an invitation: invited users choose their password here. */
-export function resetPassword(token: string, password: string) {
-  return apiRequest<MessageResponse>("/auth/reset-password", {
-    method: "POST",
-    body: { token, password },
-  })
+export async function resetPassword(token: string, password: string) {
+  const { data } = await apiClient.post<MessageResponse>(
+    "/auth/reset-password",
+    { token, password },
+    publicEndpoint
+  )
+  return data
 }
 
-export function verifyEmail(token: string) {
-  return apiRequest<MessageResponse>("/auth/verify-email", {
-    method: "POST",
-    body: { token },
-  })
+export async function verifyEmail(token: string) {
+  const { data } = await apiClient.post<MessageResponse>(
+    "/auth/verify-email",
+    { token },
+    publicEndpoint
+  )
+  return data
+}
+
+// The call below needs a signed-in user; the client attaches the token.
+
+export async function resendVerification() {
+  const { data } = await apiClient.post<MessageResponse>(
+    "/auth/resend-verification"
+  )
+  return data
 }

@@ -1,6 +1,10 @@
+import { apiClient } from "@/lib/api/axios"
 import type { AuthUser } from "@/lib/auth/auth.types"
-import { authenticatedRequest } from "@/lib/auth/authenticated-request"
-import type { CreateUserValues, EditUserValues } from "@/lib/users/user.schemas"
+import type {
+  CreateUserValues,
+  EditUserValues,
+  ProfileValues,
+} from "@/lib/users/user.schemas"
 import type { User, UsersQuery } from "@/lib/users/user.types"
 
 type UserPageResponse = {
@@ -55,39 +59,56 @@ function userPath(uid: string) {
   return `/users/${encodeURIComponent(uid)}`
 }
 
+// All of these need a signed-in user; the API client attaches the token.
+
 export async function listUsers(
   query: UsersQuery,
   signal?: AbortSignal
 ): Promise<UserPage> {
-  const { data, meta } = await authenticatedRequest<UserPageResponse>(
-    `/users?${buildUsersSearchParams(query)}`,
-    { signal }
-  )
-  return { users: data.map(toUser), totalRecords: meta.total }
+  const { data } = await apiClient.get<UserPageResponse>("/users", {
+    params: buildUsersSearchParams(query),
+    signal,
+  })
+  return { users: data.data.map(toUser), totalRecords: data.meta.total }
 }
 
 export async function getUser(uid: string, signal?: AbortSignal) {
-  return toUser(await authenticatedRequest<AuthUser>(userPath(uid), { signal }))
+  const { data } = await apiClient.get<AuthUser>(userPath(uid), { signal })
+  return toUser(data)
 }
 
 /** Creates the account and emails the person a link to choose their password. */
-export async function inviteUser(values: CreateUserValues): Promise<InvitedUser> {
-  const { user, invitationSent } =
-    await authenticatedRequest<InviteUserResponse>("/users", {
-      method: "POST",
-      body: values,
-    })
-  return { user: toUser(user), invitationSent }
+export async function inviteUser(
+  values: CreateUserValues
+): Promise<InvitedUser> {
+  const { data } = await apiClient.post<InviteUserResponse>("/users", values)
+  return { user: toUser(data.user), invitationSent: data.invitationSent }
 }
 
+/** Name, role and status in one atomic request; send only what changed. */
 export async function updateUser(
   uid: string,
   changes: Partial<EditUserValues>
 ) {
-  return toUser(
-    await authenticatedRequest<AuthUser>(userPath(uid), {
-      method: "PATCH",
-      body: changes,
-    })
-  )
+  const { data } = await apiClient.patch<AuthUser>(userPath(uid), changes)
+  return toUser(data)
+}
+
+/** Disabling also ends all of the user's sessions. The API refuses it for your own account. */
+export async function setUserActive(uid: string, isActive: boolean) {
+  const { data } = await apiClient.patch<AuthUser>(`${userPath(uid)}/active`, {
+    isActive,
+  })
+  return toUser(data)
+}
+
+/** A soft delete: the account disappears from the API and can no longer sign in. */
+export async function deleteUser(uid: string) {
+  await apiClient.delete(userPath(uid))
+}
+
+/** The signed-in user's own account; only the name can be changed. */
+export async function updateProfile(values: ProfileValues) {
+  const { data } = await apiClient.patch<AuthUser>("/users/me", values)
+  return toUser(data)
 }

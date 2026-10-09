@@ -32,6 +32,11 @@ export const createUserSchema = z.object({
 
 export type CreateUserValues = z.infer<typeof createUserSchema>
 
+/** What users may change about themselves; the API accepts nothing else. */
+export const profileSchema = z.object({ name: nameSchema })
+
+export type ProfileValues = z.infer<typeof profileSchema>
+
 /** Email and password are not editable: the API leaves them to the user. */
 export const editUserSchema = z.object({
   name: nameSchema,
