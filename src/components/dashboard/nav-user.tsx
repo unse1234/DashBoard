@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
   BellIcon,
   CircleUserRoundIcon,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
+import { EditProfileDialog } from "@/components/dashboard/edit-profile-dialog"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -27,7 +29,7 @@ import {
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/use-auth"
 import { describeApiError } from "@/lib/api/api-error"
-import { signOut } from "@/lib/auth/auth-store"
+import { useLogoutMutation } from "@/lib/auth/auth.mutations"
 
 function getInitials(name: string) {
   return name
@@ -38,23 +40,28 @@ function getInitials(name: string) {
     .join("")
 }
 
-// Signing out clears the local session at once (which returns the user to the
-// login screen), so only a failed server call needs reporting.
-async function handleLogOut() {
-  try {
-    await signOut()
-  } catch (error) {
-    toast.error(`${describeApiError(error)} Your session may still be active.`)
-  }
-}
-
 export function NavUser() {
   const { isMobile } = useSidebar()
   const { user } = useAuth()
+  const { mutateAsync: logOut } = useLogoutMutation()
+  const [profileOpen, setProfileOpen] = useState(false)
 
   if (!user) return null
 
   const initials = getInitials(user.name)
+
+  // Signing out clears the local session at once (which returns the user to the
+  // login screen and unmounts this menu), so only a failed server call needs
+  // reporting. mutateAsync, unlike the callbacks of mutate, still settles then.
+  async function handleLogOut() {
+    try {
+      await logOut()
+    } catch (error) {
+      toast.error(
+        `${describeApiError(error)} Your session may still be active.`
+      )
+    }
+  }
 
   return (
     <SidebarMenu>
@@ -101,7 +108,7 @@ export function NavUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setProfileOpen(true)}>
                 <CircleUserRoundIcon />
                 Account
               </DropdownMenuItem>
@@ -121,6 +128,8 @@ export function NavUser() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        {/* Outside the menu so it stays mounted after the menu closes. */}
+        <EditProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
       </SidebarMenuItem>
     </SidebarMenu>
   )
