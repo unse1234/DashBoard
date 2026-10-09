@@ -1,5 +1,5 @@
 import { StrictMode } from "react"
-import { render, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
 import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
@@ -12,6 +12,7 @@ import {
 } from "@/lib/auth/auth-store"
 import { TokenVerification } from "@/screens/auth/verify-email/components/token-verification"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
+import { renderWithQuery } from "@/test-utils/render"
 
 vi.mock("@/lib/auth/auth.api")
 vi.mock("@/lib/auth/auth-store")
@@ -43,7 +44,7 @@ describe("TokenVerification", () => {
     signedOut()
     vi.mocked(verifyEmail).mockResolvedValue({ message: "ok" })
 
-    render(
+    renderWithQuery(
       <StrictMode>
         <TokenVerification token="the-token" />
       </StrictMode>
@@ -65,7 +66,7 @@ describe("TokenVerification", () => {
     signedIn()
     vi.mocked(verifyEmail).mockResolvedValue({ message: "ok" })
 
-    render(<TokenVerification token="the-token" />)
+    renderWithQuery(<TokenVerification token="the-token" />)
 
     expect(
       await screen.findByRole("link", { name: "Continue to dashboard" })
@@ -79,7 +80,7 @@ describe("TokenVerification", () => {
       new ApiError(400, ["Invalid or expired token"])
     )
 
-    render(<TokenVerification token="old-token" />)
+    renderWithQuery(<TokenVerification token="old-token" />)
 
     expect(
       await screen.findByRole("heading", { name: "Verification failed" })
@@ -92,7 +93,7 @@ describe("TokenVerification", () => {
     signedOut()
     vi.mocked(verifyEmail).mockRejectedValue(new ApiError(500, ["boom"]))
 
-    render(<TokenVerification token="the-token" />)
+    renderWithQuery(<TokenVerification token="the-token" />)
 
     expect(
       await screen.findByText(/something went wrong on our side/i)

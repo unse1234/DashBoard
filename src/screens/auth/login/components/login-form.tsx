@@ -1,10 +1,13 @@
 "use client"
 
+import { useMemo } from "react"
+
 import { AuthForm } from "@/components/auth/auth-form"
 import { AuthLink } from "@/components/auth/auth-link"
 import { useAuthForm } from "@/components/auth/use-auth-form"
 import { FormField } from "@/components/shared/form-field"
-import { loginAction } from "@/lib/auth/auth.actions"
+import { createLoginAction } from "@/lib/auth/auth.actions"
+import { useLoginMutation } from "@/lib/auth/auth.mutations"
 import type { AuthFormAction } from "@/lib/auth/form-state"
 import { validateLogin, type LoginField } from "@/lib/auth/validation"
 import { routes } from "@/lib/routes"
@@ -13,8 +16,13 @@ type LoginFormProps = {
   action?: AuthFormAction<LoginField>
 }
 
-export function LoginForm({ action = loginAction }: LoginFormProps) {
-  const form = useAuthForm({ action, validate: validateLogin })
+export function LoginForm({ action }: LoginFormProps) {
+  const { mutateAsync: login } = useLoginMutation()
+  const loginAction = useMemo(() => createLoginAction(login), [login])
+  const form = useAuthForm({
+    action: action ?? loginAction,
+    validate: validateLogin,
+  })
 
   return (
     <AuthForm form={form} submitLabel="Log in" pendingLabel="Logging in…">

@@ -8,6 +8,7 @@ import { useAuthForm } from "@/components/auth/use-auth-form"
 import { FormField } from "@/components/shared/form-field"
 import { buttonVariants } from "@/components/ui/button"
 import { createResetPasswordAction } from "@/lib/auth/auth.actions"
+import { useResetPasswordMutation } from "@/lib/auth/auth.mutations"
 import type { AuthFormAction } from "@/lib/auth/form-state"
 import {
   PASSWORD_HINT,
@@ -23,9 +24,10 @@ type ResetPasswordFormProps = {
 }
 
 export function ResetPasswordForm({ token, action }: ResetPasswordFormProps) {
+  const { mutateAsync: resetPassword } = useResetPasswordMutation()
   const tokenAction = useMemo(
-    () => (token ? createResetPasswordAction(token) : undefined),
-    [token]
+    () => (token ? createResetPasswordAction(resetPassword, token) : undefined),
+    [resetPassword, token]
   )
   const form = useAuthForm({
     action: action ?? tokenAction,

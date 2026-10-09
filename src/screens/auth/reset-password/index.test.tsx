@@ -1,9 +1,10 @@
-import { render, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
 import { resetPassword } from "@/lib/auth/auth.api"
 import { ResetPasswordScreen } from "@/screens/auth/reset-password"
+import { renderWithQuery } from "@/test-utils/render"
 
 vi.mock("@/lib/auth/auth.api")
 vi.mock("@/lib/auth/auth-store")
@@ -14,7 +15,7 @@ describe("ResetPasswordScreen", () => {
   })
 
   it("offers a new link instead of a form when the link has no token", () => {
-    render(<ResetPasswordScreen />)
+    renderWithQuery(<ResetPasswordScreen />)
 
     expect(
       screen.getByRole("heading", { name: "Reset link not valid" })
@@ -26,7 +27,7 @@ describe("ResetPasswordScreen", () => {
   })
 
   it("rejects a password that breaks the policy without calling the API", async () => {
-    render(<ResetPasswordScreen token="link-token" />)
+    renderWithQuery(<ResetPasswordScreen token="link-token" />)
 
     await userEvent.type(screen.getByLabelText("New password"), "short")
     await userEvent.type(screen.getByLabelText("Confirm new password"), "short")
@@ -45,7 +46,7 @@ describe("ResetPasswordScreen", () => {
     vi.mocked(resetPassword).mockResolvedValue({
       message: "Your password has been reset. You can now sign in.",
     })
-    render(<ResetPasswordScreen token="link-token" />)
+    renderWithQuery(<ResetPasswordScreen token="link-token" />)
 
     await userEvent.type(
       screen.getByLabelText("New password"),

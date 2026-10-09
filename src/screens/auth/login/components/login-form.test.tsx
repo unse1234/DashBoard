@@ -1,15 +1,25 @@
-import { render, screen } from "@testing-library/react"
+import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
+
+import { ApiError } from "@/lib/api/api-error"
+import { signIn } from "@/lib/auth/auth-store"
 
 import type { AuthFormAction } from "@/lib/auth/form-state"
 import type { LoginField } from "@/lib/auth/validation"
 import { LoginForm } from "@/screens/auth/login/components/login-form"
+import { renderWithQuery } from "@/test-utils/render"
+
+vi.mock("@/lib/auth/auth-store")
 
 describe("LoginForm", () => {
+  beforeEach(() => {
+    vi.mocked(signIn).mockReset()
+  })
+
   it("shows field errors linked to their inputs and focuses the first one", async () => {
     const action = vi.fn<AuthFormAction<LoginField>>()
-    render(<LoginForm action={action} />)
+    renderWithQuery(<LoginForm action={action} />)
 
     await userEvent.click(screen.getByRole("button", { name: "Log in" }))
 
@@ -24,7 +34,7 @@ describe("LoginForm", () => {
   })
 
   it("toggles password visibility with an accessible control", async () => {
-    render(<LoginForm />)
+    renderWithQuery(<LoginForm />)
 
     const password = screen.getByLabelText("Password")
     expect(password).toHaveAttribute("type", "password")
@@ -37,13 +47,12 @@ describe("LoginForm", () => {
   })
 
   it("has no remember-me option, because sessions are always persistent", () => {
-    render(<LoginForm />)
+    renderWithQuery(<LoginForm />)
 
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument()
-    expect(screen.getByRole("link", { name: "Forgot password?" })).toHaveAttribute(
-      "href",
-      "/forgot-password"
-    )
+    expect(
+      screen.getByRole("link", { name: "Forgot password?" })
+    ).toHaveAttribute("href", "/forgot-password")
   })
 
   it("submits valid data to the action and renders its error message", async () => {
@@ -51,7 +60,7 @@ describe("LoginForm", () => {
       status: "error",
       message: "Invalid email or password.",
     }))
-    render(<LoginForm action={action} />)
+    renderWithQuery(<LoginForm action={action} />)
 
     await userEvent.type(screen.getByLabelText("Email"), "ada@example.com")
     await userEvent.type(screen.getByLabelText("Password"), "secret")
@@ -64,6 +73,37 @@ describe("LoginForm", () => {
     expect(formData.get("email")).toBe("ada@example.com")
     expect(formData.get("password")).toBe("secret")
     // Inputs keep their values after an error response.
+    expect(screen.getByLabelText("Email")).toHaveValue("ada@example.com")
+  })
+
+  it("signs in through the login mutation with the trimmed email", async () => {
+    vi.mocked(signIn).mockResolvedValue(undefined)
+    renderWithQuery(<LoginForm />)
+
+    await userEvent.type(screen.getByLabelText("Email"), "  ada@example.com ")
+    await userEvent.type(screen.getByLabelText("Password"), "secret")
+    await userEvent.click(screen.getByRole("button", { name: "Log in" }))
+
+    await waitFor(() =>
+      expect(signIn).toHaveBeenCalledWith("ada@example.com", "secret")
+    )
+    expect(signIn).toHaveBeenCalledTimes(1)
+  })
+
+  it("shows invalid credentials and keeps the form usable for another try", async () => {
+    vi.mocked(signIn).mockRejectedValue(
+      new ApiError(401, ["Invalid email or password"])
+    )
+    renderWithQuery(<LoginForm />)
+
+    await userEvent.type(screen.getByLabelText("Email"), "ada@example.com")
+    await userEvent.type(screen.getByLabelText("Password"), "wrong")
+    await userEvent.click(screen.getByRole("button", { name: "Log in" }))
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Invalid email or password"
+    )
+    expect(screen.getByRole("button", { name: "Log in" })).toBeEnabled()
     expect(screen.getByLabelText("Email")).toHaveValue("ada@example.com")
   })
 })

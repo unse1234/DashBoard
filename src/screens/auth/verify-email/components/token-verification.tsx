@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import Link from "next/link"
 
 import { AuthShell } from "@/components/auth/auth-shell"
@@ -8,46 +8,20 @@ import { buttonVariants } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useAuth } from "@/hooks/use-auth"
 import { describeApiError, isApiError } from "@/lib/api/api-error"
-import { verifyEmail } from "@/lib/auth/auth.api"
-import {
-  getAuthState,
-  refreshSession,
-  restoreSession,
-} from "@/lib/auth/auth-store"
+import { useVerifyEmailMutation } from "@/lib/auth/auth.mutations"
 import { routes } from "@/lib/routes"
-
-type Outcome =
-  | { status: "verifying" }
-  | { status: "verified" }
-  | { status: "failed"; message: string }
 
 const INVALID_LINK_MESSAGE =
   "This verification link is invalid or has expired. Log in to request a new one."
 
-async function verify(token: string): Promise<Outcome> {
-  try {
-    await verifyEmail(token)
-  } catch (error) {
-    // The API answers 400 for unknown, used and expired tokens alike.
-    const invalidLink = isApiError(error) && error.status === 400
-    return {
-      status: "failed",
-      message: invalidLink ? INVALID_LINK_MESSAGE : describeApiError(error),
-    }
-  }
-
-  // A signed-in user's session still says "unverified"; reload it so the
-  // dashboard guard lets them through. Visitors without a session have
-  // nothing to reload.
-  await restoreSession()
-  if (getAuthState().status === "authenticated") {
-    await refreshSession().catch(() => false)
-  }
-  return { status: "verified" }
+function describeVerificationError(error: unknown) {
+  // The API answers 400 for unknown, used and expired tokens alike.
+  const invalidLink = isApiError(error) && error.status === 400
+  return invalidLink ? INVALID_LINK_MESSAGE : describeApiError(error)
 }
 
 export function TokenVerification({ token }: { token: string }) {
-  const [outcome, setOutcome] = useState<Outcome>({ status: "verifying" })
+  const { mutate: verify, isSuccess, error } = useVerifyEmailMutation()
   const { status: sessionStatus } = useAuth()
   // Tokens are single-use, so a repeated effect (Strict Mode) must not resubmit.
   const started = useRef(false)
@@ -55,8 +29,8 @@ export function TokenVerification({ token }: { token: string }) {
   useEffect(() => {
     if (started.current) return
     started.current = true
-    void verify(token).then(setOutcome)
-  }, [token])
+    verify(token)
+  }, [token, verify])
 
   const continueHref =
     sessionStatus === "authenticated" ? routes.dashboard : routes.login
@@ -65,7 +39,7 @@ export function TokenVerification({ token }: { token: string }) {
       ? "Continue to dashboard"
       : "Continue to log in"
 
-  if (outcome.status === "verifying") {
+  if (!isSuccess && !error) {
     return (
       <AuthShell
         title="Verifying your email"
@@ -76,7 +50,7 @@ export function TokenVerification({ token }: { token: string }) {
     )
   }
 
-  if (outcome.status === "verified") {
+  if (isSuccess) {
     return (
       <AuthShell
         title="Email verified"
@@ -93,7 +67,10 @@ export function TokenVerification({ token }: { token: string }) {
   }
 
   return (
-    <AuthShell title="Verification failed" description={outcome.message}>
+    <AuthShell
+      title="Verification failed"
+      description={describeVerificationError(error)}
+    >
       <Link
         href={routes.login}
         className={buttonVariants({ size: "lg", className: "w-full" })}

@@ -1,9 +1,10 @@
-import { render, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
 import { forgotPassword } from "@/lib/auth/auth.api"
 import { ForgotPasswordForm } from "@/screens/auth/forgot-password/components/forgot-password-form"
+import { renderWithQuery } from "@/test-utils/render"
 
 vi.mock("@/lib/auth/auth.api")
 vi.mock("@/lib/auth/auth-store")
@@ -14,7 +15,7 @@ describe("ForgotPasswordForm", () => {
   })
 
   it("validates the address before calling the API", async () => {
-    render(<ForgotPasswordForm />)
+    renderWithQuery(<ForgotPasswordForm />)
 
     await userEvent.type(screen.getByLabelText("Email"), "not-an-email")
     await userEvent.click(
@@ -32,7 +33,7 @@ describe("ForgotPasswordForm", () => {
       message:
         "If an account exists for that email address, a link has been sent.",
     })
-    render(<ForgotPasswordForm />)
+    renderWithQuery(<ForgotPasswordForm />)
 
     await userEvent.type(screen.getByLabelText("Email"), "ada@example.com")
     await userEvent.click(

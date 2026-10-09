@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
@@ -8,6 +8,7 @@ import { resendVerification } from "@/lib/auth/auth.api"
 import { signOut } from "@/lib/auth/auth-store"
 import { VerificationNotice } from "@/screens/auth/verify-email/components/verification-notice"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
+import { renderWithQuery } from "@/test-utils/render"
 
 vi.mock("@/hooks/use-auth")
 vi.mock("@/lib/auth/auth.api")
@@ -23,7 +24,7 @@ describe("VerificationNotice", () => {
   it("waits for the session to load", () => {
     vi.mocked(useAuth).mockReturnValue({ status: "loading", user: null })
 
-    render(<VerificationNotice />)
+    renderWithQuery(<VerificationNotice />)
 
     expect(
       screen.getByRole("status", { name: "Loading your account" })
@@ -36,7 +37,7 @@ describe("VerificationNotice", () => {
       user: null,
     })
 
-    render(<VerificationNotice />)
+    renderWithQuery(<VerificationNotice />)
 
     expect(screen.getByRole("link", { name: "Log in" })).toHaveAttribute(
       "href",
@@ -50,7 +51,7 @@ describe("VerificationNotice", () => {
       user: createAuthUser(),
     })
 
-    render(<VerificationNotice />)
+    renderWithQuery(<VerificationNotice />)
 
     expect(
       screen.getByRole("link", { name: "Continue to dashboard" })
@@ -65,7 +66,7 @@ describe("VerificationNotice", () => {
     vi.mocked(resendVerification).mockResolvedValue({
       message: "A new link has been sent.",
     })
-    render(<VerificationNotice />)
+    renderWithQuery(<VerificationNotice />)
 
     expect(screen.getByText(/ada@example\.com/)).toBeVisible()
     await userEvent.click(
@@ -86,7 +87,7 @@ describe("VerificationNotice", () => {
     vi.mocked(resendVerification).mockRejectedValue(
       new ApiError(429, ["ThrottlerException"])
     )
-    render(<VerificationNotice />)
+    renderWithQuery(<VerificationNotice />)
 
     await userEvent.click(
       screen.getByRole("button", { name: "Resend verification email" })
@@ -103,7 +104,7 @@ describe("VerificationNotice", () => {
       user: unverified,
     })
     vi.mocked(signOut).mockResolvedValue(undefined)
-    render(<VerificationNotice />)
+    renderWithQuery(<VerificationNotice />)
 
     await userEvent.click(screen.getByRole("button", { name: "Log out" }))
 

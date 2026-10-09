@@ -9,8 +9,10 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useAuth } from "@/hooks/use-auth"
 import { describeApiError } from "@/lib/api/api-error"
-import { resendVerification } from "@/lib/auth/auth.api"
-import { signOut } from "@/lib/auth/auth-store"
+import {
+  useLogoutMutation,
+  useResendVerificationMutation,
+} from "@/lib/auth/auth.mutations"
 import type { AuthFormState } from "@/lib/auth/form-state"
 import { routes } from "@/lib/routes"
 
@@ -20,7 +22,9 @@ export function VerificationNotice() {
   const [feedback, setFeedback] = useState<AuthFormState<string>>({
     status: "idle",
   })
-  const [pending, setPending] = useState(false)
+  const { mutateAsync: resend, isPending: resending } =
+    useResendVerificationMutation()
+  const { mutateAsync: logOut } = useLogoutMutation()
 
   if (status === "loading") {
     return (
@@ -63,20 +67,17 @@ export function VerificationNotice() {
   }
 
   async function handleResend() {
-    setPending(true)
     try {
-      const { message } = await resendVerification()
+      const { message } = await resend()
       setFeedback({ status: "success", message })
     } catch (error) {
       setFeedback({ status: "error", message: describeApiError(error) })
-    } finally {
-      setPending(false)
     }
   }
 
   async function handleLogOut() {
     try {
-      await signOut()
+      await logOut()
     } catch (error) {
       setFeedback({
         status: "error",
@@ -97,9 +98,9 @@ export function VerificationNotice() {
             size="lg"
             className="w-full"
             onClick={handleResend}
-            disabled={pending}
+            disabled={resending}
           >
-            {pending ? (
+            {resending ? (
               <>
                 <Spinner aria-hidden="true" />
                 Sending…

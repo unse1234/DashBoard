@@ -1,11 +1,8 @@
 import { vi } from "vitest"
 
 import { ApiError } from "@/lib/api/api-error"
-import { loginAction } from "@/lib/auth/auth.actions"
-import { signIn } from "@/lib/auth/auth-store"
+import { createLoginAction } from "@/lib/auth/auth.actions"
 import { initialAuthFormState } from "@/lib/auth/form-state"
-
-vi.mock("@/lib/auth/auth-store")
 
 function credentials(email: string, password: string) {
   const data = new FormData()
@@ -14,29 +11,32 @@ function credentials(email: string, password: string) {
   return data
 }
 
-describe("loginAction", () => {
+describe("createLoginAction", () => {
+  const login = vi.fn()
+
   beforeEach(() => {
-    vi.mocked(signIn).mockReset()
+    login.mockReset()
   })
 
   it("signs in with the trimmed email and untouched password", async () => {
-    vi.mocked(signIn).mockResolvedValue(undefined)
+    login.mockResolvedValue(undefined)
 
-    const state = await loginAction(
+    const state = await createLoginAction(login)(
       initialAuthFormState,
       credentials("  ada@example.com ", " pass word ")
     )
 
-    expect(signIn).toHaveBeenCalledWith("ada@example.com", " pass word ")
+    expect(login).toHaveBeenCalledWith({
+      email: "ada@example.com",
+      password: " pass word ",
+    })
     expect(state).toEqual({ status: "success" })
   })
 
   it("shows the API's message for invalid credentials", async () => {
-    vi.mocked(signIn).mockRejectedValue(
-      new ApiError(401, ["Invalid email or password"])
-    )
+    login.mockRejectedValue(new ApiError(401, ["Invalid email or password"]))
 
-    const state = await loginAction(
+    const state = await createLoginAction(login)(
       initialAuthFormState,
       credentials("ada@example.com", "wrong")
     )
@@ -52,9 +52,9 @@ describe("loginAction", () => {
     [500, "Something went wrong on our side. Please try again shortly."],
     [0, "Unable to reach the server."],
   ])("describes a %i failure for the user", async (status, message) => {
-    vi.mocked(signIn).mockRejectedValue(new ApiError(status, [message]))
+    login.mockRejectedValue(new ApiError(status, [message]))
 
-    const state = await loginAction(
+    const state = await createLoginAction(login)(
       initialAuthFormState,
       credentials("ada@example.com", "x")
     )
@@ -63,9 +63,9 @@ describe("loginAction", () => {
   })
 
   it("hides unexpected errors behind a generic message", async () => {
-    vi.mocked(signIn).mockRejectedValue(new TypeError("x is not a function"))
+    login.mockRejectedValue(new TypeError("x is not a function"))
 
-    const state = await loginAction(
+    const state = await createLoginAction(login)(
       initialAuthFormState,
       credentials("ada@example.com", "x")
     )

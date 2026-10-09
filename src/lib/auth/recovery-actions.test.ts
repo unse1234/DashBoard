@@ -2,15 +2,11 @@ import { vi } from "vitest"
 
 import { ApiError } from "@/lib/api/api-error"
 import {
+  createForgotPasswordAction,
   createResetPasswordAction,
-  forgotPasswordAction,
   INVALID_RESET_LINK_MESSAGE,
 } from "@/lib/auth/auth.actions"
-import { forgotPassword, resetPassword } from "@/lib/auth/auth.api"
 import { initialAuthFormState } from "@/lib/auth/form-state"
-
-vi.mock("@/lib/auth/auth.api")
-vi.mock("@/lib/auth/auth-store")
 
 function formWith(values: Record<string, string>) {
   const data = new FormData()
@@ -18,34 +14,34 @@ function formWith(values: Record<string, string>) {
   return data
 }
 
-describe("forgotPasswordAction", () => {
+describe("createForgotPasswordAction", () => {
+  const requestLink = vi.fn()
+
   beforeEach(() => {
-    vi.resetAllMocks()
+    requestLink.mockReset()
   })
 
   it("requests a link for the trimmed email and shows the API's neutral message", async () => {
-    vi.mocked(forgotPassword).mockResolvedValue({
+    requestLink.mockResolvedValue({
       message: "If an account exists, a link has been sent.",
     })
 
-    const state = await forgotPasswordAction(
+    const state = await createForgotPasswordAction(requestLink)(
       initialAuthFormState,
       formWith({ email: "  ada@example.com " })
     )
 
-    expect(forgotPassword).toHaveBeenCalledWith("ada@example.com")
+    expect(requestLink).toHaveBeenCalledWith("ada@example.com")
     expect(state).toEqual({
       status: "success",
       message: "If an account exists, a link has been sent.",
     })
   })
 
-  it("reports rate limiting and connection problems", async () => {
-    vi.mocked(forgotPassword).mockRejectedValue(
-      new ApiError(429, ["ThrottlerException"])
-    )
+  it("reports rate limiting", async () => {
+    requestLink.mockRejectedValue(new ApiError(429, ["ThrottlerException"]))
 
-    const state = await forgotPasswordAction(
+    const state = await createForgotPasswordAction(requestLink)(
       initialAuthFormState,
       formWith({ email: "ada@example.com" })
     )
@@ -58,28 +54,33 @@ describe("forgotPasswordAction", () => {
 })
 
 describe("createResetPasswordAction", () => {
+  const resetPassword = vi.fn()
+
   beforeEach(() => {
-    vi.resetAllMocks()
+    resetPassword.mockReset()
   })
 
   it("submits the bound token with the new password untouched", async () => {
-    vi.mocked(resetPassword).mockResolvedValue({ message: "Password reset." })
+    resetPassword.mockResolvedValue({ message: "Password reset." })
 
-    const state = await createResetPasswordAction("link-token")(
+    const state = await createResetPasswordAction(resetPassword, "link-token")(
       initialAuthFormState,
       formWith({ password: " New-Passw0rd-1 ", confirmPassword: "ignored" })
     )
 
-    expect(resetPassword).toHaveBeenCalledWith("link-token", " New-Passw0rd-1 ")
+    expect(resetPassword).toHaveBeenCalledWith({
+      token: "link-token",
+      password: " New-Passw0rd-1 ",
+    })
     expect(state).toEqual({ status: "success", message: "Password reset." })
   })
 
   it("tells the user to request a new link when the token is rejected", async () => {
-    vi.mocked(resetPassword).mockRejectedValue(
+    resetPassword.mockRejectedValue(
       new ApiError(400, ["Invalid or expired token"])
     )
 
-    const state = await createResetPasswordAction("old-token")(
+    const state = await createResetPasswordAction(resetPassword, "old-token")(
       initialAuthFormState,
       formWith({ password: "New-Passw0rd-1" })
     )
@@ -91,11 +92,11 @@ describe("createResetPasswordAction", () => {
   })
 
   it("shows other API messages, such as a password the server rejects", async () => {
-    vi.mocked(resetPassword).mockRejectedValue(
+    resetPassword.mockRejectedValue(
       new ApiError(400, ["password must contain a number"])
     )
 
-    const state = await createResetPasswordAction("link-token")(
+    const state = await createResetPasswordAction(resetPassword, "link-token")(
       initialAuthFormState,
       formWith({ password: "New-Passw0rd-1" })
     )
@@ -107,11 +108,9 @@ describe("createResetPasswordAction", () => {
   })
 
   it("does not leak server internals", async () => {
-    vi.mocked(resetPassword).mockRejectedValue(
-      new ApiError(500, ["stack trace"])
-    )
+    resetPassword.mockRejectedValue(new ApiError(500, ["stack trace"]))
 
-    const state = await createResetPasswordAction("link-token")(
+    const state = await createResetPasswordAction(resetPassword, "link-token")(
       initialAuthFormState,
       formWith({ password: "New-Passw0rd-1" })
     )
