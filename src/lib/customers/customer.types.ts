@@ -59,6 +59,14 @@ export type CustomerOrderSummary = {
   createdAt: string
 }
 
+/** Everything the customer details page shows, from one API request. */
+export type CustomerDetails = {
+  customer: Customer
+  addresses: CustomerAddress[]
+  /** The latest orders, newest first; at most `RECENT_ORDERS_LIMIT`. */
+  recentOrders: CustomerOrderSummary[]
+}
+
 /** The columns the list can be sorted by. */
 export type CustomerSortColumn =
   | "id"
@@ -70,7 +78,10 @@ export type CustomerSortColumn =
 
 export type CustomerSort = Sort<CustomerSortColumn>
 
-/** Everything that decides which customers are listed; maps 1:1 to future API or URL params. */
+/**
+ * Everything that decides which customers are listed; sent to the API as query
+ * parameters. Without a sort the API returns the newest customers first.
+ */
 export type CustomersQuery = {
   search: string
   sort: CustomerSort | null
