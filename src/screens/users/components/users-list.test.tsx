@@ -1,14 +1,21 @@
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { toast } from "sonner"
 import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { inviteUser, listUsers, updateUser } from "@/lib/users/user.api"
+import {
+  deleteUser,
+  inviteUser,
+  listUsers,
+  setUserActive,
+  updateUser,
+} from "@/lib/users/user.api"
 import type { UserPage } from "@/lib/users/user.api"
 import { UsersList } from "@/screens/users/components/users-list"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
+import { renderWithQuery } from "@/test-utils/render"
 import { createUser } from "@/test-utils/user-fixtures"
 
 vi.mock("@/lib/users/user.api")
@@ -37,13 +44,20 @@ function page(users = [priya, mei, ada], totalRecords = 248): UserPage {
 }
 
 async function renderList() {
-  render(<UsersList />)
+  renderWithQuery(<UsersList />)
   await screen.findByText("Priya Raman")
   return userEvent.setup()
 }
 
 function lastQuery() {
   return vi.mocked(listUsers).mock.lastCall?.[0]
+}
+
+async function openActions(
+  user: ReturnType<typeof userEvent.setup>,
+  name: string
+) {
+  await user.click(screen.getByRole("button", { name: `Actions for ${name}` }))
 }
 
 beforeEach(() => {
@@ -59,17 +73,17 @@ beforeEach(() => {
 describe("UsersList loading", () => {
   it("shows placeholder rows until the first page arrives", async () => {
     let resolve: (value: UserPage) => void = () => {}
-    vi.mocked(listUsers).mockReturnValue(
-      new Promise((res) => (resolve = res))
-    )
-    render(<UsersList />)
+    vi.mocked(listUsers).mockReturnValue(new Promise((res) => (resolve = res)))
+    renderWithQuery(<UsersList />)
 
     expect(screen.getByRole("table")).toHaveAttribute("aria-busy", "true")
     expect(screen.queryByText("No users found")).not.toBeInTheDocument()
 
     resolve(page())
     expect(await screen.findByText("Priya Raman")).toBeInTheDocument()
-    expect(screen.getByRole("table")).toHaveAttribute("aria-busy", "false")
+    await waitFor(() =>
+      expect(screen.getByRole("table")).toHaveAttribute("aria-busy", "false")
+    )
   })
 
   it("requests the first page of ten with no filters", async () => {
@@ -85,7 +99,7 @@ describe("UsersList loading", () => {
     vi.mocked(listUsers).mockRejectedValueOnce(
       new ApiError(500, ["internal detail"])
     )
-    render(<UsersList />)
+    renderWithQuery(<UsersList />)
 
     const alert = await screen.findByRole("alert")
     expect(alert).toHaveTextContent("Couldn't load users")
@@ -114,7 +128,7 @@ describe("UsersList table", () => {
 
   it("shows the empty state when nothing matches", async () => {
     vi.mocked(listUsers).mockResolvedValue(page([], 0))
-    render(<UsersList />)
+    renderWithQuery(<UsersList />)
 
     expect(await screen.findByText("No users found")).toBeInTheDocument()
   })
@@ -128,13 +142,23 @@ describe("UsersList pagination, search and filters", () => {
     expect(screen.getByText("248")).toBeInTheDocument()
   })
 
-  it("asks the API for the next page", async () => {
+  it("asks the API for the next page and keeps the rows until it arrives", async () => {
     const user = await renderList()
+    let resolveNext: (value: UserPage) => void = () => {}
+    vi.mocked(listUsers).mockReturnValueOnce(
+      new Promise((res) => (resolveNext = res))
+    )
 
     await user.click(screen.getByRole("button", { name: "Go to next page" }))
 
     await waitFor(() => expect(lastQuery()).toMatchObject({ page: 2 }))
     expect(screen.getByText("11–20")).toBeInTheDocument()
+    // The previous page stays on screen (dimmed) instead of blanking the table.
+    expect(screen.getByText("Priya Raman")).toBeInTheDocument()
+    expect(screen.queryByText("No users found")).not.toBeInTheDocument()
+
+    resolveNext(page([createUser({ uid: "u-next", name: "Next Person" })]))
+    expect(await screen.findByText("Next Person")).toBeInTheDocument()
   })
 
   it("searches after typing pauses and returns to page one", async () => {
@@ -173,9 +197,7 @@ describe("UsersList row actions", () => {
   it("offers Disable for an active user and links View to the details page", async () => {
     const user = await renderList()
 
-    await user.click(
-      screen.getByRole("button", { name: "Actions for Priya Raman" })
-    )
+    await openActions(user, "Priya Raman")
 
     expect(
       await screen.findByRole("menuitem", { name: "Disable" })
@@ -187,47 +209,82 @@ describe("UsersList row actions", () => {
     )
   })
 
-  it("disables a user through the API, confirms, and reloads the list", async () => {
-    vi.mocked(updateUser).mockResolvedValue({ ...priya, status: "inactive" })
+  it("asks before disabling, then disables through the status endpoint and reloads", async () => {
+    vi.mocked(setUserActive).mockResolvedValue({ ...priya, status: "inactive" })
     const user = await renderList()
 
-    await user.click(
-      screen.getByRole("button", { name: "Actions for Priya Raman" })
-    )
+    await openActions(user, "Priya Raman")
     await user.click(await screen.findByRole("menuitem", { name: "Disable" }))
 
+    const dialog = await screen.findByRole("dialog", {
+      name: "Disable Priya Raman?",
+    })
+    expect(setUserActive).not.toHaveBeenCalled()
+    await user.click(within(dialog).getByRole("button", { name: "Disable" }))
+
     await waitFor(() =>
-      expect(updateUser).toHaveBeenCalledWith("u-priya", { isActive: false })
+      expect(setUserActive).toHaveBeenCalledWith("u-priya", false)
     )
     expect(toast.success).toHaveBeenCalledWith("Priya Raman was disabled.")
     await waitFor(() => expect(listUsers).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
   })
 
-  it("offers Enable for an inactive user", async () => {
-    vi.mocked(updateUser).mockResolvedValue({ ...mei, status: "active" })
+  it("does nothing when the disable confirmation is cancelled", async () => {
     const user = await renderList()
 
-    await user.click(
-      screen.getByRole("button", { name: "Actions for Mei Lin Tan" })
+    await openActions(user, "Priya Raman")
+    await user.click(await screen.findByRole("menuitem", { name: "Disable" }))
+    const dialog = await screen.findByRole("dialog")
+    await user.click(within(dialog).getByRole("button", { name: "Cancel" }))
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+    expect(setUserActive).not.toHaveBeenCalled()
+    expect(listUsers).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps the confirmation open and explains why when the API refuses to disable", async () => {
+    vi.mocked(setUserActive).mockRejectedValue(
+      new ApiError(409, ["At least one active admin is required"])
     )
+    const user = await renderList()
+
+    await openActions(user, "Ada Admin")
+    await user.click(await screen.findByRole("menuitem", { name: "Disable" }))
+    const dialog = await screen.findByRole("dialog")
+    await user.click(within(dialog).getByRole("button", { name: "Disable" }))
+
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "At least one active admin is required"
+    )
+    expect(screen.getByRole("dialog")).toBeInTheDocument()
+    expect(toast.success).not.toHaveBeenCalled()
+    expect(listUsers).toHaveBeenCalledTimes(1)
+  })
+
+  it("enables a user straight away, without a confirmation", async () => {
+    vi.mocked(setUserActive).mockResolvedValue({ ...mei, status: "active" })
+    const user = await renderList()
+
+    await openActions(user, "Mei Lin Tan")
     await user.click(await screen.findByRole("menuitem", { name: "Enable" }))
 
     await waitFor(() =>
-      expect(updateUser).toHaveBeenCalledWith("u-mei", { isActive: true })
+      expect(setUserActive).toHaveBeenCalledWith("u-mei", true)
     )
+    expect(screen.queryByRole("dialog")).toBeNull()
     expect(toast.success).toHaveBeenCalledWith("Mei Lin Tan was enabled.")
+    await waitFor(() => expect(listUsers).toHaveBeenCalledTimes(2))
   })
 
-  it("reports a failed status change without reloading", async () => {
-    vi.mocked(updateUser).mockRejectedValue(
+  it("reports a failed enable without reloading", async () => {
+    vi.mocked(setUserActive).mockRejectedValue(
       new ApiError(403, ["Insufficient permissions"])
     )
     const user = await renderList()
 
-    await user.click(
-      screen.getByRole("button", { name: "Actions for Priya Raman" })
-    )
-    await user.click(await screen.findByRole("menuitem", { name: "Disable" }))
+    await openActions(user, "Mei Lin Tan")
+    await user.click(await screen.findByRole("menuitem", { name: "Enable" }))
 
     await waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith("Insufficient permissions")
@@ -235,51 +292,167 @@ describe("UsersList row actions", () => {
     expect(listUsers).toHaveBeenCalledTimes(1)
   })
 
-  it("does not let you disable your own account", async () => {
+  it("does not let you disable or delete your own account", async () => {
     vi.mocked(useAuth).mockReturnValue({
       status: "authenticated",
       user: createAuthUser({ id: "u-priya" }),
     })
     const user = await renderList()
 
-    await user.click(
-      screen.getByRole("button", { name: "Actions for Priya Raman" })
-    )
+    await openActions(user, "Priya Raman")
 
-    expect(await screen.findByRole("menuitem", { name: "Disable" })).toHaveAttribute(
+    expect(
+      await screen.findByRole("menuitem", { name: "Disable" })
+    ).toHaveAttribute("aria-disabled", "true")
+    expect(screen.getByRole("menuitem", { name: "Delete" })).toHaveAttribute(
       "aria-disabled",
       "true"
     )
   })
 
-  it("saves edits through the API and reloads", async () => {
+  it("saves only the fields that changed and reloads", async () => {
     vi.mocked(updateUser).mockResolvedValue({ ...mei, role: "ADMIN" })
     const user = await renderList()
 
-    await user.click(
-      screen.getByRole("button", { name: "Actions for Mei Lin Tan" })
-    )
+    await openActions(user, "Mei Lin Tan")
     await user.click(await screen.findByRole("menuitem", { name: "Edit" }))
     const dialog = await screen.findByRole("dialog", { name: "Edit user" })
     expect(within(dialog).getByLabelText("Name")).toHaveValue("Mei Lin Tan")
-    expect(within(dialog).getByRole("switch", { name: "Status" })).not.toBeChecked()
+    expect(
+      within(dialog).getByRole("switch", { name: "Status" })
+    ).not.toBeChecked()
 
     await user.click(within(dialog).getByRole("combobox", { name: "Role" }))
     await user.click(await screen.findByRole("option", { name: "Admin" }))
-    await user.click(within(dialog).getByRole("button", { name: "Save changes" }))
+    await user.click(
+      within(dialog).getByRole("button", { name: "Save changes" })
+    )
 
     await waitFor(() =>
-      expect(updateUser).toHaveBeenCalledWith("u-mei", {
-        name: "Mei Lin Tan",
-        role: "ADMIN",
-        isActive: false,
-      })
+      expect(updateUser).toHaveBeenCalledWith("u-mei", { role: "ADMIN" })
     )
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
     expect(toast.success).toHaveBeenCalledWith(
       "Changes to Mei Lin Tan were saved."
     )
-    expect(listUsers).toHaveBeenCalledTimes(2)
+    await waitFor(() => expect(listUsers).toHaveBeenCalledTimes(2))
+  })
+
+  it("does not call the API when the edit changed nothing", async () => {
+    const user = await renderList()
+
+    await openActions(user, "Mei Lin Tan")
+    await user.click(await screen.findByRole("menuitem", { name: "Edit" }))
+    const dialog = await screen.findByRole("dialog", { name: "Edit user" })
+    await user.click(
+      within(dialog).getByRole("button", { name: "Save changes" })
+    )
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+    expect(updateUser).not.toHaveBeenCalled()
+    expect(toast.success).not.toHaveBeenCalled()
+  })
+
+  it("shows the API's reason in the edit dialog and keeps it open", async () => {
+    vi.mocked(updateUser).mockRejectedValue(
+      new ApiError(400, ["name must be shorter than 100 characters"])
+    )
+    const user = await renderList()
+
+    await openActions(user, "Mei Lin Tan")
+    await user.click(await screen.findByRole("menuitem", { name: "Edit" }))
+    const dialog = await screen.findByRole("dialog", { name: "Edit user" })
+    await user.type(within(dialog).getByLabelText("Name"), " Jr")
+    await user.click(
+      within(dialog).getByRole("button", { name: "Save changes" })
+    )
+
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "name must be shorter than 100 characters"
+    )
+    expect(listUsers).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("UsersList deleting users", () => {
+  async function startDelete(
+    user: ReturnType<typeof userEvent.setup>,
+    name = "Priya Raman"
+  ) {
+    await openActions(user, name)
+    await user.click(await screen.findByRole("menuitem", { name: "Delete" }))
+    return screen.findByRole("dialog", { name: `Delete ${name}?` })
+  }
+
+  it("asks first, then deletes, confirms and reloads", async () => {
+    vi.mocked(deleteUser).mockResolvedValue(undefined)
+    const user = await renderList()
+
+    const dialog = await startDelete(user)
+    expect(deleteUser).not.toHaveBeenCalled()
+    await user.click(
+      within(dialog).getByRole("button", { name: "Delete user" })
+    )
+
+    await waitFor(() => expect(deleteUser).toHaveBeenCalledWith("u-priya"))
+    expect(toast.success).toHaveBeenCalledWith("Priya Raman was deleted.")
+    await waitFor(() => expect(listUsers).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+  })
+
+  it("does nothing when cancelled", async () => {
+    const user = await renderList()
+
+    const dialog = await startDelete(user)
+    await user.click(within(dialog).getByRole("button", { name: "Cancel" }))
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+    expect(deleteUser).not.toHaveBeenCalled()
+  })
+
+  it("explains why the API refused and leaves the user in the list", async () => {
+    vi.mocked(deleteUser).mockRejectedValue(
+      new ApiError(409, ["At least one active admin is required"])
+    )
+    const user = await renderList()
+
+    const dialog = await startDelete(user, "Ada Admin")
+    await user.click(
+      within(dialog).getByRole("button", { name: "Delete user" })
+    )
+
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(
+      "At least one active admin is required"
+    )
+    expect(screen.getByText("Ada Admin")).toBeInTheDocument()
+    expect(listUsers).toHaveBeenCalledTimes(1)
+    // The dialog is usable again for another attempt.
+    expect(
+      within(dialog).getByRole("button", { name: "Delete user" })
+    ).toBeEnabled()
+  })
+
+  it("steps back a page when the last user on the last page is deleted", async () => {
+    let total = 11
+    vi.mocked(listUsers).mockImplementation(async (query) => ({
+      users: query.page === 2 ? [priya] : [mei, ada],
+      totalRecords: total,
+    }))
+    vi.mocked(deleteUser).mockResolvedValue(undefined)
+    renderWithQuery(<UsersList />)
+    const user = userEvent.setup()
+    await screen.findByText("Mei Lin Tan")
+    await user.click(screen.getByRole("button", { name: "Go to next page" }))
+    await screen.findByText("Priya Raman")
+
+    total = 10 // Priya was the only user on page two.
+    const dialog = await startDelete(user)
+    await user.click(
+      within(dialog).getByRole("button", { name: "Delete user" })
+    )
+
+    await waitFor(() => expect(lastQuery()).toMatchObject({ page: 1 }))
+    expect(await screen.findByText("Mei Lin Tan")).toBeInTheDocument()
   })
 })
 

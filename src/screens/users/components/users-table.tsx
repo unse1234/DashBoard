@@ -20,15 +20,9 @@ type UsersTableProps = {
   users: User[]
   /** True while the first page loads or a newer page is being fetched. */
   isLoading: boolean
-  /** Called after a row action (edit, enable, disable) has changed a user. */
-  onUserChanged: () => void
 }
 
-export function UsersTable({
-  users,
-  isLoading,
-  onUserChanged,
-}: UsersTableProps) {
+export function UsersTable({ users, isLoading }: UsersTableProps) {
   const isFirstLoad = isLoading && users.length === 0
 
   return (
@@ -57,13 +51,7 @@ export function UsersTable({
               </TableCell>
             </TableRow>
           ) : (
-            users.map((user) => (
-              <UserRow
-                key={user.uid}
-                user={user}
-                onUserChanged={onUserChanged}
-              />
-            ))
+            users.map((user) => <UserRow key={user.uid} user={user} />)
           )}
         </TableBody>
       </Table>
@@ -85,10 +73,9 @@ function SkeletonRows() {
 
 type UserRowProps = {
   user: User
-  onUserChanged: () => void
 }
 
-function UserRow({ user, onUserChanged }: UserRowProps) {
+function UserRow({ user }: UserRowProps) {
   return (
     <TableRow className="group/row [--row-tint:color-mix(in_oklab,var(--muted)_50%,var(--background))] hover:bg-(--row-tint) has-aria-expanded:bg-(--row-tint)">
       <TableCell className="font-mono text-xs text-muted-foreground">
@@ -126,7 +113,7 @@ function UserRow({ user, onUserChanged }: UserRowProps) {
           repeats the row's hover and menu-open tint, which is opaque so the
           cell hides what scrolls under it. */}
       <TableCell className="sticky right-0 bg-background text-right group-hover/row:bg-(--row-tint) group-has-aria-expanded/row:bg-(--row-tint)">
-        <UserActions user={user} onChanged={onUserChanged} />
+        <UserActions user={user} />
       </TableCell>
     </TableRow>
   )

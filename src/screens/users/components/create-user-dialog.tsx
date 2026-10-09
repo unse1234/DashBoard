@@ -24,7 +24,7 @@ import {
   createUserSchema,
   type CreateUserValues,
 } from "@/lib/users/user.schemas"
-import { UserFormFooter } from "@/screens/users/components/user-form-footer"
+import { DialogFormFooter } from "@/components/shared/dialog-form-footer"
 
 type CreateUserDialogProps = {
   /** Called with the validated values; the dialog closes once it resolves, and shows the error if it rejects. */
@@ -122,7 +122,7 @@ function CreateUserForm({ onSubmit, onSuccess }: CreateUserFormProps) {
             )}
           />
         </FieldGroup>
-        <UserFormFooter
+        <DialogFormFooter
           isSubmitting={isSubmitting}
           submitLabel="Create user"
           submittingLabel="Creating…"

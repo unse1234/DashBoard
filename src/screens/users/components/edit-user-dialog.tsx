@@ -25,7 +25,7 @@ import { describeApiError } from "@/lib/api/api-error"
 import { USER_ROLE_OPTIONS, USER_STATUS_LABELS } from "@/lib/users/user.constants"
 import { editUserSchema, type EditUserValues } from "@/lib/users/user.schemas"
 import type { User } from "@/lib/users/user.types"
-import { UserFormFooter } from "@/screens/users/components/user-form-footer"
+import { DialogFormFooter } from "@/components/shared/dialog-form-footer"
 
 type EditUserDialogProps = {
   user: User
@@ -173,7 +173,7 @@ function EditUserForm({
             </FieldDescription>
           )}
         </FieldGroup>
-        <UserFormFooter
+        <DialogFormFooter
           isSubmitting={isSubmitting}
           submitLabel="Save changes"
           submittingLabel="Saving…"

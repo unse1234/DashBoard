@@ -2,17 +2,17 @@ import { Button } from "@/components/ui/button"
 import { DialogClose, DialogFooter } from "@/components/ui/dialog"
 import { Spinner } from "@/components/ui/spinner"
 
-type UserFormFooterProps = {
+type DialogFormFooterProps = {
   isSubmitting: boolean
   submitLabel: string
   submittingLabel: string
 }
 
-export function UserFormFooter({
+export function DialogFormFooter({
   isSubmitting,
   submitLabel,
   submittingLabel,
-}: UserFormFooterProps) {
+}: DialogFormFooterProps) {
   return (
     <DialogFooter>
       <DialogClose render={<Button type="button" variant="outline" />}>
