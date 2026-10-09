@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { SortableTableHead } from "@/components/shared/sortable-table-head"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -20,23 +21,30 @@ import { getCustomerRoute } from "@/lib/routes"
 import { CustomerActions } from "@/screens/customers/components/customer-actions"
 
 const COLUMN_COUNT = 8
+const SKELETON_ROW_COUNT = 5
 
 // Phone is the widest column and the one scanned least, so it only appears once
 // the table has room for it; otherwise it would push Joined under the pinned
 // Actions column. The number is still on the details page and still searchable.
 const PHONE_COLUMN_CLASS = "hidden @6xl:table-cell"
+const PHONE_COLUMN_INDEX = 3
 
 type CustomersTableProps = {
   customers: Customer[]
+  /** True while the first page loads or a newer page is being fetched. */
+  isLoading: boolean
   sort: CustomerSort | null
   onSortChange: (column: CustomerSortColumn) => void
 }
 
 export function CustomersTable({
   customers,
+  isLoading,
   sort,
   onSortChange,
 }: CustomersTableProps) {
+  const isFirstLoad = isLoading && customers.length === 0
+
   function getSortProps(column: CustomerSortColumn) {
     return {
       direction: sort?.column === column ? sort.direction : null,
@@ -46,7 +54,7 @@ export function CustomersTable({
 
   return (
     <div className="@container overflow-hidden rounded-lg border">
-      <Table>
+      <Table aria-busy={isLoading}>
         <TableHeader className="bg-muted">
           <TableRow className="hover:bg-transparent">
             <SortableTableHead label="Customer ID" {...getSortProps("id")} />
@@ -69,8 +77,10 @@ export function CustomersTable({
             </TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {customers.length === 0 ? (
+        <TableBody className={isLoading && !isFirstLoad ? "opacity-60" : ""}>
+          {isFirstLoad ? (
+            <SkeletonRows />
+          ) : customers.length === 0 ? (
             <TableRow className="hover:bg-transparent">
               <TableCell colSpan={COLUMN_COUNT} className="h-40 text-center">
                 <p className="font-medium">No customers found</p>
@@ -88,6 +98,21 @@ export function CustomersTable({
       </Table>
     </div>
   )
+}
+
+function SkeletonRows() {
+  return Array.from({ length: SKELETON_ROW_COUNT }, (_, row) => (
+    <TableRow key={row} className="hover:bg-transparent">
+      {Array.from({ length: COLUMN_COUNT }, (_, cell) => (
+        <TableCell
+          key={cell}
+          className={cell === PHONE_COLUMN_INDEX ? PHONE_COLUMN_CLASS : ""}
+        >
+          <Skeleton className="h-4 w-full max-w-32" />
+        </TableCell>
+      ))}
+    </TableRow>
+  ))
 }
 
 function CustomerRow({ customer }: { customer: Customer }) {

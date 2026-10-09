@@ -1,26 +1,17 @@
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { PageContent } from "@/components/dashboard/page-content"
-import type { Customer } from "@/lib/customers/customer.types"
 import { CustomersList } from "@/screens/customers/components/customers-list"
+import { CustomersTotal } from "@/screens/customers/components/customers-total"
 
-type CustomersScreenProps = {
-  customers: Customer[]
-  totalRecords: number
-}
-
-export function CustomersScreen({
-  customers,
-  totalRecords,
-}: CustomersScreenProps) {
+export function CustomersScreen() {
   return (
     <>
       <DashboardHeader title="Customers" />
       <PageContent>
         <p className="text-sm text-muted-foreground">
-          Review your customers and what they have ordered. {totalRecords}{" "}
-          customers in total.
+          Review your customers and what they have ordered. <CustomersTotal />
         </p>
-        <CustomersList customers={customers} totalRecords={totalRecords} />
+        <CustomersList />
       </PageContent>
     </>
   )

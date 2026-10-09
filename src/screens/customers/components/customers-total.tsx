@@ -1,0 +1,18 @@
+"use client"
+
+import { useCustomersQuery } from "@/lib/customers/customer.queries"
+import { defaultCustomersQuery } from "@/lib/customers/customer.query"
+
+/**
+ * How many customers there are in all, whatever the list is searching for.
+ * It asks for the list's opening page, so on arrival it shares that request
+ * and its cache entry instead of making one of its own. Nothing is shown until
+ * the count is known.
+ */
+export function CustomersTotal() {
+  const { data } = useCustomersQuery(defaultCustomersQuery)
+
+  if (!data) return null
+
+  return <>{data.totalRecords} customers in total.</>
+}

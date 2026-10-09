@@ -1,9 +1,5 @@
 import type { Metadata } from "next"
 
-import {
-  mockCustomers,
-  mockTotalCustomers,
-} from "@/lib/customers/customer.mock-data"
 import { CustomersScreen } from "@/screens/customers"
 
 export const metadata: Metadata = {
@@ -11,10 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function CustomersPage() {
-  return (
-    <CustomersScreen
-      customers={mockCustomers}
-      totalRecords={mockTotalCustomers}
-    />
-  )
+  return <CustomersScreen />
 }
