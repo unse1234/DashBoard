@@ -1,195 +1,133 @@
 # Dashboard
 
-Next.js (App Router) · TypeScript · Tailwind CSS v4 · shadcn/ui (Base UI) · Vitest
+Next.js App Router · React · TypeScript · Tailwind CSS v4 · shadcn/ui (Base UI) · TanStack Query · Axios · Vitest
 
-## Scripts
+## Development
+
+Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_API_URL` to the backend base URL. The development fallback is `http://localhost:3001`; production builds require an explicit value. This public variable is embedded at build time, so rebuild after changing it.
 
 ```bash
-npm run dev       # start the dev server on http://localhost:3000
-npm run build     # production build (also type-checks)
-npm run lint      # ESLint
-npm run test      # Vitest in watch mode (test:run for a single run)
+npm run dev                    # development server on http://localhost:3000
+npx tsc --noEmit                # TypeScript check; there is no typecheck package script
+npm run lint                   # ESLint
+npm run test                   # Vitest watch mode
+npm run test:run               # full test suite
+npm run test:run -- --maxWorkers=1 # lower test concurrency when resources are limited
+npm run build                  # production build, including route generation/type checking
+npm run start                  # serve the production build
 ```
 
-## Routes
+## Architecture
 
-| Path               | Description                                  |
-| ------------------ | -------------------------------------------- |
-| `/`                | Redirects to `/login`                        |
-| `/login`           | Log in                                       |
-| `/register`        | Create an account                            |
-| `/forgot-password` | Request a password reset link                |
-| `/reset-password`  | Set a new password                           |
-| `/dashboard`       | Dashboard overview                           |
-| `/dashboard/users` | User management list                         |
-| `/dashboard/users/[userId]` | User details                        |
-| `/dashboard/products` | Product management list                   |
-| `/dashboard/products/new` | Add a product                         |
-| `/dashboard/products/[productId]` | Product details               |
-| `/dashboard/products/[productId]/edit` | Edit a product           |
-| `/dashboard/orders` | Order list                              |
-| `/dashboard/orders/[orderId]` | Order details                 |
-| `/dashboard/customers` | Customer list                        |
-| `/dashboard/customers/[customerId]` | Customer details        |
-| `/dashboard/imports` | Product CSV import center              |
-| `/dashboard/imports/[jobId]` | Import job details              |
+API integration has three layers:
 
-Paths are defined once in `src/lib/routes.ts`. `typedRoutes` is enabled, so links to routes that don't exist fail type-checking.
-
-## Structure
+1. **Fetching — services:** plain async functions call the shared Axios client, adapt API payloads, and return typed data. They do not import React, query hooks, or screens.
+2. **Caching — hooks:** TanStack Query queries, keys, and mutations manage server data, pending/error state, cache updates, and invalidation.
+3. **Presentation — screens:** screen entry points, forms, tables, filters, and loading/error/empty states consume hooks. Local search/filter/selection state stays here.
 
 ```text
 src/
-├── app/
-│   ├── layout.tsx           # root layout, fonts, title template
-│   ├── page.tsx             # "/" → redirect
-│   ├── (auth)/              # route group sharing the auth layout
-│   │   ├── layout.tsx
-│   │   ├── login/
-│   │   ├── register/
-│   │   ├── forgot-password/
-│   │   └── reset-password/
-│   └── (dashboard)/         # route group sharing the sidebar shell
-│       ├── layout.tsx
-│       └── dashboard/
-│           ├── users/       # list and [userId] details
-│           ├── products/    # list, new, [productId] details and edit
-│           ├── orders/      # list and [orderId] details
-│           ├── customers/   # list and [customerId] details
-│           └── imports/     # import center and [jobId] details
-├── components/
-│   ├── ui/                  # shadcn/ui components
-│   ├── auth/                # auth shell, forms and form primitives
-│   ├── dashboard/           # sidebar, header and overview widgets
-│   ├── users/               # user management table, dialogs and details
-│   ├── products/            # product list, form and details
-│   ├── orders/              # order list, status control and details
-│   ├── customers/           # customer list, details, addresses and recent orders
-│   ├── imports/             # CSV upload, import job list and job details
-│   └── shared/              # app-wide components (e.g. the logo)
-├── hooks/
-└── lib/
-    ├── app.constants.ts
-    ├── routes.ts
-    ├── pagination.ts
-    ├── sort.ts
-    ├── format-date.ts
-    ├── format-number.ts
-    ├── format-duration.ts
-    ├── format-file-size.ts
-    ├── auth/                # form state types and validation
-    ├── users/               # user types, zod schemas and mock data
-    ├── products/            # product types, zod schema and mock data
-    ├── orders/              # order types, query helper and mock data
-    ├── customers/           # customer types, query helper and mock data
-    └── imports/             # import job types, file validation and mock data
+├── app/                         # route pages, layouts, metadata, parameters, boundaries
+│   ├── (auth)/                  # login, forgot-password, reset-password, verify-email
+│   └── (dashboard)/dashboard/   # overview, users, products, customers, orders, imports
+├── services/                    # typed HTTP functions and their API tests
+│   ├── auth/auth.api.ts
+│   ├── users/user.api.ts
+│   ├── products/product.api.ts  # products, categories, and product history
+│   ├── customers/customer.api.ts
+│   └── orders/order.api.ts
+├── hooks/                       # query keys, query hooks, mutation hooks, and tests
+│   ├── auth/                    # use-auth.ts and auth.mutations.ts
+│   ├── users/                   # user.keys/queries/mutations.ts
+│   ├── products/                # product.keys/queries/mutations.ts
+│   ├── customers/               # customer.keys/queries.ts; read-only
+│   ├── orders/                  # order.keys/queries/mutations.ts
+│   ├── use-debounced-value.ts
+│   └── use-mobile.ts
+├── screens/                     # screen entry points and feature-specific UI/tests
+│   ├── auth/actions/            # auth form-action adapters and tests
+│   ├── overview/
+│   ├── users/user.filters.ts
+│   ├── products/product.filters.ts
+│   ├── customers/customer.filters.ts
+│   ├── orders/order.filters.ts
+│   └── imports/
+├── components/                  # reusable presentation components
+│   ├── auth/                    # guards, auth shell/form, local form controller
+│   ├── dashboard/               # sidebar, navigation, profile dialog, header
+│   ├── shared/                  # form controls, confirmation, pagination, load errors
+│   └── ui/                      # shadcn/Base UI primitives
+├── types/                       # shared domain, form, navigation, pagination, sort types
+├── utils/                       # cn.ts, formatters, pagination, sort, pure domain helpers
+├── constants/                   # domain labels/options, password policy, page sizes
+├── validations/                 # auth validation, user/product Zod schemas, CSV validation
+├── config/                      # app.constants.ts and routes.ts
+├── lib/                         # shared infrastructure only
+│   ├── api/                     # Axios client, base URL resolution, normalized API errors
+│   ├── auth/                    # in-memory session/token store and infrastructure tests
+│   └── query/                   # QueryClient policy and account cache cleanup
+├── providers/                   # query-provider.tsx and session-restorer.tsx
+├── mocks/                       # existing demo data only
+│   ├── overview/data.json
+│   └── imports/import.mock-data.ts
+└── test-utils/                  # fixtures, fake Axios transport, query rendering helpers
 ```
 
-Auth forms are UI-only. Each accepts an optional `action` prop with the
-`AuthFormAction` signature (`src/lib/auth/form-state.ts`), so a Server Action can
-be passed in from the page when backend auth is added.
+The `@/*` alias resolves to `src/*`. shadcn's utility alias resolves to `@/utils/cn`; other shadcn aliases and Base UI styling remain unchanged. Import concrete modules directly rather than adding compatibility barrels at obsolete paths.
 
-## User management
+Shared types live in `types/`, including schema-derived form values and API page results. Component-specific props and JSX renderers remain beside their components. Utilities and constants must not depend on presentation components. Transport-specific private response types may stay beside their service implementation.
 
-The users module is UI-only and runs on mock data (`src/lib/users/user.mock-data.ts`).
-Search, the status filter, sorting and pagination are controlled by one `UsersQuery`
-held in `UsersList`; they do not change the rows yet. To connect an API, send that query
-(or write it to the URL) and pass the returned `users` and `totalRecords` back in.
+List defaults are screen-local `*.filters.ts` files. Existing exports such as `defaultProductsQuery` retain their names. `*.queries.ts`, `*.keys.ts`, and `*.mutations.ts` live under the relevant `hooks/<module>/` folder.
 
-The create and edit dialogs use react-hook-form with the zod schemas in
-`src/lib/users/user.schemas.ts` and accept an optional `onSubmit`. Disable / Enable in the
-row menu is not wired up.
+## Routes
 
-## Product management
+| Path | Screen |
+| --- | --- |
+| `/` | Redirects to `/dashboard`; the auth guard then handles access |
+| `/login` | Sign in |
+| `/forgot-password` | Request a password reset link |
+| `/reset-password` | Set a password from a reset/invitation token |
+| `/verify-email` | Verify an emailed token or request another email |
+| `/dashboard` | Overview |
+| `/dashboard/users` | User management |
+| `/dashboard/users/[userId]` | User details |
+| `/dashboard/products` | Product list |
+| `/dashboard/products/new` | Create product |
+| `/dashboard/products/[productId]` | Product details |
+| `/dashboard/products/[productId]/edit` | Edit product |
+| `/dashboard/customers` | Customer list |
+| `/dashboard/customers/[customerId]` | Customer details |
+| `/dashboard/orders` | Order list |
+| `/dashboard/orders/[orderId]` | Order details |
+| `/dashboard/imports` | Product CSV import center |
+| `/dashboard/imports/[jobId]` | Import job details |
 
-The products module is UI-only and runs on mock data (`src/lib/products/product.mock-data.ts`).
-It follows the users module: search, the category and status filters and pagination are
-controlled by one `ProductsQuery` held in `ProductsList`, and they do not change the rows yet.
-To connect an API, send that query (or write it to the URL) and pass the returned `products`
-and `totalRecords` back in. Row selection is local to the list; Export and Delete in the bulk
-actions bar are not connected.
+Route constants and ID-encoding helpers live in `src/config/routes.ts`. `typedRoutes` remains enabled. Route groups organize layouts without changing URLs. Accounts are invited by administrators; there is no self-service registration route.
 
-A product's `status` is what an admin sets (`active` or `inactive`). "Out of Stock" is derived
-from `stock` by `getProductDisplayStatus`, so the two can't contradict each other; an inactive
-product shows as Inactive whatever its stock.
+## Session and cache infrastructure
 
-Create and edit share `ProductForm`, which uses react-hook-form with `productFormSchema`.
-The amount fields are typed as text and the schema converts them to numbers, so
-`ProductFormValues` (the schema's output) is shaped like a product. `ProductForm` accepts an
-optional `onSubmit`; until one is passed, a valid submission only shows a "Nothing was saved"
-notice. The history on the details page and the Analytics tab placeholder are mock-only.
+`app/layout.tsx` mounts `QueryProvider`, then `SessionRestorer` followed by page content inside that provider. The toast container remains outside the provider at the root so feedback survives navigation away from the dashboard.
 
-## Product imports
+The access token lives in the auth store's memory. Page loads restore it using the HttpOnly refresh cookie. Concurrent refresh callers share one refresh operation; the existing refresh-race retry and expiry policy remain in the store. Axios attaches bearer tokens and replays an authenticated request once after a successful refresh. Public auth endpoints skip bearer authentication; cookie endpoints keep their credential and CSRF-header settings.
 
-The imports module is UI-only and runs on mock data (`src/lib/imports/import.mock-data.ts`). It
-only handles product CSV files.
+Auth mutations call the session infrastructure for sign-in/sign-out and the auth service for recovery/verification. Form-action adapters in `screens/auth/actions/` turn submitted data and mutation results into form state. They are client callbacks, not Next.js Server Actions; moving them does not add a `"use server"` directive.
 
-`ImportUpload` lets an admin pick a file or drop one on the box, and checks it against
-`validateImportFile` (a `.csv` name, at most 10 MB; dropping several files is refused). The chosen
-`File` stays in that component's state: nothing is uploaded or read. The job list is split into
-Processing, Queued, Completed and Failed tabs by `groupImportsByStatus`, and
-`/dashboard/imports/[jobId]` shows one job with its progress, failed rows, job information and
-timeline. Progress and duration are derived from the job's row counts and timestamps
-(`getImportProgress`, `getImportDurationSeconds`), and `ImportProgress` only displays the 0 to 100
-value it is given. A failed job is one that finished with rows that could not be imported.
+TanStack Query owns server data. Its existing query-key values, stale times, retry policy, mutation behavior, and invalidations are preserved. Account changes cancel outstanding requests and clear cached data. Role and email-verification guards remain in `components/auth/`.
 
-To connect an API, pass the jobs and, for the details page, the failed rows in place of the mock
-data; the job list only needs `sampleErrors` per job. Every action that needs the backend (Cancel,
-Retry, Error Report, the downloads, Export Errors, Retry Failed, the CSV template and the Import
-button next to the file picker, which is only enabled once a valid file is chosen) is an
-`ImportActionButton`. Without an `onAction` it shows a "Not available yet" notice instead of
-pretending to work. To start an import, give the Import button in `ImportUpload` the upload call;
-the chosen file is already in that component's state.
+## Feature integration
 
-## Customer management
+| Module | Current data source and behavior |
+| --- | --- |
+| Authentication | Backend login, refresh/logout, recovery, verification, and resend |
+| Users | Backend list/details, invitations, edits, enable/disable/delete, and profile name |
+| Products | Backend list/details/categories/history, create/edit, and bulk archive |
+| Customers | Read-only backend list/details with addresses and recent orders |
+| Orders | Existing backend list/details, status updates, and payment recording |
+| Imports | Existing mock jobs/failed rows; CSV file selection and validation |
+| Overview | Existing demo cards/chart and table rows from `mocks/overview/data.json` |
 
-The customers module is UI-only and runs on mock data (`src/lib/customers/customer.mock-data.ts`,
-and the latest orders in `customer-order.mock-data.ts`). Customers can be listed and viewed; there is
-no creating, editing, deleting, or enabling and disabling.
+The Orders API integration already present before this structural refactor is preserved. Imports retain their existing lookup, missing-job boundary, and unavailable-action notices. Product analytics and product export remain unconnected. No additional integration is introduced by the folder moves.
 
-It follows the users module: search, sorting and pagination are controlled by one `CustomersQuery`
-held in `CustomersList`, and they do not change the rows yet. `mockCustomers` stands in for one page
-of results (ten rows) and `mockTotalCustomers` for the total; the other mock customers only exist so
-their details pages open. To connect an API, send that query (or write it to the URL) and pass the
-returned `customers` and `totalRecords` back in. The sort cycle and the sortable header are shared
-with users (`lib/sort.ts`, `components/shared/sortable-table-head.tsx`). Customers have no status,
-so there is no status column, filter or toggle.
+## Tests
 
-A customer's `totalOrders`, `totalSpent` and `lastOrderAt` come with the customer, as the API will
-report them, and are not worked out from the orders on the details page. Those are a
-`CustomerOrderSummary`, the few fields the page needs, for the latest `RECENT_ORDERS_LIMIT` orders;
-the Orders module can replace it with its own order type. Order IDs are plain text until there is an
-order details route to link to. Cancelled orders count towards `totalOrders` but not `totalSpent`,
-and a test (`customer.mock-data.test.ts`) keeps each customer's summary in step with their listed
-orders. Addresses are read-only, grouped as shipping and billing.
-
-The Phone column only shows when the table is wide enough for it (a container query in
-`CustomersTable`), so the table fits common laptop screens without scrolling sideways.
-
-## Order management
-
-The orders module is UI-only and runs on mock data (`src/lib/orders/order.mock-data.ts`). Orders can
-be listed and opened; there is no creating, editing or deleting, and no payment, refund, shipping or
-invoice handling.
-
-It follows the users module: search, the order and payment status filters, sorting and pagination
-are controlled by one `OrdersQuery` held in `OrdersList`, and they do not change the rows yet.
-`mockOrders` stands in for one page of results (ten rows) and `mockTotalOrders` for the total; the
-other mock orders only exist so their details pages open. To connect an API, send that query (or
-write it to the URL) and pass the returned `orders` and `totalRecords` back in. The Items column
-counts units, not lines.
-
-An order is its own snapshot: `OrderCustomer`, the two `OrderAddress`es and each `OrderItem`'s name,
-SKU and price are copied onto it, as an API would store them, so the module does not import the
-Customers or Products types. The IDs are the same, though. The customer's name on the details page
-links to `/dashboard/customers/[customerId]` and each product to `/dashboard/products/[productId]`,
-and every mock order is also one of that customer's recent orders in
-`lib/customers/customer-order.mock-data.ts`, with the same date, status and total. The mock data
-works the item totals, subtotal and total out from the lines (`order.mock-data.ts`), and
-`order.mock-data.test.ts` checks that they agree.
-
-The details page has a status control (`OrderStatusControl`): choose a status and press Update. It
-offers every status, because which moves are allowed is for the API to decide, and nothing is saved.
-Without an `onStatusChange` the button shows a "Not available yet" notice instead of pretending the
-status changed. To connect the API, pass `onStatusChange` from `OrderDetailsHeader` (the page then
-gets the new status back from the server). The payment status is shown, never changed.
+Tests remain beside the code they exercise, including moved API, query, mutation, utility, validation, provider, and adapter tests. `src/test-utils/` holds shared fixtures and rendering helpers. Its fake Axios transport preserves real interceptors and error normalization while preventing network access.
