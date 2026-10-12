@@ -4,8 +4,8 @@ import type { ReactNode } from "react"
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
-import { toast } from "sonner"
 
+import { AuthFormMessage } from "@/components/auth/auth-form"
 import { FormField } from "@/components/shared/form-field"
 import { FormSelectField } from "@/components/shared/form-select-field"
 import { FormTextareaField } from "@/components/shared/form-textarea-field"
@@ -19,16 +19,17 @@ import {
 } from "@/components/ui/card"
 import { FieldGroup } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
+import { describeApiError, isApiError } from "@/lib/api/api-error"
 import {
-  PRODUCT_CATEGORY_OPTIONS,
   PRODUCT_STATUS_OPTIONS,
+  SKU_TAKEN_MESSAGE,
 } from "@/lib/products/product.constants"
 import {
   productFormSchema,
   type ProductFormInput,
   type ProductFormValues,
 } from "@/lib/products/product.schemas"
-import type { Product } from "@/lib/products/product.types"
+import type { Category, Product } from "@/lib/products/product.types"
 import { getProductRoute, routes } from "@/lib/routes"
 import { cn } from "@/lib/utils"
 
@@ -37,7 +38,7 @@ const emptyValues: ProductFormInput = {
   sku: "",
   brand: "",
   description: "",
-  category: "",
+  categoryId: "",
   status: "active",
   price: "",
   costPrice: "",
@@ -50,7 +51,7 @@ function getDefaultValues(product: Product): ProductFormInput {
     sku: product.sku,
     brand: product.brand ?? "",
     description: product.description ?? "",
-    category: product.category,
+    categoryId: product.categoryId,
     status: product.status,
     price: product.price.toFixed(2),
     costPrice: product.costPrice === null ? "" : product.costPrice.toFixed(2),
@@ -58,17 +59,40 @@ function getDefaultValues(product: Product): ProductFormInput {
   }
 }
 
+/** The error type of a save that was refused because the product had changed. */
+const STALE_ERROR_TYPE = "stale"
+
 type ProductFormProps = {
   /** The product to edit; leave out to create a new one. */
   product?: Product
-  /** Called with the validated values. Until it is connected to an API, a valid submission is only acknowledged. */
-  onSubmit?: (values: ProductFormValues) => void | Promise<void>
+  /** The options of the category field. */
+  categories: Category[]
+  /**
+   * Saves the validated values. If it rejects, the form shows why: a taken SKU
+   * on the SKU field, anything else above the form.
+   */
+  onSubmit: (values: ProductFormValues) => Promise<void>
+  /**
+   * Loads the product's current details again. Offered when a save was refused
+   * because someone else changed the product; the form then starts over from
+   * what was loaded.
+   */
+  onReload?: () => void
 }
 
-export function ProductForm({ product, onSubmit }: ProductFormProps) {
+export function ProductForm({
+  product,
+  categories,
+  onSubmit,
+  onReload,
+}: ProductFormProps) {
   const isEditing = product !== undefined
   const submitLabel = isEditing ? "Update Product" : "Create Product"
   const submittingLabel = isEditing ? "Updating…" : "Creating…"
+  const categoryOptions = categories.map(({ id, name }) => ({
+    value: id,
+    label: name,
+  }))
   const form = useForm<ProductFormInput, unknown, ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     defaultValues: product ? getDefaultValues(product) : emptyValues,
@@ -76,14 +100,25 @@ export function ProductForm({ product, onSubmit }: ProductFormProps) {
   const { errors, isSubmitting } = form.formState
 
   async function submit(values: ProductFormValues) {
-    if (onSubmit) {
+    try {
       await onSubmit(values)
-      return
+    } catch (error) {
+      if (!isApiError(error) || error.status !== 409) {
+        form.setError("root", { message: describeApiError(error) })
+      } else if (error.message === SKU_TAKEN_MESSAGE) {
+        form.setError(
+          "sku",
+          { message: "Another product already uses this SKU." },
+          { shouldFocus: true }
+        )
+      } else {
+        // The only other conflict is a product that changed since it was loaded.
+        form.setError("root", {
+          type: STALE_ERROR_TYPE,
+          message: describeApiError(error),
+        })
+      }
     }
-
-    toast.info("Nothing was saved", {
-      description: "The details are valid, but saving isn't connected yet.",
-    })
   }
 
   return (
@@ -92,6 +127,24 @@ export function ProductForm({ product, onSubmit }: ProductFormProps) {
         disabled={isSubmitting}
         className="flex min-w-0 flex-col gap-4 md:gap-6"
       >
+        {errors.root && (
+          <div className="flex flex-col items-start gap-2">
+            <div className="w-full">
+              <AuthFormMessage status="error" message={errors.root.message} />
+            </div>
+            {errors.root.type === STALE_ERROR_TYPE && onReload && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onReload}
+              >
+                Reload product
+              </Button>
+            )}
+          </div>
+        )}
+
         <ProductFormSection
           title="Basic information"
           description="What the product is called and how it is identified."
@@ -133,7 +186,7 @@ export function ProductForm({ product, onSubmit }: ProductFormProps) {
           <div className="grid gap-5 @lg:grid-cols-2">
             <Controller
               control={form.control}
-              name="category"
+              name="categoryId"
               render={({ field }) => (
                 <FormSelectField
                   name={field.name}
@@ -142,11 +195,11 @@ export function ProductForm({ product, onSubmit }: ProductFormProps) {
                   onValueChange={field.onChange}
                   onBlur={field.onBlur}
                   label="Category"
-                  options={PRODUCT_CATEGORY_OPTIONS}
+                  options={categoryOptions}
                   placeholder="Select a category"
                   required
                   disabled={isSubmitting}
-                  error={errors.category?.message}
+                  error={errors.categoryId?.message}
                 />
               )}
             />

@@ -69,7 +69,7 @@ export const productFormSchema = z.object({
   sku: skuSchema,
   brand: optionalTextSchema("Brand", BRAND_MAX_LENGTH),
   description: optionalTextSchema("Description", DESCRIPTION_MAX_LENGTH),
-  category: z.string().min(1, "Select a category."),
+  categoryId: z.string().min(1, "Select a category."),
   status: z.enum(["active", "inactive"], "Select a status."),
   price: z
     .string()

@@ -1,27 +1,17 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
 
-import { getMockProductById } from "@/lib/products/product.mock-data"
 import { EditProductScreen } from "@/screens/products/edit"
 
-type EditProductPageProps = PageProps<"/dashboard/products/[productId]/edit">
-
-export async function generateMetadata({
-  params,
-}: EditProductPageProps): Promise<Metadata> {
-  const { productId } = await params
-  const product = getMockProductById(productId)
-
-  return { title: product ? `Edit ${product.name}` : "Product not found" }
+// The product is loaded in the browser (the API needs the signed-in token), so
+// the title cannot include its name.
+export const metadata: Metadata = {
+  title: "Edit product",
 }
 
 export default async function EditProductPage({
   params,
-}: EditProductPageProps) {
+}: PageProps<"/dashboard/products/[productId]/edit">) {
   const { productId } = await params
-  const product = getMockProductById(productId)
 
-  if (!product) notFound()
-
-  return <EditProductScreen product={product} />
+  return <EditProductScreen productId={productId} />
 }

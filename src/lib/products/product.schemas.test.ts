@@ -8,7 +8,7 @@ const validInput: ProductFormInput = {
   sku: "AUD-ANC-500",
   brand: "Soundcraft",
   description: "Wireless over-ear headphones.",
-  category: "Electronics",
+  categoryId: "cat-electronics",
   status: "active",
   price: "249.00",
   costPrice: "138.50",
@@ -38,7 +38,7 @@ describe("productFormSchema", () => {
       sku: "AUD-ANC-500",
       brand: "Soundcraft",
       description: "Wireless over-ear headphones.",
-      category: "Electronics",
+      categoryId: "cat-electronics",
       status: "active",
       price: 249,
       costPrice: 138.5,
@@ -84,7 +84,9 @@ describe("productFormSchema", () => {
     })
 
     it("can't contain spaces or be too long", () => {
-      expect(getErrors({ sku: "AUD 500" }).sku).toBe("SKU can't contain spaces.")
+      expect(getErrors({ sku: "AUD 500" }).sku).toBe(
+        "SKU can't contain spaces."
+      )
       expect(getErrors({ sku: "A".repeat(65) }).sku).toBe(
         "SKU must be 64 characters or fewer."
       )
@@ -107,7 +109,9 @@ describe("productFormSchema", () => {
 
   describe("category and status", () => {
     it("requires a category", () => {
-      expect(getErrors({ category: "" }).category).toBe("Select a category.")
+      expect(getErrors({ categoryId: "" }).categoryId).toBe(
+        "Select a category."
+      )
     })
 
     it("only accepts active or inactive", () => {
@@ -197,8 +201,8 @@ describe("productFormSchema", () => {
   it("reports every invalid field at once", () => {
     expect(
       Object.keys(
-        getErrors({ name: "", sku: "", category: "", price: "", stock: "" })
+        getErrors({ name: "", sku: "", categoryId: "", price: "", stock: "" })
       )
-    ).toEqual(["name", "sku", "category", "price", "stock"])
+    ).toEqual(["name", "sku", "categoryId", "price", "stock"])
   })
 })

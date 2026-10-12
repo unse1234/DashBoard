@@ -1,13 +1,22 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { toast } from "sonner"
 
-import { getMockProductById } from "@/lib/products/product.mock-data"
+import { ApiError } from "@/lib/api/api-error"
+import { SKU_TAKEN_MESSAGE } from "@/lib/products/product.constants"
 import { ProductForm } from "@/screens/products/components/product-form"
-
-vi.mock("sonner", () => ({ toast: { info: vi.fn() } }))
+import { categoryFixtures, createProduct } from "@/test-utils/product-fixtures"
 
 const user = userEvent.setup()
+
+function renderForm(
+  props: Partial<React.ComponentProps<typeof ProductForm>> = {}
+) {
+  const onSubmit = props.onSubmit ?? vi.fn().mockResolvedValue(undefined)
+  render(
+    <ProductForm categories={categoryFixtures} onSubmit={onSubmit} {...props} />
+  )
+  return { onSubmit }
+}
 
 async function chooseOption(selectName: string, optionName: string) {
   await user.click(screen.getByRole("combobox", { name: selectName }))
@@ -28,14 +37,16 @@ afterEach(() => {
 
 describe("ProductForm (create)", () => {
   it("groups the fields into labelled sections", () => {
-    render(<ProductForm />)
+    renderForm()
 
     for (const heading of [
       "Basic information",
       "Categorization",
       "Pricing and inventory",
     ]) {
-      expect(screen.getByRole("heading", { level: 2, name: heading })).toBeInTheDocument()
+      expect(
+        screen.getByRole("heading", { level: 2, name: heading })
+      ).toBeInTheDocument()
     }
     for (const label of [
       "Product Name",
@@ -48,12 +59,16 @@ describe("ProductForm (create)", () => {
     ]) {
       expect(screen.getByLabelText(label)).toBeInTheDocument()
     }
-    expect(screen.getByRole("combobox", { name: "Category" })).toBeInTheDocument()
-    expect(screen.getByRole("combobox", { name: "Status" })).toHaveTextContent("Active")
+    expect(
+      screen.getByRole("combobox", { name: "Category" })
+    ).toBeInTheDocument()
+    expect(screen.getByRole("combobox", { name: "Status" })).toHaveTextContent(
+      "Active"
+    )
   })
 
   it("links Cancel back to the products list", () => {
-    render(<ProductForm />)
+    renderForm()
 
     expect(screen.getByRole("link", { name: "Cancel" })).toHaveAttribute(
       "href",
@@ -62,17 +77,26 @@ describe("ProductForm (create)", () => {
   })
 
   it("starts empty with a category to choose", () => {
-    render(<ProductForm />)
+    renderForm()
 
     expect(screen.getByLabelText("Product Name")).toHaveValue("")
-    expect(screen.getByRole("combobox", { name: "Category" })).toHaveTextContent(
-      "Select a category"
-    )
+    expect(
+      screen.getByRole("combobox", { name: "Category" })
+    ).toHaveTextContent("Select a category")
+  })
+
+  it("offers the categories it was given", async () => {
+    renderForm()
+
+    await user.click(screen.getByRole("combobox", { name: "Category" }))
+
+    for (const { name } of categoryFixtures) {
+      expect(await screen.findByRole("option", { name })).toBeInTheDocument()
+    }
   })
 
   it("shows an error for every missing required field and does not submit", async () => {
-    const onSubmit = vi.fn()
-    render(<ProductForm onSubmit={onSubmit} />)
+    const { onSubmit } = renderForm()
 
     await user.click(screen.getByRole("button", { name: "Create Product" }))
 
@@ -85,7 +109,7 @@ describe("ProductForm (create)", () => {
   })
 
   it("ties each error to its field", async () => {
-    render(<ProductForm />)
+    renderForm()
 
     await user.click(screen.getByRole("button", { name: "Create Product" }))
 
@@ -95,7 +119,7 @@ describe("ProductForm (create)", () => {
   })
 
   it("rejects negative amounts and fractional stock", async () => {
-    render(<ProductForm />)
+    renderForm()
 
     await fillRequiredFields()
     await user.clear(screen.getByLabelText("Selling Price (USD)"))
@@ -108,15 +132,16 @@ describe("ProductForm (create)", () => {
     expect(
       await screen.findByText("Selling price must not be negative.")
     ).toBeInTheDocument()
-    expect(screen.getByText("Cost price must not be negative.")).toBeInTheDocument()
+    expect(
+      screen.getByText("Cost price must not be negative.")
+    ).toBeInTheDocument()
     expect(
       screen.getByText("Stock quantity must be a whole number.")
     ).toBeInTheDocument()
   })
 
   it("passes the validated, converted values to onSubmit", async () => {
-    const onSubmit = vi.fn()
-    render(<ProductForm onSubmit={onSubmit} />)
+    const { onSubmit } = renderForm()
 
     await fillRequiredFields()
     await user.click(screen.getByRole("button", { name: "Create Product" }))
@@ -127,34 +152,101 @@ describe("ProductForm (create)", () => {
       sku: "ELC-MON-27",
       brand: null,
       description: null,
-      category: "Electronics",
+      categoryId: "cat-electronics",
       status: "active",
       price: 349.99,
       costPrice: null,
       stock: 12,
     })
-    expect(toast.info).not.toHaveBeenCalled()
   })
 
-  it("says nothing was saved when no submit handler is connected", async () => {
-    render(<ProductForm />)
+  it("disables the form and shows progress while saving, so it cannot be sent twice", async () => {
+    let finish: () => void = () => {}
+    const onSubmit = vi
+      .fn()
+      .mockReturnValue(new Promise<void>((resolve) => (finish = resolve)))
+    renderForm({ onSubmit })
 
     await fillRequiredFields()
     await user.click(screen.getByRole("button", { name: "Create Product" }))
 
-    await vi.waitFor(() => expect(toast.info).toHaveBeenCalledTimes(1))
-    expect(toast.info).toHaveBeenCalledWith(
-      "Nothing was saved",
-      expect.objectContaining({ description: expect.any(String) })
+    const saving = await screen.findByRole("button", { name: "Creating…" })
+    expect(saving).toBeInTheDocument()
+    expect(screen.getByLabelText("Product Name")).toBeDisabled()
+    await user.click(saving)
+    expect(onSubmit).toHaveBeenCalledTimes(1)
+
+    finish()
+    expect(
+      await screen.findByRole("button", { name: "Create Product" })
+    ).toBeEnabled()
+  })
+})
+
+describe("ProductForm (server errors)", () => {
+  it("points a taken SKU out on the SKU field", async () => {
+    const onSubmit = vi
+      .fn()
+      .mockRejectedValue(new ApiError(409, [SKU_TAKEN_MESSAGE]))
+    renderForm({ onSubmit })
+
+    await fillRequiredFields()
+    await user.click(screen.getByRole("button", { name: "Create Product" }))
+
+    const sku = await screen.findByLabelText("SKU")
+    await vi.waitFor(() => expect(sku).toBeInvalid())
+    expect(sku).toHaveAccessibleDescription(
+      "Another product already uses this SKU."
     )
+    // Only the field's own error: nothing is shown above the form.
+    expect(screen.getAllByRole("alert")).toHaveLength(1)
+    // What was typed is kept, so the SKU can simply be changed.
+    expect(screen.getByLabelText("Product Name")).toHaveValue(
+      "  Studio Monitor  "
+    )
+  })
+
+  it("shows any other failure above the form", async () => {
+    const onSubmit = vi
+      .fn()
+      .mockRejectedValue(new ApiError(500, ["internal detail"]))
+    renderForm({ onSubmit })
+
+    await fillRequiredFields()
+    await user.click(screen.getByRole("button", { name: "Create Product" }))
+
+    const alert = await screen.findByRole("alert")
+    expect(alert).toHaveTextContent("Something went wrong on our side")
+    expect(alert).not.toHaveTextContent("internal detail")
+    expect(screen.queryByRole("button", { name: "Reload product" })).toBeNull()
+  })
+
+  it("explains a product that changed in the meantime and offers to reload it", async () => {
+    const onSubmit = vi
+      .fn()
+      .mockRejectedValue(
+        new ApiError(409, [
+          "This product was changed by someone else. Reload it and try again.",
+        ])
+      )
+    const onReload = vi.fn()
+    renderForm({ product: createProduct(), onSubmit, onReload })
+
+    await user.click(screen.getByRole("button", { name: "Update Product" }))
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "This product was changed by someone else."
+    )
+    await user.click(screen.getByRole("button", { name: "Reload product" }))
+    expect(onReload).toHaveBeenCalledTimes(1)
   })
 })
 
 describe("ProductForm (edit)", () => {
-  const product = getMockProductById("PRD-2041")!
+  const product = createProduct()
 
   it("prefills every field from the product", () => {
-    render(<ProductForm product={product} />)
+    renderForm({ product })
 
     expect(screen.getByLabelText("Product Name")).toHaveValue(product.name)
     expect(screen.getByLabelText("SKU")).toHaveValue("AUD-ANC-500-BLK")
@@ -162,17 +254,23 @@ describe("ProductForm (edit)", () => {
     expect(screen.getByLabelText("Description (optional)")).toHaveValue(
       product.description
     )
-    expect(screen.getByRole("combobox", { name: "Category" })).toHaveTextContent(
-      "Electronics"
+    expect(
+      screen.getByRole("combobox", { name: "Category" })
+    ).toHaveTextContent("Electronics")
+    expect(screen.getByRole("combobox", { name: "Status" })).toHaveTextContent(
+      "Active"
     )
-    expect(screen.getByRole("combobox", { name: "Status" })).toHaveTextContent("Active")
     expect(screen.getByLabelText("Selling Price (USD)")).toHaveValue("249.00")
-    expect(screen.getByLabelText("Cost Price (USD, optional)")).toHaveValue("138.50")
+    expect(screen.getByLabelText("Cost Price (USD, optional)")).toHaveValue(
+      "138.50"
+    )
     expect(screen.getByLabelText("Stock Quantity")).toHaveValue("184")
   })
 
   it("shows the status and leaves the cost price empty when it is unknown", () => {
-    render(<ProductForm product={getMockProductById("PRD-2126")!} />)
+    renderForm({
+      product: createProduct({ status: "inactive", costPrice: null }),
+    })
 
     expect(screen.getByLabelText("Cost Price (USD, optional)")).toHaveValue("")
     expect(screen.getByRole("combobox", { name: "Status" })).toHaveTextContent(
@@ -181,25 +279,26 @@ describe("ProductForm (edit)", () => {
   })
 
   it("leaves the brand and description empty when the product has none", () => {
-    render(<ProductForm product={getMockProductById("PRD-2104")!} />)
+    renderForm({ product: createProduct({ brand: null, description: null }) })
 
     expect(screen.getByLabelText("Brand (optional)")).toHaveValue("")
     expect(screen.getByLabelText("Description (optional)")).toHaveValue("")
   })
 
   it("offers Update Product and cancels back to the product", () => {
-    render(<ProductForm product={product} />)
+    renderForm({ product })
 
-    expect(screen.getByRole("button", { name: "Update Product" })).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Update Product" })
+    ).toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Cancel" })).toHaveAttribute(
       "href",
-      "/dashboard/products/PRD-2041"
+      "/dashboard/products/PRD-1001"
     )
   })
 
   it("submits the edited values", async () => {
-    const onSubmit = vi.fn()
-    render(<ProductForm product={product} onSubmit={onSubmit} />)
+    const { onSubmit } = renderForm({ product })
 
     await user.clear(screen.getByLabelText("Stock Quantity"))
     await user.type(screen.getByLabelText("Stock Quantity"), "0")
@@ -210,11 +309,24 @@ describe("ProductForm (edit)", () => {
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
         sku: "AUD-ANC-500-BLK",
+        categoryId: "cat-electronics",
         status: "inactive",
         price: 249,
         costPrice: 138.5,
         stock: 0,
       })
     )
+  })
+
+  it("does not show the Reload action unless the save was refused for a changed product", async () => {
+    const onSubmit = vi
+      .fn()
+      .mockRejectedValue(new ApiError(500, ["internal detail"]))
+    renderForm({ product, onSubmit, onReload: vi.fn() })
+
+    await user.click(screen.getByRole("button", { name: "Update Product" }))
+
+    await screen.findByRole("alert")
+    expect(screen.queryByRole("button", { name: "Reload product" })).toBeNull()
   })
 })

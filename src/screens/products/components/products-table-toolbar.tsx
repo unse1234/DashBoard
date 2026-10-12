@@ -14,15 +14,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
-  PRODUCT_CATEGORY_FILTER_OPTIONS,
+  ALL_CATEGORIES,
   PRODUCT_STATUS_FILTER_OPTIONS,
 } from "@/lib/products/product.constants"
-import type { ProductStatusFilter } from "@/lib/products/product.types"
-
-function toCategoryFilter(value: string | null) {
-  return PRODUCT_CATEGORY_FILTER_OPTIONS.find((option) => option.value === value)
-    ?.value
-}
+import type {
+  Category,
+  ProductStatusFilter,
+} from "@/lib/products/product.types"
 
 function toStatusFilter(value: string | null) {
   return PRODUCT_STATUS_FILTER_OPTIONS.find((option) => option.value === value)
@@ -31,8 +29,11 @@ function toStatusFilter(value: string | null) {
 
 type ProductsTableToolbarProps = {
   search: string
+  /** A category's identifier, or "all". */
   category: string
   status: ProductStatusFilter
+  /** The categories to filter by; empty until they have loaded. */
+  categories: Category[]
   onSearchChange: (search: string) => void
   onCategoryChange: (category: string) => void
   onStatusChange: (status: ProductStatusFilter) => void
@@ -42,10 +43,16 @@ export function ProductsTableToolbar({
   search,
   category,
   status,
+  categories,
   onSearchChange,
   onCategoryChange,
   onStatusChange,
 }: ProductsTableToolbarProps) {
+  const categoryOptions = [
+    { value: ALL_CATEGORIES, label: "All Categories" },
+    ...categories.map(({ id, name }) => ({ value: id, label: name })),
+  ]
+
   return (
     <div role="search" className="flex flex-col gap-2 sm:flex-row">
       <InputGroup className="sm:max-w-xs">
@@ -64,10 +71,10 @@ export function ProductsTableToolbar({
       </InputGroup>
       <Select
         value={category}
-        items={PRODUCT_CATEGORY_FILTER_OPTIONS}
+        items={categoryOptions}
         onValueChange={(value) => {
-          const next = toCategoryFilter(value)
-          if (next) onCategoryChange(next)
+          const next = categoryOptions.find((option) => option.value === value)
+          if (next) onCategoryChange(next.value)
         }}
       >
         <SelectTrigger
@@ -78,7 +85,7 @@ export function ProductsTableToolbar({
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {PRODUCT_CATEGORY_FILTER_OPTIONS.map((option) => (
+            {categoryOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>

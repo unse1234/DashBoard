@@ -4,27 +4,11 @@ import type {
   ProductStatusFilter,
 } from "@/lib/products/product.types"
 
-// Placeholder options until a categories API exists.
-export const PRODUCT_CATEGORIES = [
-  "Accessories",
-  "Electronics",
-  "Furniture",
-  "Home & Kitchen",
-  "Office Supplies",
-  "Sports & Outdoors",
-] as const
-
+/** The category filter's value for "no category filter". */
 export const ALL_CATEGORIES = "all"
 
-export const PRODUCT_CATEGORY_OPTIONS = PRODUCT_CATEGORIES.map((category) => ({
-  value: category,
-  label: category,
-}))
-
-export const PRODUCT_CATEGORY_FILTER_OPTIONS = [
-  { value: ALL_CATEGORIES, label: "All Categories" },
-  ...PRODUCT_CATEGORY_OPTIONS,
-]
+/** The API's answer (409) when another product already has the SKU. */
+export const SKU_TAKEN_MESSAGE = "A product with this SKU already exists"
 
 export const PRODUCT_STATUS_LABELS = {
   active: "Active",

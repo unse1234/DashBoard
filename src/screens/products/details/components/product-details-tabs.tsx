@@ -1,25 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
-import type { Product, ProductHistoryEntry } from "@/lib/products/product.types"
-import { ProductHistory } from "@/screens/products/details/components/product-history"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import type { Product } from "@/lib/products/product.types"
+import { ProductHistoryTab } from "@/screens/products/details/components/product-history-tab"
 import { ProductInformation } from "@/screens/products/details/components/product-information"
 import { ProductInventory } from "@/screens/products/details/components/product-inventory"
 import { ProductPricing } from "@/screens/products/details/components/product-pricing"
 
 type ProductDetailsTabsProps = {
   product: Product
-  history: ProductHistoryEntry[]
 }
 
-export function ProductDetailsTabs({
-  product,
-  history,
-}: ProductDetailsTabsProps) {
+export function ProductDetailsTabs({ product }: ProductDetailsTabsProps) {
   return (
     <Tabs defaultValue="overview">
       <TabsList>
@@ -35,7 +26,7 @@ export function ProductDetailsTabs({
         </div>
       </TabsContent>
       <TabsContent value="history">
-        <ProductHistory entries={history} />
+        <ProductHistoryTab productId={product.id} />
       </TabsContent>
       <TabsContent value="analytics">
         <Card>

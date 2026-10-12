@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { Checkbox } from "@/components/ui/checkbox"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -18,9 +19,12 @@ import { ProductActions } from "@/screens/products/components/product-actions"
 import { ProductStatusBadge } from "@/screens/products/components/product-status-badge"
 
 const COLUMN_COUNT = 9
+const SKELETON_ROW_COUNT = 5
 
 type ProductsTableProps = {
   products: Product[]
+  /** True while the first page loads or a newer page is being fetched. */
+  isLoading: boolean
   selectedIds: ReadonlySet<string>
   onSelectProduct: (productId: string, selected: boolean) => void
   /** Selects or clears every product in `products`. */
@@ -29,10 +33,12 @@ type ProductsTableProps = {
 
 export function ProductsTable({
   products,
+  isLoading,
   selectedIds,
   onSelectProduct,
   onSelectAll,
 }: ProductsTableProps) {
+  const isFirstLoad = isLoading && products.length === 0
   const allSelected =
     products.length > 0 && products.every(({ id }) => selectedIds.has(id))
   const someSelected =
@@ -40,7 +46,7 @@ export function ProductsTable({
 
   return (
     <div className="overflow-hidden rounded-lg border">
-      <Table>
+      <Table aria-busy={isLoading}>
         <TableHeader className="bg-muted">
           <TableRow className="hover:bg-transparent">
             <TableHead className="w-10 pl-3">
@@ -64,8 +70,10 @@ export function ProductsTable({
             </TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {products.length === 0 ? (
+        <TableBody className={isLoading && !isFirstLoad ? "opacity-60" : ""}>
+          {isFirstLoad ? (
+            <SkeletonRows />
+          ) : products.length === 0 ? (
             <TableRow className="hover:bg-transparent">
               <TableCell colSpan={COLUMN_COUNT} className="h-40 text-center">
                 <p className="font-medium">No products found</p>
@@ -90,6 +98,18 @@ export function ProductsTable({
       </Table>
     </div>
   )
+}
+
+function SkeletonRows() {
+  return Array.from({ length: SKELETON_ROW_COUNT }, (_, row) => (
+    <TableRow key={row} className="hover:bg-transparent">
+      {Array.from({ length: COLUMN_COUNT }, (_, cell) => (
+        <TableCell key={cell} className={cell === 0 ? "pl-3" : ""}>
+          <Skeleton className={cell === 0 ? "size-4" : "h-4 w-full max-w-32"} />
+        </TableCell>
+      ))}
+    </TableRow>
+  ))
 }
 
 type ProductRowProps = {
@@ -125,7 +145,9 @@ function ProductRow({ product, selected, onSelectChange }: ProductRowProps) {
       </TableCell>
       <TableCell>{product.category}</TableCell>
       <TableCell>
-        {product.brand ?? <span className="text-muted-foreground">Not set</span>}
+        {product.brand ?? (
+          <span className="text-muted-foreground">Not set</span>
+        )}
       </TableCell>
       <TableCell className="text-right tabular-nums">
         {formatCurrency(product.price)}
