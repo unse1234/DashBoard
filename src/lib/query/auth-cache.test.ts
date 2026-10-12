@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query"
 
-import type { AuthResponse } from "@/lib/auth/auth.types"
+import type { AuthResponse } from "@/types/auth.types"
 import {
   clearSession,
   refreshSession,

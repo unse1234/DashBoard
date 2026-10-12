@@ -1,3 +1,4 @@
+import type { SessionHandlers } from "@/types/auth.types"
 import axios, { isAxiosError, isCancel } from "axios"
 
 import { API_URL } from "@/lib/api/api.config"
@@ -20,23 +21,6 @@ declare module "axios" {
     /** Set on the replay of a request after a session refresh; it is never replayed twice. */
     retriedAfterRefresh?: boolean
   }
-}
-
-/**
- * What the client needs from the session. The auth store registers itself here
- * (see `attachSessionHandlers`) instead of being imported, because the store
- * calls the auth API through this very client.
- */
-export type SessionHandlers = {
-  /** A valid access token, renewing it first when it is missing or about to expire. */
-  getAccessToken: () => Promise<string>
-  /**
-   * Exchanges the refresh cookie for a new access token. Concurrent callers must
-   * share one network call. Resolves `false` when there is no valid session.
-   */
-  refreshSession: () => Promise<boolean>
-  /** Forgets the session after it could not be renewed. */
-  clearSession: () => void
 }
 
 const NETWORK_ERROR_MESSAGE =

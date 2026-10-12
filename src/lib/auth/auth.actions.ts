@@ -1,15 +1,8 @@
 import { describeApiError, isApiError } from "@/lib/api/api-error"
-import type {
-  LoginCredentials,
-  ResetPasswordRequest,
-} from "@/lib/auth/auth.mutations"
-import type { MessageResponse } from "@/lib/auth/auth.types"
-import type { AuthFormAction } from "@/lib/auth/form-state"
-import type {
-  ForgotPasswordField,
-  LoginField,
-  ResetPasswordField,
-} from "@/lib/auth/validation"
+import type { LoginCredentials, ResetPasswordRequest } from "@/types/auth.types";
+import type { MessageResponse } from "@/types/auth.types"
+import type { AuthFormAction } from "@/types/form-state"
+import type { ForgotPasswordField, LoginField, ResetPasswordField } from "@/types/form-state";
 
 /** What the API answers for reset tokens that are unknown, used or expired. */
 const INVALID_TOKEN_MESSAGE = "Invalid or expired token"

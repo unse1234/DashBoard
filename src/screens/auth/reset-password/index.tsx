@@ -3,7 +3,7 @@ import Link from "next/link"
 import { AuthLink } from "@/components/auth/auth-link"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { buttonVariants } from "@/components/ui/button"
-import { routes } from "@/lib/routes"
+import { routes } from "@/config/routes"
 import { ResetPasswordForm } from "@/screens/auth/reset-password/components/reset-password-form"
 
 type ResetPasswordScreenProps = {

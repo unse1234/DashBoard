@@ -11,9 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { formatCurrency, formatInteger } from "@/lib/format-number"
-import type { OrderItem } from "@/lib/orders/order.types"
-import { getProductRoute } from "@/lib/routes"
+import { formatCurrency, formatInteger } from "@/utils/format-number"
+import type { OrderItem } from "@/types/order.types"
+import { getProductRoute } from "@/config/routes"
 
 type OrderItemsTableProps = {
   items: OrderItem[]

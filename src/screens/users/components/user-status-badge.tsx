@@ -1,8 +1,8 @@
 import { CircleCheckIcon, CircleXIcon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
-import { USER_STATUS_LABELS } from "@/lib/users/user.constants"
-import type { UserStatus } from "@/lib/users/user.types"
+import { USER_STATUS_LABELS } from "@/constants/user.constants"
+import type { UserStatus } from "@/types/user.types"
 
 type UserStatusBadgeProps = {
   status: UserStatus

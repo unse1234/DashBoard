@@ -1,8 +1,8 @@
 import type { ReactNode } from "react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatCurrency } from "@/lib/format-number"
-import type { Order } from "@/lib/orders/order.types"
+import { formatCurrency } from "@/utils/format-number"
+import type { Order } from "@/types/order.types"
 
 type OrderPriceBreakdownProps = {
   order: Pick<Order, "subtotal" | "shipping" | "discount" | "tax" | "total">

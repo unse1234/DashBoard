@@ -14,10 +14,10 @@ import type {
   Customer,
   CustomerSort,
   CustomerSortColumn,
-} from "@/lib/customers/customer.types"
-import { formatDate } from "@/lib/format-date"
-import { formatCurrency, formatInteger } from "@/lib/format-number"
-import { getCustomerRoute } from "@/lib/routes"
+} from "@/types/customer.types"
+import { formatDate } from "@/utils/format-date"
+import { formatCurrency, formatInteger } from "@/utils/format-number"
+import { getCustomerRoute } from "@/config/routes"
 import { CustomerActions } from "@/screens/customers/components/customer-actions"
 
 const COLUMN_COUNT = 8

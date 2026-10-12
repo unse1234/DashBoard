@@ -7,14 +7,14 @@ import { LoadError } from "@/components/shared/load-error"
 import { TablePagination } from "@/components/shared/table-pagination"
 import { useAuth } from "@/hooks/use-auth"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
-import { getTotalPages } from "@/lib/pagination"
+import { getTotalPages } from "@/utils/pagination"
 import { useArchiveProductsMutation } from "@/lib/products/product.mutations"
 import {
   useCategoriesQuery,
   useProductsQuery,
 } from "@/lib/products/product.queries"
 import { defaultProductsQuery } from "@/lib/products/product.query"
-import type { ProductsQuery } from "@/lib/products/product.types"
+import type { ProductsQuery } from "@/types/product.types"
 import { ProductsBulkActions } from "@/screens/products/components/products-bulk-actions"
 import { ProductsTable } from "@/screens/products/components/products-table"
 import { ProductsTableToolbar } from "@/screens/products/components/products-table-toolbar"

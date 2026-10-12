@@ -4,7 +4,7 @@ import { PlusIcon } from "lucide-react"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { PageContent } from "@/components/dashboard/page-content"
 import { buttonVariants } from "@/components/ui/button"
-import { routes } from "@/lib/routes"
+import { routes } from "@/config/routes"
 import { ProductsList } from "@/screens/products/components/products-list"
 import { ProductsTotal } from "@/screens/products/components/products-total"
 

@@ -1,3 +1,4 @@
+import type { CustomerPage } from "@/types/customer.types"
 import { apiClient } from "@/lib/api/axios"
 import type {
   Customer,
@@ -6,7 +7,7 @@ import type {
   CustomerOrderStatus,
   CustomerOrderSummary,
   CustomersQuery,
-} from "@/lib/customers/customer.types"
+} from "@/types/customer.types"
 
 // The API sends enums as stored, in upper case; the UI uses lower case.
 type ApiAddressType = "SHIPPING" | "BILLING"
@@ -34,11 +35,6 @@ type CustomerDetailsResponse = {
   customer: Customer
   addresses: ApiCustomerAddress[]
   recentOrders: ApiCustomerOrderSummary[]
-}
-
-export type CustomerPage = {
-  customers: Customer[]
-  totalRecords: number
 }
 
 const ADDRESS_TYPES = {

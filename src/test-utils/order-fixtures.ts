@@ -4,7 +4,7 @@ import type {
   OrderCustomer,
   OrderItem,
   OrderListItem,
-} from "@/lib/orders/order.types"
+} from "@/types/order.types"
 
 export function createOrderCustomer(
   overrides: Partial<OrderCustomer> = {}

@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
 import { ApiError } from "@/lib/api/api-error"
-import type { User } from "@/lib/users/user.types"
+import type { User } from "@/types/user.types"
 import { EditUserDialog } from "@/screens/users/components/edit-user-dialog"
 import { createUser } from "@/test-utils/user-fixtures"
 

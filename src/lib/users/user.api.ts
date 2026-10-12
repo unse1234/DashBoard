@@ -1,11 +1,8 @@
+import type { UserPage, InvitedUser } from "@/types/user.types"
 import { apiClient } from "@/lib/api/axios"
-import type { AuthUser } from "@/lib/auth/auth.types"
-import type {
-  CreateUserValues,
-  EditUserValues,
-  ProfileValues,
-} from "@/lib/users/user.schemas"
-import type { User, UsersQuery } from "@/lib/users/user.types"
+import type { AuthUser } from "@/types/auth.types"
+import type { CreateUserValues, EditUserValues, ProfileValues } from "@/types/user.types";
+import type { User, UsersQuery } from "@/types/user.types"
 
 type UserPageResponse = {
   data: AuthUser[]
@@ -15,16 +12,6 @@ type UserPageResponse = {
 type InviteUserResponse = {
   user: AuthUser
   /** False when the account was created but the email could not be sent. */
-  invitationSent: boolean
-}
-
-export type UserPage = {
-  users: User[]
-  totalRecords: number
-}
-
-export type InvitedUser = {
-  user: User
   invitationSent: boolean
 }
 

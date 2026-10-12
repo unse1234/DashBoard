@@ -2,8 +2,8 @@ import Link from "next/link"
 
 import { DetailItem } from "@/components/shared/detail-item"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { OrderCustomer } from "@/lib/orders/order.types"
-import { getCustomerRoute } from "@/lib/routes"
+import type { OrderCustomer } from "@/types/order.types"
+import { getCustomerRoute } from "@/config/routes"
 
 type OrderCustomerInformationProps = {
   customer: OrderCustomer

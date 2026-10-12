@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react"
 import Link from "next/link"
 
-import type { NavItem } from "@/components/dashboard/nav.types"
+import type { NavItem } from "@/types/nav.types"
 import {
   SidebarGroup,
   SidebarGroupContent,

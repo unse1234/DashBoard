@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 
 import { Spinner } from "@/components/ui/spinner"
 import { useAuth } from "@/hooks/use-auth"
-import { routes } from "@/lib/routes"
+import { routes } from "@/config/routes"
 
 type RequireAuthProps = {
   children: ReactNode

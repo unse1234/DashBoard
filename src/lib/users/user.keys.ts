@@ -1,4 +1,4 @@
-import type { UsersQuery } from "@/lib/users/user.types"
+import type { UsersQuery } from "@/types/user.types"
 
 /**
  * Every users cache entry lives under `["users"]`, from the broadest key to the

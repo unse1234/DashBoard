@@ -1,8 +1,8 @@
 import { CircleCheckIcon, CircleXIcon, ClockIcon, LoaderIcon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
-import { IMPORT_STATUS_LABELS } from "@/lib/imports/import.constants"
-import type { ImportStatus } from "@/lib/imports/import.types"
+import { IMPORT_STATUS_LABELS } from "@/constants/import.constants"
+import type { ImportStatus } from "@/types/import.types"
 
 type ImportStatusBadgeProps = {
   status: ImportStatus

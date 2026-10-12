@@ -23,15 +23,12 @@ import { describeApiError, isApiError } from "@/lib/api/api-error"
 import {
   PRODUCT_STATUS_OPTIONS,
   SKU_TAKEN_MESSAGE,
-} from "@/lib/products/product.constants"
-import {
-  productFormSchema,
-  type ProductFormInput,
-  type ProductFormValues,
-} from "@/lib/products/product.schemas"
-import type { Category, Product } from "@/lib/products/product.types"
-import { getProductRoute, routes } from "@/lib/routes"
-import { cn } from "@/lib/utils"
+} from "@/constants/product.constants"
+import { productFormSchema } from "@/validations/product.schemas";
+import { type ProductFormInput, type ProductFormValues } from "@/types/product.types";
+import type { Category, Product } from "@/types/product.types"
+import { getProductRoute, routes } from "@/config/routes"
+import { cn } from "@/utils/cn"
 
 const emptyValues: ProductFormInput = {
   name: "",

@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils/cn"
 
 /**
  * Wraps a table that can be wider than the screen but has nothing focusable

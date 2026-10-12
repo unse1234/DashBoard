@@ -1,8 +1,8 @@
 import { DetailItem } from "@/components/shared/detail-item"
 import { Card, CardContent } from "@/components/ui/card"
-import { formatDateTime } from "@/lib/format-date"
-import { formatCurrency } from "@/lib/format-number"
-import type { Order, OrderStatus } from "@/lib/orders/order.types"
+import { formatDateTime } from "@/utils/format-date"
+import { formatCurrency } from "@/utils/format-number"
+import type { Order, OrderStatus } from "@/types/order.types"
 import { OrderStatusBadge } from "@/screens/orders/components/order-status-badge"
 import { PaymentStatusBadge } from "@/screens/orders/components/payment-status-badge"
 

@@ -23,15 +23,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/hooks/use-auth"
 import { describeApiError } from "@/lib/api/api-error"
-import { getUserRoute } from "@/lib/routes"
+import { getUserRoute } from "@/config/routes"
 import {
   useDeleteUserMutation,
   useSetUserActiveMutation,
   useUpdateUserMutation,
 } from "@/lib/users/user.mutations"
-import type { EditUserValues } from "@/lib/users/user.schemas"
-import type { User } from "@/lib/users/user.types"
-import { getChangedFields } from "@/lib/users/user.utils"
+import type { EditUserValues } from "@/types/user.types";
+import type { User } from "@/types/user.types"
+import { getChangedFields } from "@/utils/user.utils"
 import { EditUserDialog } from "@/screens/users/components/edit-user-dialog"
 
 type UserActionsProps = {

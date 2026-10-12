@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import { ApiError } from "@/lib/api/api-error"
-import { SKU_TAKEN_MESSAGE } from "@/lib/products/product.constants"
+import { SKU_TAKEN_MESSAGE } from "@/constants/product.constants"
 import { ProductForm } from "@/screens/products/components/product-form"
 import { categoryFixtures, createProduct } from "@/test-utils/product-fixtures"
 

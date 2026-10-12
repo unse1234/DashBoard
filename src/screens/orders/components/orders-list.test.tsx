@@ -4,7 +4,8 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { listOrders, type OrderPage } from "@/lib/orders/order.api"
+import { listOrders } from "@/lib/orders/order.api";
+import { type OrderPage } from "@/types/order.types";
 import { OrdersList } from "@/screens/orders/components/orders-list"
 import { OrdersTotal } from "@/screens/orders/components/orders-total"
 import { createAuthUser } from "@/test-utils/auth-fixtures"

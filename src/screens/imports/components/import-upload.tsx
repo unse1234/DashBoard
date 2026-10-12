@@ -18,12 +18,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { formatFileSize } from "@/lib/format-file-size"
+import { formatFileSize } from "@/utils/format-file-size"
 import {
   IMPORT_FILE_EXTENSION,
   IMPORT_MAX_FILE_SIZE_LABEL,
-} from "@/lib/imports/import.constants"
-import { validateImportFile } from "@/lib/imports/import.validation"
+} from "@/constants/import.constants"
+import { validateImportFile } from "@/validations/import.validation"
 import { ImportActionButton } from "@/screens/imports/components/import-action-button"
 import { ImportGuidelinesDialog } from "@/screens/imports/components/import-guidelines-dialog"
 

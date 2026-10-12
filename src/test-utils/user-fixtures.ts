@@ -1,4 +1,4 @@
-import type { User } from "@/lib/users/user.types"
+import type { User } from "@/types/user.types"
 
 /** An active staff member who has logged in before; override fields per test. */
 export function createUser(overrides: Partial<User> = {}): User {

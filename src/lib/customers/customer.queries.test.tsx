@@ -4,11 +4,8 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import {
-  getCustomerDetails,
-  listCustomers,
-  type CustomerPage,
-} from "@/lib/customers/customer.api"
+import { getCustomerDetails, listCustomers } from "@/lib/customers/customer.api";
+import { type CustomerPage } from "@/types/customer.types";
 import {
   useCustomerDetailsQuery,
   useCustomersQuery,

@@ -9,7 +9,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { useAuth } from "@/hooks/use-auth"
 import { describeApiError, isApiError } from "@/lib/api/api-error"
 import { useVerifyEmailMutation } from "@/lib/auth/auth.mutations"
-import { routes } from "@/lib/routes"
+import { routes } from "@/config/routes"
 
 const INVALID_LINK_MESSAGE =
   "This verification link is invalid or has expired. Log in to request a new one."

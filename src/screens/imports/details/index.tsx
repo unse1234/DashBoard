@@ -5,8 +5,8 @@ import type {
   ImportFailedRow,
   ImportJob,
   ImportTimelineEvent,
-} from "@/lib/imports/import.types"
-import { routes } from "@/lib/routes"
+} from "@/types/import.types"
+import { routes } from "@/config/routes"
 import { ImportDetailsHeader } from "@/screens/imports/details/components/import-details-header"
 import { ImportFailedRows } from "@/screens/imports/details/components/import-failed-rows"
 import { ImportJobInfo } from "@/screens/imports/details/components/import-job-info"

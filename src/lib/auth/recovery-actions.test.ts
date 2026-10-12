@@ -6,7 +6,7 @@ import {
   createResetPasswordAction,
   INVALID_RESET_LINK_MESSAGE,
 } from "@/lib/auth/auth.actions"
-import { initialAuthFormState } from "@/lib/auth/form-state"
+import { initialAuthFormState } from "@/utils/auth-form";
 
 function formWith(values: Record<string, string>) {
   const data = new FormData()

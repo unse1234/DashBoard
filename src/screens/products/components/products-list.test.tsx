@@ -5,12 +5,8 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import {
-  archiveProducts,
-  listCategories,
-  listProducts,
-  type ProductPage,
-} from "@/lib/products/product.api"
+import { archiveProducts, listCategories, listProducts } from "@/lib/products/product.api";
+import { type ProductPage } from "@/types/product.types";
 import { ProductsList } from "@/screens/products/components/products-list"
 import { ProductsTotal } from "@/screens/products/components/products-total"
 import { createAuthUser } from "@/test-utils/auth-fixtures"

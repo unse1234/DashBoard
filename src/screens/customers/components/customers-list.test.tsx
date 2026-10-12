@@ -4,7 +4,8 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { listCustomers, type CustomerPage } from "@/lib/customers/customer.api"
+import { listCustomers } from "@/lib/customers/customer.api";
+import { type CustomerPage } from "@/types/customer.types";
 import { CustomersList } from "@/screens/customers/components/customers-list"
 import { CustomersTotal } from "@/screens/customers/components/customers-total"
 import { createAuthUser } from "@/test-utils/auth-fixtures"

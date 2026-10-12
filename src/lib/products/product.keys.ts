@@ -1,4 +1,4 @@
-import type { ProductsQuery } from "@/lib/products/product.types"
+import type { ProductsQuery } from "@/types/product.types"
 
 /**
  * Every products cache entry lives under `["products"]`, from the broadest key

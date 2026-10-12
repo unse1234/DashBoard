@@ -1,6 +1,6 @@
-import { DEFAULT_PAGE_SIZE } from "@/lib/pagination"
-import { ALL_CATEGORIES } from "@/lib/products/product.constants"
-import type { ProductsQuery } from "@/lib/products/product.types"
+import { DEFAULT_PAGE_SIZE } from "@/constants/pagination.constants";
+import { ALL_CATEGORIES } from "@/constants/product.constants"
+import type { ProductsQuery } from "@/types/product.types"
 
 export const defaultProductsQuery: ProductsQuery = {
   search: "",

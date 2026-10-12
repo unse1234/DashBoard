@@ -1,7 +1,7 @@
 import { vi } from "vitest"
 
 import { apiClient } from "@/lib/api/axios"
-import type { AuthResponse } from "@/lib/auth/auth.types"
+import type { AuthResponse } from "@/types/auth.types"
 import {
   getAuthState,
   resetAuthStore,

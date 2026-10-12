@@ -1,6 +1,6 @@
 import { DownloadIcon, FileWarningIcon } from "lucide-react"
 
-import type { ImportJob } from "@/lib/imports/import.types"
+import type { ImportJob } from "@/types/import.types"
 import { ImportActionButton } from "@/screens/imports/components/import-action-button"
 import { ImportStatusBadge } from "@/screens/imports/components/import-status-badge"
 

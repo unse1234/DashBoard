@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { Product } from "@/lib/products/product.types"
+import type { Product } from "@/types/product.types"
 import { ProductHistoryTab } from "@/screens/products/details/components/product-history-tab"
 import { ProductInformation } from "@/screens/products/details/components/product-information"
 import { ProductInventory } from "@/screens/products/details/components/product-inventory"

@@ -6,7 +6,7 @@ import {
   getMockImportFailedRows,
   getMockImportJobById,
 } from "@/lib/imports/import.mock-data"
-import { getImportTimeline } from "@/lib/imports/import.utils"
+import { getImportTimeline } from "@/utils/import.utils"
 import { ImportDetailsHeader } from "@/screens/imports/details/components/import-details-header"
 import { ImportFailedRows } from "@/screens/imports/details/components/import-failed-rows"
 import { ImportJobInfo } from "@/screens/imports/details/components/import-job-info"

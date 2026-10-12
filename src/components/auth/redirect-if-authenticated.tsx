@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 import { useAuth } from "@/hooks/use-auth"
-import { routes } from "@/lib/routes"
+import { routes } from "@/config/routes"
 
 /**
  * Renders nothing; sends a signed-in user on to the dashboard. This is also what

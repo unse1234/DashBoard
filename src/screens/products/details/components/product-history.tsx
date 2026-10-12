@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatDateTime } from "@/lib/format-date"
-import type { ProductHistoryEntry } from "@/lib/products/product.types"
+import { formatDateTime } from "@/utils/format-date"
+import type { ProductHistoryEntry } from "@/types/product.types"
 
 type ProductHistoryProps = {
   /** Newest first. */

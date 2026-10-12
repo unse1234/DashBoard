@@ -1,19 +1,8 @@
+import type { AuthState } from "@/types/auth.types"
 import { ApiError, isApiError } from "@/lib/api/api-error"
 import { attachSessionHandlers } from "@/lib/api/axios"
 import * as authApi from "@/lib/auth/auth.api"
-import type { AuthResponse, AuthUser } from "@/lib/auth/auth.types"
-
-/**
- * Client-side session. The access token lives only in this module's memory
- * (never in localStorage or a readable cookie), so a page reload starts
- * "loading" and silently trades the HttpOnly refresh cookie for a new token.
- */
-export type AuthStatus = "loading" | "authenticated" | "unauthenticated"
-
-export type AuthState = {
-  status: AuthStatus
-  user: AuthUser | null
-}
+import type { AuthResponse, AuthUser } from "@/types/auth.types"
 
 /** Renew this long before expiry so a request never carries a dying token. */
 const TOKEN_EXPIRY_SKEW_MS = 30_000

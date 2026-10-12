@@ -1,5 +1,5 @@
-import type { OrdersQuery } from "@/lib/orders/order.types"
-import { DEFAULT_PAGE_SIZE } from "@/lib/pagination"
+import type { OrdersQuery } from "@/types/order.types"
+import { DEFAULT_PAGE_SIZE } from "@/constants/pagination.constants";
 
 export const defaultOrdersQuery: OrdersQuery = {
   search: "",

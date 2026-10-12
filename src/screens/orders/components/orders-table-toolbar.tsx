@@ -16,11 +16,11 @@ import {
 import {
   ORDER_STATUS_FILTER_OPTIONS,
   PAYMENT_STATUS_FILTER_OPTIONS,
-} from "@/lib/orders/order.constants"
+} from "@/constants/order.constants"
 import type {
   OrderStatusFilter,
   PaymentStatusFilter,
-} from "@/lib/orders/order.types"
+} from "@/types/order.types"
 
 function toOrderStatusFilter(value: string | null) {
   return ORDER_STATUS_FILTER_OPTIONS.find((option) => option.value === value)

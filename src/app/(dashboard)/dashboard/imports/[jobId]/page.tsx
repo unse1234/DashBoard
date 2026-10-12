@@ -5,7 +5,7 @@ import {
   getMockImportFailedRows,
   getMockImportJobById,
 } from "@/lib/imports/import.mock-data"
-import { getImportTimeline } from "@/lib/imports/import.utils"
+import { getImportTimeline } from "@/utils/import.utils"
 import { ImportDetailsScreen } from "@/screens/imports/details"
 
 type ImportDetailsPageProps = PageProps<"/dashboard/imports/[jobId]">

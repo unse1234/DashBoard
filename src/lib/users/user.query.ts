@@ -1,5 +1,5 @@
-import { DEFAULT_PAGE_SIZE } from "@/lib/pagination"
-import type { UsersQuery } from "@/lib/users/user.types"
+import { DEFAULT_PAGE_SIZE } from "@/constants/pagination.constants";
+import type { UsersQuery } from "@/types/user.types"
 
 export const defaultUsersQuery: UsersQuery = {
   search: "",

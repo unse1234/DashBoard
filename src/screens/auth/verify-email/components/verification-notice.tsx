@@ -13,8 +13,8 @@ import {
   useLogoutMutation,
   useResendVerificationMutation,
 } from "@/lib/auth/auth.mutations"
-import type { AuthFormState } from "@/lib/auth/form-state"
-import { routes } from "@/lib/routes"
+import type { AuthFormState } from "@/types/form-state"
+import { routes } from "@/config/routes"
 
 /** Shown when someone lands here without a token: they need to check their inbox. */
 export function VerificationNotice() {

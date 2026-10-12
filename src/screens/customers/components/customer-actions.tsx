@@ -8,8 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import type { Customer } from "@/lib/customers/customer.types"
-import { getCustomerRoute } from "@/lib/routes"
+import type { Customer } from "@/types/customer.types"
+import { getCustomerRoute } from "@/config/routes"
 
 type CustomerActionsProps = {
   customer: Customer

@@ -1,3 +1,4 @@
+import type { LoginCredentials, ResetPasswordRequest } from "@/types/auth.types"
 import { useMutation } from "@tanstack/react-query"
 
 import * as authApi from "@/lib/auth/auth.api"
@@ -8,21 +9,6 @@ import {
   signIn,
   signOut,
 } from "@/lib/auth/auth-store"
-
-// The session itself (token, status, refresh) stays in the auth store. These
-// hooks give the screens React Query's pending and error handling around the
-// calls that change it. Cached server data is dropped by `clearCacheOnAccountChange`
-// when the signed-in account changes, so no mutation here has to clean up.
-
-export type LoginCredentials = {
-  email: string
-  password: string
-}
-
-export type ResetPasswordRequest = {
-  token: string
-  password: string
-}
 
 export function useLoginMutation() {
   return useMutation({

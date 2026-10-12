@@ -17,13 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  getRecordRange,
-  getTotalPages,
-  getVisiblePages,
-  PAGE_SIZE_OPTIONS,
-  type PageSize,
-} from "@/lib/pagination"
+import { getRecordRange, getTotalPages, getVisiblePages } from "@/utils/pagination";
+import { PAGE_SIZE_OPTIONS } from "@/constants/pagination.constants";
+import { type PageSize } from "@/types/pagination.types";
 
 const PAGE_SIZE_ITEMS = PAGE_SIZE_OPTIONS.map((size) => ({
   value: String(size),

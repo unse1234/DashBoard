@@ -14,7 +14,7 @@ import {
   updateProduct,
 } from "@/lib/products/product.api"
 import { defaultProductsQuery } from "@/lib/products/product.query"
-import type { ProductFormValues } from "@/lib/products/product.schemas"
+import type { ProductFormValues } from "@/types/product.types";
 import { mockApi } from "@/test-utils/mock-api"
 import {
   categoryFixtures,

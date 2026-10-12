@@ -1,6 +1,6 @@
 import { AuthLink } from "@/components/auth/auth-link"
 import { AuthShell } from "@/components/auth/auth-shell"
-import { routes } from "@/lib/routes"
+import { routes } from "@/config/routes"
 import { ForgotPasswordForm } from "@/screens/auth/forgot-password/components/forgot-password-form"
 
 export function ForgotPasswordScreen() {

@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { IMPORT_GUIDELINES } from "@/lib/imports/import.constants"
+import { IMPORT_GUIDELINES } from "@/constants/import.constants"
 
 export function ImportGuidelinesDialog() {
   return (

@@ -7,8 +7,8 @@ import {
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
-import { CUSTOMER_ORDER_STATUS_LABELS } from "@/lib/customers/customer.constants"
-import type { CustomerOrderStatus } from "@/lib/customers/customer.types"
+import { CUSTOMER_ORDER_STATUS_LABELS } from "@/constants/customer.constants"
+import type { CustomerOrderStatus } from "@/types/customer.types"
 
 type CustomerOrderStatusBadgeProps = {
   status: CustomerOrderStatus

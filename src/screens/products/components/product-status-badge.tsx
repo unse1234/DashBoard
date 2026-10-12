@@ -1,8 +1,8 @@
 import { CircleAlertIcon, CircleCheckIcon, CircleXIcon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
-import { PRODUCT_STATUS_LABELS } from "@/lib/products/product.constants"
-import type { ProductDisplayStatus } from "@/lib/products/product.types"
+import { PRODUCT_STATUS_LABELS } from "@/constants/product.constants"
+import type { ProductDisplayStatus } from "@/types/product.types"
 
 type ProductStatusBadgeProps = {
   status: ProductDisplayStatus

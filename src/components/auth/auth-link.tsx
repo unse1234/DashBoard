@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react"
 import Link from "next/link"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils/cn"
 
 export function AuthLink({ className, ...props }: ComponentProps<typeof Link>) {
   return (

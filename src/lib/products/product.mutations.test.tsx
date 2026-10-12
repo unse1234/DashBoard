@@ -23,7 +23,7 @@ import {
   useProductsQuery,
 } from "@/lib/products/product.queries"
 import { defaultProductsQuery } from "@/lib/products/product.query"
-import type { ProductFormValues } from "@/lib/products/product.schemas"
+import type { ProductFormValues } from "@/types/product.types";
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import {
   createHistoryEntry,

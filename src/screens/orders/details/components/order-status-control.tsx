@@ -16,8 +16,8 @@ import {
 } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { describeApiError } from "@/lib/api/api-error"
-import { ORDER_STATUS_OPTIONS } from "@/lib/orders/order.constants"
-import type { OrderStatus, PaymentStatus } from "@/lib/orders/order.types"
+import { ORDER_STATUS_OPTIONS } from "@/constants/order.constants"
+import type { OrderStatus, PaymentStatus } from "@/types/order.types"
 
 function toOrderStatus(value: string | null) {
   return ORDER_STATUS_OPTIONS.find((option) => option.value === value)?.value

@@ -1,4 +1,4 @@
-import type { CustomersQuery } from "@/lib/customers/customer.types"
+import type { CustomersQuery } from "@/types/customer.types"
 
 /**
  * Every customers cache entry lives under `["customers"]`, from the broadest

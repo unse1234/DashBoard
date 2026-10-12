@@ -1,7 +1,7 @@
 import { DetailItem } from "@/components/shared/detail-item"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { Customer } from "@/lib/customers/customer.types"
-import { formatDateTime } from "@/lib/format-date"
+import type { Customer } from "@/types/customer.types"
+import { formatDateTime } from "@/utils/format-date"
 
 type CustomerInformationProps = {
   customer: Customer

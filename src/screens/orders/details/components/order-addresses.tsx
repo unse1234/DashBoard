@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { Order, OrderAddress } from "@/lib/orders/order.types"
-import { getOrderAddressLines } from "@/lib/orders/order.utils"
+import type { Order, OrderAddress } from "@/types/order.types"
+import { getOrderAddressLines } from "@/utils/order.utils"
 
 type OrderAddressesProps = {
   order: Pick<Order, "shippingAddress" | "billingAddress">

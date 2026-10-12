@@ -9,13 +9,11 @@ import { FormField } from "@/components/shared/form-field"
 import { buttonVariants } from "@/components/ui/button"
 import { createResetPasswordAction } from "@/lib/auth/auth.actions"
 import { useResetPasswordMutation } from "@/lib/auth/auth.mutations"
-import type { AuthFormAction } from "@/lib/auth/form-state"
-import {
-  PASSWORD_HINT,
-  validateResetPassword,
-  type ResetPasswordField,
-} from "@/lib/auth/validation"
-import { routes } from "@/lib/routes"
+import type { AuthFormAction } from "@/types/form-state"
+import { PASSWORD_HINT } from "@/constants/auth.constants";
+import { validateResetPassword } from "@/validations/auth.validation";
+import { type ResetPasswordField } from "@/types/form-state";
+import { routes } from "@/config/routes"
 
 type ResetPasswordFormProps = {
   /** From the emailed link; used to build the default action. */

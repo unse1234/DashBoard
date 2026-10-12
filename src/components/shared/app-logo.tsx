@@ -1,8 +1,8 @@
 import type { Route } from "next"
 import Link from "next/link"
 
-import { APP_NAME } from "@/lib/app.constants"
-import { routes } from "@/lib/routes"
+import { APP_NAME } from "@/config/app.constants"
+import { routes } from "@/config/routes"
 
 type AppLogoProps = {
   href?: Route

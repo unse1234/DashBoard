@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/hooks/use-auth"
 import { getOrder, listOrders } from "@/lib/orders/order.api"
 import { orderKeys } from "@/lib/orders/order.keys"
-import type { OrdersQuery } from "@/lib/orders/order.types"
+import type { OrdersQuery } from "@/types/order.types"
 
 // `enabled` keeps these from firing while the session is still being restored,
 // or from retrying into a 401 after it has ended. Changing an order replaces its

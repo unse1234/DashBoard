@@ -1,8 +1,8 @@
 import { CircleCheckIcon, ClockIcon, Undo2Icon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
-import { PAYMENT_STATUS_LABELS } from "@/lib/orders/order.constants"
-import type { PaymentStatus } from "@/lib/orders/order.types"
+import { PAYMENT_STATUS_LABELS } from "@/constants/order.constants"
+import type { PaymentStatus } from "@/types/order.types"
 
 type PaymentStatusBadgeProps = {
   status: PaymentStatus

@@ -3,13 +3,8 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import {
-  getProduct,
-  getProductHistory,
-  listCategories,
-  listProducts,
-  type ProductPage,
-} from "@/lib/products/product.api"
+import { getProduct, getProductHistory, listCategories, listProducts } from "@/lib/products/product.api";
+import { type ProductPage } from "@/types/product.types";
 import {
   useCategoriesQuery,
   useProductHistoryQuery,

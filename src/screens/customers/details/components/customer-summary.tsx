@@ -1,9 +1,9 @@
 import type { ReactNode } from "react"
 
 import { Card } from "@/components/ui/card"
-import type { Customer } from "@/lib/customers/customer.types"
-import { formatDate } from "@/lib/format-date"
-import { formatCurrency, formatInteger } from "@/lib/format-number"
+import type { Customer } from "@/types/customer.types"
+import { formatDate } from "@/utils/format-date"
+import { formatCurrency, formatInteger } from "@/utils/format-number"
 
 type CustomerSummaryProps = {
   customer: Customer

@@ -8,8 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { getEditProductRoute, getProductRoute } from "@/lib/routes"
-import type { Product } from "@/lib/products/product.types"
+import { getEditProductRoute, getProductRoute } from "@/config/routes"
+import type { Product } from "@/types/product.types"
 
 type ProductActionsProps = {
   product: Product

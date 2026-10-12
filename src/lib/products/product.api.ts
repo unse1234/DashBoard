@@ -1,5 +1,6 @@
+import type { ProductPage } from "@/types/product.types"
 import { apiClient } from "@/lib/api/axios"
-import type { ProductFormValues } from "@/lib/products/product.schemas"
+import type { ProductFormValues } from "@/types/product.types";
 import type {
   Category,
   Product,
@@ -7,8 +8,8 @@ import type {
   ProductStatus,
   ProductStatusFilter,
   ProductsQuery,
-} from "@/lib/products/product.types"
-import { ALL_CATEGORIES } from "@/lib/products/product.constants"
+} from "@/types/product.types"
+import { ALL_CATEGORIES } from "@/constants/product.constants"
 
 // The API sends enums as stored, in upper case; the UI uses lower case.
 type ApiProductStatus = "ACTIVE" | "INACTIVE"
@@ -19,11 +20,6 @@ type ApiProduct = Omit<Product, "status"> & { status: ApiProductStatus }
 type ProductPageResponse = {
   data: ApiProduct[]
   meta: { total: number }
-}
-
-export type ProductPage = {
-  products: Product[]
-  totalRecords: number
 }
 
 const PRODUCT_STATUSES = {

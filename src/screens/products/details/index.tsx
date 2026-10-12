@@ -1,7 +1,7 @@
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { PageContent } from "@/components/dashboard/page-content"
 import { BackLink } from "@/components/shared/back-link"
-import { routes } from "@/lib/routes"
+import { routes } from "@/config/routes"
 import { ProductDetails } from "@/screens/products/details/components/product-details"
 
 type ProductDetailsScreenProps = {

@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { ImportFailedRow } from "@/lib/imports/import.types"
+import type { ImportFailedRow } from "@/types/import.types"
 import { ImportActionButton } from "@/screens/imports/components/import-action-button"
 
 type ImportFailedRowsProps = {

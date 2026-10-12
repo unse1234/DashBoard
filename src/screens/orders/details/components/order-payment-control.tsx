@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { Button } from "@/components/ui/button"
-import { formatCurrency } from "@/lib/format-number"
+import { formatCurrency } from "@/utils/format-number"
 
 type OrderPaymentControlProps = {
   orderId: string

@@ -1,7 +1,7 @@
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { PageContent } from "@/components/dashboard/page-content"
 import { BackLink } from "@/components/shared/back-link"
-import { routes } from "@/lib/routes"
+import { routes } from "@/config/routes"
 
 export default function ImportNotFound() {
   return (

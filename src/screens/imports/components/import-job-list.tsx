@@ -1,5 +1,5 @@
-import { IMPORT_EMPTY_STATES } from "@/lib/imports/import.constants"
-import type { ImportJob, ImportStatus } from "@/lib/imports/import.types"
+import { IMPORT_EMPTY_STATES } from "@/constants/import.constants"
+import type { ImportJob, ImportStatus } from "@/types/import.types"
 import { ImportJobItem } from "@/screens/imports/components/import-job-item"
 
 type ImportJobListProps = {

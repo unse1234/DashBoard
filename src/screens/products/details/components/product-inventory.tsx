@@ -1,7 +1,7 @@
 import { DetailItem } from "@/components/shared/detail-item"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatInteger } from "@/lib/format-number"
-import type { Product } from "@/lib/products/product.types"
+import { formatInteger } from "@/utils/format-number"
+import type { Product } from "@/types/product.types"
 
 type ProductInventoryProps = {
   product: Product

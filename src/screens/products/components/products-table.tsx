@@ -10,11 +10,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { formatCurrency, formatInteger } from "@/lib/format-number"
-import { getProductDisplayStatus } from "@/lib/products/product.utils"
-import type { Product } from "@/lib/products/product.types"
-import { getProductRoute } from "@/lib/routes"
-import { cn } from "@/lib/utils"
+import { formatCurrency, formatInteger } from "@/utils/format-number"
+import { getProductDisplayStatus } from "@/utils/product.utils"
+import type { Product } from "@/types/product.types"
+import { getProductRoute } from "@/config/routes"
+import { cn } from "@/utils/cn"
 import { ProductActions } from "@/screens/products/components/product-actions"
 import { ProductStatusBadge } from "@/screens/products/components/product-status-badge"
 

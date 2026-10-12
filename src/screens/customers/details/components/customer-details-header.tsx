@@ -1,4 +1,4 @@
-import type { Customer } from "@/lib/customers/customer.types"
+import type { Customer } from "@/types/customer.types"
 
 type CustomerDetailsHeaderProps = {
   customer: Customer

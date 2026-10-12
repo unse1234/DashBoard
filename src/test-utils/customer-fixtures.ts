@@ -3,7 +3,7 @@ import type {
   CustomerAddress,
   CustomerDetails,
   CustomerOrderSummary,
-} from "@/lib/customers/customer.types"
+} from "@/types/customer.types"
 
 /** A customer with a phone number and a few orders; override fields per test. */
 export function createCustomer(overrides: Partial<Customer> = {}): Customer {

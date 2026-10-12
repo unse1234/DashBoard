@@ -1,4 +1,4 @@
-import type { OrdersQuery } from "@/lib/orders/order.types"
+import type { OrdersQuery } from "@/types/order.types"
 
 /**
  * Every orders cache entry lives under `["orders"]`, from the broadest key to

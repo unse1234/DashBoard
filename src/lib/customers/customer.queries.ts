@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/hooks/use-auth"
 import { getCustomerDetails, listCustomers } from "@/lib/customers/customer.api"
 import { customerKeys } from "@/lib/customers/customer.keys"
-import type { CustomersQuery } from "@/lib/customers/customer.types"
+import type { CustomersQuery } from "@/types/customer.types"
 
 // Customers are read-only here, so nothing invalidates these: they refresh
 // once stale, on window focus, and the cache is cleared when the account

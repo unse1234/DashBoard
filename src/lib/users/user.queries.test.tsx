@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import { shouldRetryQuery } from "@/lib/query/query-client"
 import { getUser, listUsers } from "@/lib/users/user.api"
-import type { UserPage } from "@/lib/users/user.api"
+import type { UserPage } from "@/types/user.types";
 import { useUserQuery, useUsersQuery } from "@/lib/users/user.queries"
 import { defaultUsersQuery } from "@/lib/users/user.query"
 import { createAuthUser } from "@/test-utils/auth-fixtures"

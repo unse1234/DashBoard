@@ -14,7 +14,7 @@ import {
 import { NavMain } from "@/components/dashboard/nav-main"
 import { NavSecondary } from "@/components/dashboard/nav-secondary"
 import { NavUser } from "@/components/dashboard/nav-user"
-import type { NavItem } from "@/components/dashboard/nav.types"
+import type { NavItem } from "@/types/nav.types"
 import { AppLogo } from "@/components/shared/app-logo"
 import {
   Sidebar,
@@ -22,7 +22,7 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar"
-import { routes } from "@/lib/routes"
+import { routes } from "@/config/routes"
 
 // Placeholder content: only Dashboard, Users, Products, Orders, Customers and
 // Imports point to real pages so far.

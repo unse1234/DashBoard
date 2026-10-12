@@ -2,12 +2,12 @@
 
 import { toast } from "sonner"
 
-import { ORDER_STATUS_LABELS } from "@/lib/orders/order.constants"
+import { ORDER_STATUS_LABELS } from "@/constants/order.constants"
 import {
   useMarkOrderPaidMutation,
   useUpdateOrderStatusMutation,
 } from "@/lib/orders/order.mutations"
-import type { Order, OrderStatus } from "@/lib/orders/order.types"
+import type { Order, OrderStatus } from "@/types/order.types"
 import { OrderPaymentControl } from "@/screens/orders/details/components/order-payment-control"
 import { OrderStatusControl } from "@/screens/orders/details/components/order-status-control"
 import { OrderSummary } from "@/screens/orders/details/components/order-summary"

@@ -10,14 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { formatDate } from "@/lib/format-date"
-import { formatCurrency, formatInteger } from "@/lib/format-number"
+import { formatDate } from "@/utils/format-date"
+import { formatCurrency, formatInteger } from "@/utils/format-number"
 import type {
   OrderListItem,
   OrderSort,
   OrderSortColumn,
-} from "@/lib/orders/order.types"
-import { getOrderRoute } from "@/lib/routes"
+} from "@/types/order.types"
+import { getOrderRoute } from "@/config/routes"
 import { OrderActions } from "@/screens/orders/components/order-actions"
 import { OrderStatusBadge } from "@/screens/orders/components/order-status-badge"
 import { PaymentStatusBadge } from "@/screens/orders/components/payment-status-badge"

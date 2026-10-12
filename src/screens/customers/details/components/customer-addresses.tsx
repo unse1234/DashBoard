@@ -1,8 +1,8 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CUSTOMER_ADDRESS_GROUPS } from "@/lib/customers/customer.constants"
-import type { CustomerAddress } from "@/lib/customers/customer.types"
-import { getAddressLines } from "@/lib/customers/customer.utils"
+import { CUSTOMER_ADDRESS_GROUPS } from "@/constants/customer.constants"
+import type { CustomerAddress } from "@/types/customer.types"
+import { getAddressLines } from "@/utils/customer.utils"
 
 type CustomerAddressesProps = {
   addresses: CustomerAddress[]

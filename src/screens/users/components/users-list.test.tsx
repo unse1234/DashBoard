@@ -12,7 +12,7 @@ import {
   setUserActive,
   updateUser,
 } from "@/lib/users/user.api"
-import type { UserPage } from "@/lib/users/user.api"
+import type { UserPage } from "@/types/user.types";
 import { UsersList } from "@/screens/users/components/users-list"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { renderWithQuery } from "@/test-utils/render"

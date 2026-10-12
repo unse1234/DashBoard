@@ -1,6 +1,6 @@
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { PageContent } from "@/components/dashboard/page-content"
-import type { ImportJob } from "@/lib/imports/import.types"
+import type { ImportJob } from "@/types/import.types"
 import { ImportJobTabs } from "@/screens/imports/components/import-job-tabs"
 import { ImportUpload } from "@/screens/imports/components/import-upload"
 

@@ -2,7 +2,7 @@ import { vi } from "vitest"
 
 import { ApiError } from "@/lib/api/api-error"
 import { createLoginAction } from "@/lib/auth/auth.actions"
-import { initialAuthFormState } from "@/lib/auth/form-state"
+import { initialAuthFormState } from "@/utils/auth-form";
 
 function credentials(email: string, password: string) {
   const data = new FormData()

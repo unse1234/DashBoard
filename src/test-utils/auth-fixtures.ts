@@ -1,4 +1,4 @@
-import type { AuthUser } from "@/lib/auth/auth.types"
+import type { AuthUser } from "@/types/auth.types"
 
 /** A verified, active administrator; override fields per test. */
 export function createAuthUser(overrides: Partial<AuthUser> = {}): AuthUser {

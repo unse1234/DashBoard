@@ -22,9 +22,10 @@ import {
 } from "@/components/ui/field"
 import { Switch } from "@/components/ui/switch"
 import { describeApiError } from "@/lib/api/api-error"
-import { USER_ROLE_OPTIONS, USER_STATUS_LABELS } from "@/lib/users/user.constants"
-import { editUserSchema, type EditUserValues } from "@/lib/users/user.schemas"
-import type { User } from "@/lib/users/user.types"
+import { USER_ROLE_OPTIONS, USER_STATUS_LABELS } from "@/constants/user.constants"
+import { editUserSchema } from "@/validations/user.schemas";
+import { type EditUserValues } from "@/types/user.types";
+import type { User } from "@/types/user.types"
 import { DialogFormFooter } from "@/components/shared/dialog-form-footer"
 
 type EditUserDialogProps = {

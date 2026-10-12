@@ -1,7 +1,7 @@
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { PageContent } from "@/components/dashboard/page-content"
 import { BackLink } from "@/components/shared/back-link"
-import { getProductRoute } from "@/lib/routes"
+import { getProductRoute } from "@/config/routes"
 import { EditProduct } from "@/screens/products/edit/components/edit-product"
 
 type EditProductScreenProps = {

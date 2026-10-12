@@ -8,7 +8,7 @@ import {
   listProducts,
 } from "@/lib/products/product.api"
 import { categoryKeys, productKeys } from "@/lib/products/product.keys"
-import type { ProductsQuery } from "@/lib/products/product.types"
+import type { ProductsQuery } from "@/types/product.types"
 
 // `enabled` keeps these from firing while the session is still being restored,
 // or from retrying into a 401 after it has ended. Saving a product replaces its

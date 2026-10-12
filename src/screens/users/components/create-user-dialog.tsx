@@ -19,11 +19,9 @@ import {
 } from "@/components/ui/dialog"
 import { FieldGroup } from "@/components/ui/field"
 import { describeApiError, isApiError } from "@/lib/api/api-error"
-import { USER_ROLE_OPTIONS } from "@/lib/users/user.constants"
-import {
-  createUserSchema,
-  type CreateUserValues,
-} from "@/lib/users/user.schemas"
+import { USER_ROLE_OPTIONS } from "@/constants/user.constants"
+import { createUserSchema } from "@/validations/user.schemas";
+import { type CreateUserValues } from "@/types/user.types";
 import { DialogFormFooter } from "@/components/shared/dialog-form-footer"
 
 type CreateUserDialogProps = {

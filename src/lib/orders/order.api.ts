@@ -1,3 +1,4 @@
+import type { OrderPage } from "@/types/order.types"
 import { apiClient } from "@/lib/api/axios"
 import type {
   Order,
@@ -5,7 +6,7 @@ import type {
   OrderStatus,
   OrdersQuery,
   PaymentStatus,
-} from "@/lib/orders/order.types"
+} from "@/types/order.types"
 
 // The API sends enums as stored, in upper case; the UI uses lower case.
 type ApiOrderStatus =
@@ -29,11 +30,6 @@ type ApiOrder = Omit<Order, "status" | "paymentStatus"> & {
 type OrderPageResponse = {
   data: ApiOrderListItem[]
   meta: { total: number }
-}
-
-export type OrderPage = {
-  orders: OrderListItem[]
-  totalRecords: number
 }
 
 const ORDER_STATUSES = {

@@ -17,9 +17,10 @@ import {
 import { FieldGroup } from "@/components/ui/field"
 import { useAuth } from "@/hooks/use-auth"
 import { describeApiError } from "@/lib/api/api-error"
-import type { AuthUser } from "@/lib/auth/auth.types"
+import type { AuthUser } from "@/types/auth.types"
 import { useUpdateProfileMutation } from "@/lib/users/user.mutations"
-import { profileSchema, type ProfileValues } from "@/lib/users/user.schemas"
+import { profileSchema } from "@/validations/user.schemas";
+import { type ProfileValues } from "@/types/user.types";
 
 type EditProfileDialogProps = {
   open: boolean

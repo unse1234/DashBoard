@@ -13,8 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { USER_STATUS_FILTER_OPTIONS } from "@/lib/users/user.constants"
-import type { UserStatusFilter } from "@/lib/users/user.types"
+import { USER_STATUS_FILTER_OPTIONS } from "@/constants/user.constants"
+import type { UserStatusFilter } from "@/types/user.types"
 
 function toStatusFilter(value: string | null) {
   return USER_STATUS_FILTER_OPTIONS.find((option) => option.value === value)

@@ -2,9 +2,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   IMPORT_STATUSES,
   IMPORT_STATUS_LABELS,
-} from "@/lib/imports/import.constants"
-import type { ImportJob } from "@/lib/imports/import.types"
-import { groupImportsByStatus } from "@/lib/imports/import.utils"
+} from "@/constants/import.constants"
+import type { ImportJob } from "@/types/import.types"
+import { groupImportsByStatus } from "@/utils/import.utils"
 import { ImportJobList } from "@/screens/imports/components/import-job-list"
 
 type ImportJobTabsProps = {

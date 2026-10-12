@@ -1,0 +1,25 @@
+export type FieldErrors<Field extends string> = Partial<Record<Field, string>>
+
+export type AuthFormStatus = "idle" | "error" | "success"
+
+export type AuthFormState<Field extends string> = {
+  status: AuthFormStatus
+  /** Form-level feedback, e.g. "Invalid email or password." */
+  message?: string
+  fieldErrors?: FieldErrors<Field>
+}
+
+/**
+ * Signature expected from the (future) auth Server Actions so they can be
+ * passed straight to the auth forms and used with `useActionState`.
+ */
+export type AuthFormAction<Field extends string> = (
+  state: AuthFormState<Field>,
+  formData: FormData
+) => Promise<AuthFormState<Field>>
+
+export type LoginField = "email" | "password"
+
+export type ForgotPasswordField = "email"
+
+export type ResetPasswordField = "password" | "confirmPassword"

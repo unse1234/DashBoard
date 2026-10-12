@@ -6,8 +6,8 @@ import { toast } from "sonner"
 import { LoadError } from "@/components/shared/load-error"
 import { useCreateProductMutation } from "@/lib/products/product.mutations"
 import { useCategoriesQuery } from "@/lib/products/product.queries"
-import type { ProductFormValues } from "@/lib/products/product.schemas"
-import { getProductRoute } from "@/lib/routes"
+import type { ProductFormValues } from "@/types/product.types";
+import { getProductRoute } from "@/config/routes"
 import { ProductForm } from "@/screens/products/components/product-form"
 import { ProductFormSkeleton } from "@/screens/products/components/product-form-skeleton"
 

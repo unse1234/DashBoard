@@ -2,7 +2,7 @@ import type {
   Category,
   Product,
   ProductHistoryEntry,
-} from "@/lib/products/product.types"
+} from "@/types/product.types"
 
 /** An active, in-stock product with a cost price; override fields per test. */
 export function createProduct(overrides: Partial<Product> = {}): Product {

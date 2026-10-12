@@ -2,7 +2,8 @@ import { renderHook, waitFor } from "@testing-library/react"
 import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
-import { getOrder, listOrders, type OrderPage } from "@/lib/orders/order.api"
+import { getOrder, listOrders } from "@/lib/orders/order.api";
+import { type OrderPage } from "@/types/order.types";
 import { useOrderQuery, useOrdersQuery } from "@/lib/orders/order.queries"
 import { defaultOrdersQuery } from "@/lib/orders/order.query"
 import { createAuthUser } from "@/test-utils/auth-fixtures"

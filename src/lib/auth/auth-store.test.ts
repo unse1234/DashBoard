@@ -1,6 +1,6 @@
 import { vi } from "vitest"
 
-import type { AuthResponse, AuthUser } from "@/lib/auth/auth.types"
+import type { AuthResponse, AuthUser } from "@/types/auth.types"
 
 vi.mock("@/lib/auth/auth.api")
 

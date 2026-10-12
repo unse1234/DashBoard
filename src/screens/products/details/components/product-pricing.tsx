@@ -1,8 +1,8 @@
 import { DetailItem } from "@/components/shared/detail-item"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatCurrency, formatPercent } from "@/lib/format-number"
-import type { Product } from "@/lib/products/product.types"
-import { getProductMargin } from "@/lib/products/product.utils"
+import { formatCurrency, formatPercent } from "@/utils/format-number"
+import type { Product } from "@/types/product.types"
+import { getProductMargin } from "@/utils/product.utils"
 
 type ProductPricingProps = {
   product: Product

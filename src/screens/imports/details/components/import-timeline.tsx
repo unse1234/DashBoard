@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatDateTime } from "@/lib/format-date"
-import type { ImportTimelineEvent } from "@/lib/imports/import.types"
-import { cn } from "@/lib/utils"
+import { formatDateTime } from "@/utils/format-date"
+import type { ImportTimelineEvent } from "@/types/import.types"
+import { cn } from "@/utils/cn"
 
 const markerClasses = {
   done: "bg-primary",

@@ -2,9 +2,9 @@ import Link from "next/link"
 import { PencilIcon } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
-import type { Product } from "@/lib/products/product.types"
-import { getProductDisplayStatus } from "@/lib/products/product.utils"
-import { getEditProductRoute } from "@/lib/routes"
+import type { Product } from "@/types/product.types"
+import { getProductDisplayStatus } from "@/utils/product.utils"
+import { getEditProductRoute } from "@/config/routes"
 import { ProductStatusBadge } from "@/screens/products/components/product-status-badge"
 
 type ProductDetailsHeaderProps = {

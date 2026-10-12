@@ -1,4 +1,4 @@
-import type { ImportFailedRow, ImportJob } from "@/lib/imports/import.types"
+import type { ImportFailedRow, ImportJob } from "@/types/import.types"
 
 // Placeholder data until the imports API exists.
 

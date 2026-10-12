@@ -4,8 +4,8 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { CirclePlusIcon, MailIcon } from "lucide-react"
 
-import type { NavItem } from "@/components/dashboard/nav.types"
-import { getVisibleNavItems } from "@/components/dashboard/nav.utils"
+import type { NavItem } from "@/types/nav.types"
+import { getVisibleNavItems } from "@/utils/nav.utils"
 import { Button } from "@/components/ui/button"
 import {
   SidebarGroup,

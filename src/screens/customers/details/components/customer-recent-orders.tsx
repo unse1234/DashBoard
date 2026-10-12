@@ -11,10 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { CustomerOrderSummary } from "@/lib/customers/customer.types"
-import { formatDate } from "@/lib/format-date"
-import { formatCurrency, formatInteger } from "@/lib/format-number"
-import { getOrderRoute } from "@/lib/routes"
+import type { CustomerOrderSummary } from "@/types/customer.types"
+import { formatDate } from "@/utils/format-date"
+import { formatCurrency, formatInteger } from "@/utils/format-number"
+import { getOrderRoute } from "@/config/routes"
 import { CustomerOrderStatusBadge } from "@/screens/customers/details/components/customer-order-status-badge"
 
 // On a narrow card the date moves under the order ID instead of taking a column

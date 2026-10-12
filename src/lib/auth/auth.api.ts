@@ -1,7 +1,7 @@
 import type { AxiosRequestConfig } from "axios"
 
 import { apiClient } from "@/lib/api/axios"
-import type { AuthResponse, MessageResponse } from "@/lib/auth/auth.types"
+import type { AuthResponse, MessageResponse } from "@/types/auth.types"
 
 /** Browsers only send this header cross-origin after a CORS preflight; the API requires it on cookie endpoints. */
 const CSRF_HEADER = "X-CSRF-Protection"

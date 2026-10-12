@@ -7,9 +7,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { formatDate, formatDateTime } from "@/lib/format-date"
-import { USER_COLUMNS, USER_ROLE_LABELS } from "@/lib/users/user.constants"
-import type { User } from "@/lib/users/user.types"
+import { formatDate, formatDateTime } from "@/utils/format-date"
+import { USER_COLUMNS, USER_ROLE_LABELS } from "@/constants/user.constants"
+import type { User } from "@/types/user.types"
 import { UserActions } from "@/screens/users/components/user-actions"
 import { UserStatusBadge } from "@/screens/users/components/user-status-badge"
 

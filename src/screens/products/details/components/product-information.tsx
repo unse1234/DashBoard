@@ -1,8 +1,8 @@
 import { DetailItem } from "@/components/shared/detail-item"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatDateTime } from "@/lib/format-date"
-import type { Product } from "@/lib/products/product.types"
-import { getProductDisplayStatus } from "@/lib/products/product.utils"
+import { formatDateTime } from "@/utils/format-date"
+import type { Product } from "@/types/product.types"
+import { getProductDisplayStatus } from "@/utils/product.utils"
 import { ProductStatusBadge } from "@/screens/products/components/product-status-badge"
 
 type ProductInformationProps = {

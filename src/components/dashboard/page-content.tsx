@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils/cn"
 
 type PageContentProps = {
   /** Caps the width for forms and detail pages; lists use the full width. */

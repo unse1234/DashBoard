@@ -16,11 +16,11 @@ import {
 import {
   ALL_CATEGORIES,
   PRODUCT_STATUS_FILTER_OPTIONS,
-} from "@/lib/products/product.constants"
+} from "@/constants/product.constants"
 import type {
   Category,
   ProductStatusFilter,
-} from "@/lib/products/product.types"
+} from "@/types/product.types"
 
 function toStatusFilter(value: string | null) {
   return PRODUCT_STATUS_FILTER_OPTIONS.find((option) => option.value === value)

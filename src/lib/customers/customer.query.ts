@@ -1,5 +1,5 @@
-import type { CustomersQuery } from "@/lib/customers/customer.types"
-import { DEFAULT_PAGE_SIZE } from "@/lib/pagination"
+import type { CustomersQuery } from "@/types/customer.types"
+import { DEFAULT_PAGE_SIZE } from "@/constants/pagination.constants";
 
 export const defaultCustomersQuery: CustomersQuery = {
   search: "",

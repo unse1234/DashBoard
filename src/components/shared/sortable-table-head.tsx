@@ -2,8 +2,8 @@ import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { TableHead } from "@/components/ui/table"
-import type { SortDirection } from "@/lib/sort"
-import { cn } from "@/lib/utils"
+import type { SortDirection } from "@/types/sort.types";
+import { cn } from "@/utils/cn"
 
 const sortIcons = {
   asc: ArrowUpIcon,
