@@ -12,7 +12,7 @@ import {
   updateProfile,
   updateUser,
 } from "@/services/users/user.api"
-import { defaultUsersQuery } from "@/lib/users/user.query"
+import { defaultUsersQuery } from "@/screens/users/user.filters"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { mockApi } from "@/test-utils/mock-api"
 

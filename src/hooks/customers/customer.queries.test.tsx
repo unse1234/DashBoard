@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query"
 import { renderHook, waitFor } from "@testing-library/react"
 import { vi } from "vitest"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import { getCustomerDetails, listCustomers } from "@/services/customers/customer.api";
 import { type CustomerPage } from "@/types/customer.types";
@@ -10,7 +10,7 @@ import {
   useCustomerDetailsQuery,
   useCustomersQuery,
 } from "@/hooks/customers/customer.queries"
-import { defaultCustomersQuery } from "@/lib/customers/customer.query"
+import { defaultCustomersQuery } from "@/screens/customers/customer.filters"
 import { shouldRetryQuery } from "@/lib/query/query-client"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import {
@@ -20,7 +20,7 @@ import {
 import { createQueryWrapper } from "@/test-utils/render"
 
 vi.mock("@/services/customers/customer.api")
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 
 const details = createCustomerDetails()
 

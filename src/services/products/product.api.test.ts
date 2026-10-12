@@ -13,7 +13,7 @@ import {
   toProduct,
   updateProduct,
 } from "@/services/products/product.api"
-import { defaultProductsQuery } from "@/lib/products/product.query"
+import { defaultProductsQuery } from "@/screens/products/product.filters"
 import type { ProductFormValues } from "@/types/product.types";
 import { mockApi } from "@/test-utils/mock-api"
 import {

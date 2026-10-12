@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { toast } from "sonner"
 import { vi } from "vitest"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import { markOrderPaid, updateOrderStatus } from "@/services/orders/order.api"
 import type { Order } from "@/types/order.types"
@@ -14,7 +14,7 @@ import { createOrder } from "@/test-utils/order-fixtures"
 import { renderWithQuery } from "@/test-utils/render"
 
 vi.mock("@/services/orders/order.api")
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() },
 }))

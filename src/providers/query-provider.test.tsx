@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { act, render, screen, waitFor } from "@testing-library/react"
 
-import { QueryProvider } from "@/components/shared/query-provider"
+import { QueryProvider } from "@/providers/query-provider"
 import { resetAuthStore, signIn, signOut } from "@/lib/auth/auth-store"
 import { getQueryClient } from "@/lib/query/query-client"
 import { createAuthUser } from "@/test-utils/auth-fixtures"

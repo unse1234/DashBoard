@@ -10,8 +10,8 @@ export type AuthFormState<Field extends string> = {
 }
 
 /**
- * Signature expected from the (future) auth Server Actions so they can be
- * passed straight to the auth forms and used with `useActionState`.
+ * Async form callback used with `useActionState`. The current adapters run
+ * on the client; this signature does not make them Next.js Server Actions.
  */
 export type AuthFormAction<Field extends string> = (
   state: AuthFormState<Field>,

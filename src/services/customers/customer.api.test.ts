@@ -9,7 +9,7 @@ import {
   toCustomerAddress,
   toCustomerOrderSummary,
 } from "@/services/customers/customer.api"
-import { defaultCustomersQuery } from "@/lib/customers/customer.query"
+import { defaultCustomersQuery } from "@/screens/customers/customer.filters"
 import {
   createCustomer,
   createCustomerAddress,

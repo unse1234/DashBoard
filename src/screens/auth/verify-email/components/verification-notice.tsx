@@ -7,7 +7,7 @@ import { AuthFormMessage } from "@/components/auth/auth-form"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { describeApiError } from "@/lib/api/api-error"
 import {
   useLogoutMutation,

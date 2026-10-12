@@ -5,7 +5,7 @@ import { toast } from "sonner"
 import {
   getMockImportFailedRows,
   getMockImportJobById,
-} from "@/lib/imports/import.mock-data"
+} from "@/mocks/imports/import.mock-data"
 import { getImportTimeline } from "@/utils/import.utils"
 import { ImportDetailsHeader } from "@/screens/imports/details/components/import-details-header"
 import { ImportFailedRows } from "@/screens/imports/details/components/import-failed-rows"

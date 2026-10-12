@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import { getUser } from "@/services/users/user.api"
 import { UserDetails } from "@/screens/users/details/components/user-details"
@@ -11,7 +11,7 @@ import { renderWithQuery } from "@/test-utils/render"
 import { createUser } from "@/test-utils/user-fixtures"
 
 vi.mock("@/services/users/user.api")
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 
 const ada = createUser({ uid: "u-ada", name: "Ada Lovelace" })
 

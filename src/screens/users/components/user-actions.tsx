@@ -21,7 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { describeApiError } from "@/lib/api/api-error"
 import { getUserRoute } from "@/config/routes"
 import {
@@ -29,8 +29,7 @@ import {
   useSetUserActiveMutation,
   useUpdateUserMutation,
 } from "@/hooks/users/user.mutations"
-import type { EditUserValues } from "@/types/user.types";
-import type { User } from "@/types/user.types"
+import type { EditUserValues, User } from "@/types/user.types"
 import { getChangedFields } from "@/utils/user.utils"
 import { EditUserDialog } from "@/screens/users/components/edit-user-dialog"
 

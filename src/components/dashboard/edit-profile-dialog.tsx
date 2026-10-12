@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { FieldGroup } from "@/components/ui/field"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { describeApiError } from "@/lib/api/api-error"
 import type { AuthUser } from "@/types/auth.types"
 import { useUpdateProfileMutation } from "@/hooks/users/user.mutations"

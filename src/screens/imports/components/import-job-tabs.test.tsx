@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { toast } from "sonner"
 
-import { mockImportJobs } from "@/lib/imports/import.mock-data"
+import { mockImportJobs } from "@/mocks/imports/import.mock-data"
 import { ImportJobTabs } from "@/screens/imports/components/import-job-tabs"
 
 vi.mock("sonner", () => ({ toast: { info: vi.fn() } }))

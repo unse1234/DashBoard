@@ -10,8 +10,7 @@ import {
   updateUser,
 } from "@/services/users/user.api"
 import { userKeys } from "@/hooks/users/user.keys"
-import type { CreateUserValues, EditUserValues, ProfileValues } from "@/types/user.types";
-import type { User } from "@/types/user.types"
+import type { CreateUserValues, EditUserValues, ProfileValues, User } from "@/types/user.types"
 
 // A user appears on every page of every filter of the list, so any change
 // refetches the lists (not awaited: the screen keeps showing its rows, dimmed,

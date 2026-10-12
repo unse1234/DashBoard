@@ -6,11 +6,10 @@ import { AuthForm } from "@/components/auth/auth-form"
 import { AuthLink } from "@/components/auth/auth-link"
 import { useAuthForm } from "@/components/auth/use-auth-form"
 import { FormField } from "@/components/shared/form-field"
-import { createLoginAction } from "@/lib/auth/auth.actions"
+import { createLoginAction } from "@/screens/auth/actions/auth.actions"
 import { useLoginMutation } from "@/hooks/auth/auth.mutations"
-import type { AuthFormAction } from "@/types/form-state"
+import type { AuthFormAction, LoginField } from "@/types/form-state"
 import { validateLogin } from "@/validations/auth.validation";
-import { type LoginField } from "@/types/form-state";
 import { routes } from "@/config/routes"
 
 type LoginFormProps = {

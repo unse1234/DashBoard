@@ -1,8 +1,6 @@
-import type { UserPage, InvitedUser } from "@/types/user.types"
+import type { UserPage, InvitedUser, CreateUserValues, EditUserValues, ProfileValues, User, UsersQuery } from "@/types/user.types"
 import { apiClient } from "@/lib/api/axios"
 import type { AuthUser } from "@/types/auth.types"
-import type { CreateUserValues, EditUserValues, ProfileValues } from "@/types/user.types";
-import type { User, UsersQuery } from "@/types/user.types"
 
 type UserPageResponse = {
   data: AuthUser[]

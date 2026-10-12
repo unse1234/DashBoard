@@ -2,7 +2,7 @@ import {
   getMockImportFailedRows,
   getMockImportJobById,
   mockImportJobs,
-} from "@/lib/imports/import.mock-data"
+} from "@/mocks/imports/import.mock-data"
 import {
   getImportDurationSeconds,
   getImportProgress,

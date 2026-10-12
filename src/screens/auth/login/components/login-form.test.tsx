@@ -5,8 +5,7 @@ import { vi } from "vitest"
 import { ApiError } from "@/lib/api/api-error"
 import { signIn } from "@/lib/auth/auth-store"
 
-import type { AuthFormAction } from "@/types/form-state"
-import type { LoginField } from "@/types/form-state";
+import type { AuthFormAction, LoginField } from "@/types/form-state"
 import { LoginForm } from "@/screens/auth/login/components/login-form"
 import { renderWithQuery } from "@/test-utils/render"
 

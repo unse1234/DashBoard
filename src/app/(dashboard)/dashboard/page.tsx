@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 
 import { OverviewScreen } from "@/screens/overview"
 
-import data from "./data.json"
+import data from "@/mocks/overview/data.json"
 
 export const metadata: Metadata = {
   title: "Overview",

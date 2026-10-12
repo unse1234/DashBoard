@@ -25,8 +25,7 @@ import {
   SKU_TAKEN_MESSAGE,
 } from "@/constants/product.constants"
 import { productFormSchema } from "@/validations/product.schemas";
-import { type ProductFormInput, type ProductFormValues } from "@/types/product.types";
-import type { Category, Product } from "@/types/product.types"
+import type { ProductFormInput, ProductFormValues, Category, Product } from "@/types/product.types"
 import { getProductRoute, routes } from "@/config/routes"
 import { cn } from "@/utils/cn"
 

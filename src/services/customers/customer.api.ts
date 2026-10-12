@@ -1,13 +1,5 @@
-import type { CustomerPage } from "@/types/customer.types"
+import type { CustomerPage, Customer, CustomerAddress, CustomerDetails, CustomerOrderStatus, CustomerOrderSummary, CustomersQuery } from "@/types/customer.types"
 import { apiClient } from "@/lib/api/axios"
-import type {
-  Customer,
-  CustomerAddress,
-  CustomerDetails,
-  CustomerOrderStatus,
-  CustomerOrderSummary,
-  CustomersQuery,
-} from "@/types/customer.types"
 
 // The API sends enums as stored, in upper case; the UI uses lower case.
 type ApiAddressType = "SHIPPING" | "BILLING"

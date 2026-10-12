@@ -1,7 +1,7 @@
 "use client"
 
 import { useProductsQuery } from "@/hooks/products/product.queries"
-import { defaultProductsQuery } from "@/lib/products/product.query"
+import { defaultProductsQuery } from "@/screens/products/product.filters"
 
 /**
  * How many products there are in all, whatever the list is searching for. It

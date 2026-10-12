@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react"
 import { vi } from "vitest"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import {
   archiveProducts,
@@ -22,7 +22,7 @@ import {
   useProductQuery,
   useProductsQuery,
 } from "@/hooks/products/product.queries"
-import { defaultProductsQuery } from "@/lib/products/product.query"
+import { defaultProductsQuery } from "@/screens/products/product.filters"
 import type { ProductFormValues } from "@/types/product.types";
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import {
@@ -32,7 +32,7 @@ import {
 import { createQueryWrapper, createTestQueryClient } from "@/test-utils/render"
 
 vi.mock("@/services/products/product.api")
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 
 const mug = createProduct({ id: "PRD-1001", name: "Mug" })
 const values: ProductFormValues = {

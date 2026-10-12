@@ -24,8 +24,7 @@ import { Switch } from "@/components/ui/switch"
 import { describeApiError } from "@/lib/api/api-error"
 import { USER_ROLE_OPTIONS, USER_STATUS_LABELS } from "@/constants/user.constants"
 import { editUserSchema } from "@/validations/user.schemas";
-import { type EditUserValues } from "@/types/user.types";
-import type { User } from "@/types/user.types"
+import type { EditUserValues, User } from "@/types/user.types"
 import { DialogFormFooter } from "@/components/shared/dialog-form-footer"
 
 type EditUserDialogProps = {

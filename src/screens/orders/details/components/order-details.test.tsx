@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import { getOrder } from "@/services/orders/order.api"
 import { OrderAddresses } from "@/screens/orders/details/components/order-addresses"
@@ -20,7 +20,7 @@ import {
 import { renderWithQuery } from "@/test-utils/render"
 
 vi.mock("@/services/orders/order.api")
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 
 beforeEach(() => {
   vi.resetAllMocks()

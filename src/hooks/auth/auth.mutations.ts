@@ -10,6 +10,8 @@ import {
   signOut,
 } from "@/lib/auth/auth-store"
 
+// The auth store owns the session; these hooks provide pending/error handling.
+// Account changes clear cached server data through `clearCacheOnAccountChange`.
 export function useLoginMutation() {
   return useMutation({
     mutationFn: ({ email, password }: LoginCredentials) =>

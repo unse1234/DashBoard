@@ -1,7 +1,7 @@
 "use client"
 
 import { useOrdersQuery } from "@/hooks/orders/order.queries"
-import { defaultOrdersQuery } from "@/lib/orders/order.query"
+import { defaultOrdersQuery } from "@/screens/orders/order.filters"
 
 /**
  * How many orders there are in all, whatever the list is searching for. It asks

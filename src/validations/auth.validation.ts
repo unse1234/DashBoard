@@ -1,6 +1,5 @@
 import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/constants/auth.constants"
-import type { LoginField, ForgotPasswordField, ResetPasswordField } from "@/types/form-state"
-import type { FieldErrors } from "@/types/form-state"
+import type { LoginField, ForgotPasswordField, ResetPasswordField, FieldErrors } from "@/types/form-state"
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 

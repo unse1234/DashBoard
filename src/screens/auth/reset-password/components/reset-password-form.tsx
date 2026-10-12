@@ -7,12 +7,11 @@ import { AuthForm, AuthFormMessage } from "@/components/auth/auth-form"
 import { useAuthForm } from "@/components/auth/use-auth-form"
 import { FormField } from "@/components/shared/form-field"
 import { buttonVariants } from "@/components/ui/button"
-import { createResetPasswordAction } from "@/lib/auth/auth.actions"
+import { createResetPasswordAction } from "@/screens/auth/actions/auth.actions"
 import { useResetPasswordMutation } from "@/hooks/auth/auth.mutations"
-import type { AuthFormAction } from "@/types/form-state"
+import type { AuthFormAction, ResetPasswordField } from "@/types/form-state"
 import { PASSWORD_HINT } from "@/constants/auth.constants";
 import { validateResetPassword } from "@/validations/auth.validation";
-import { type ResetPasswordField } from "@/types/form-state";
 import { routes } from "@/config/routes"
 
 type ResetPasswordFormProps = {

@@ -10,7 +10,7 @@ import {
   toOrderListItem,
   updateOrderStatus,
 } from "@/services/orders/order.api"
-import { defaultOrdersQuery } from "@/lib/orders/order.query"
+import { defaultOrdersQuery } from "@/screens/orders/order.filters"
 import { createOrder, createOrderListItem } from "@/test-utils/order-fixtures"
 import { mockApi } from "@/test-utils/mock-api"
 

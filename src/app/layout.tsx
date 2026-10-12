@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { SessionRestorer } from "@/components/auth/session-restorer"
-import { QueryProvider } from "@/components/shared/query-provider"
+import { SessionRestorer } from "@/providers/session-restorer"
+import { QueryProvider } from "@/providers/query-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { APP_NAME } from "@/config/app.constants";
 import "./globals.css";

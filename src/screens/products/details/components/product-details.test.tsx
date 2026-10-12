@@ -2,7 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import { getProduct, getProductHistory } from "@/services/products/product.api"
 import { ProductDetails } from "@/screens/products/details/components/product-details"
@@ -16,7 +16,7 @@ import {
 import { renderWithQuery } from "@/test-utils/render"
 
 vi.mock("@/services/products/product.api")
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 
 beforeEach(() => {
   vi.resetAllMocks()

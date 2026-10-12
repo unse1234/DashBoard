@@ -2,7 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import { listOrders } from "@/services/orders/order.api";
 import { type OrderPage } from "@/types/order.types";
@@ -16,7 +16,7 @@ import {
 import { renderWithQuery } from "@/test-utils/render"
 
 vi.mock("@/services/orders/order.api")
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 
 const daniel = createOrderListItem({
   id: "ORD-31620",

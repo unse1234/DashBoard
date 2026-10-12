@@ -2,10 +2,10 @@ import { render, screen } from "@testing-library/react"
 import { vi } from "vitest"
 
 import { AdminOnly } from "@/components/auth/admin-only"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 
 function renderGate() {
   render(

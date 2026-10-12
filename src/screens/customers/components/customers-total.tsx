@@ -1,7 +1,7 @@
 "use client"
 
 import { useCustomersQuery } from "@/hooks/customers/customer.queries"
-import { defaultCustomersQuery } from "@/lib/customers/customer.query"
+import { defaultCustomersQuery } from "@/screens/customers/customer.filters"
 
 /**
  * How many customers there are in all, whatever the list is searching for.

@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 
-import { mockImportJobs } from "@/lib/imports/import.mock-data"
+import { mockImportJobs } from "@/mocks/imports/import.mock-data"
 import { ImportsScreen } from "@/screens/imports"
 
 export const metadata: Metadata = {

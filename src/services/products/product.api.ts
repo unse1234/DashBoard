@@ -1,14 +1,5 @@
-import type { ProductPage } from "@/types/product.types"
+import type { ProductPage, ProductFormValues, Category, Product, ProductHistoryEntry, ProductStatus, ProductStatusFilter, ProductsQuery } from "@/types/product.types"
 import { apiClient } from "@/lib/api/axios"
-import type { ProductFormValues } from "@/types/product.types";
-import type {
-  Category,
-  Product,
-  ProductHistoryEntry,
-  ProductStatus,
-  ProductStatusFilter,
-  ProductsQuery,
-} from "@/types/product.types"
 import { ALL_CATEGORIES } from "@/constants/product.constants"
 
 // The API sends enums as stored, in upper case; the UI uses lower case.

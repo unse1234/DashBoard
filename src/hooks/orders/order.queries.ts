@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { getOrder, listOrders } from "@/services/orders/order.api"
 import { orderKeys } from "@/hooks/orders/order.keys"
 import type { OrdersQuery } from "@/types/order.types"

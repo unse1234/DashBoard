@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { getCustomerDetails, listCustomers } from "@/services/customers/customer.api"
 import { customerKeys } from "@/hooks/customers/customer.keys"
 import type { CustomersQuery } from "@/types/customer.types"

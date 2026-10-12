@@ -5,11 +5,16 @@ import {
   type FormEvent,
 } from "react"
 
-import { hasFieldErrors, initialAuthFormState } from "@/utils/auth-form";
-import { type AuthFormAction, type AuthFormState, type AuthFormStatus, type FieldErrors } from "@/types/form-state";
+import { hasFieldErrors, initialAuthFormState } from "@/utils/auth-form"
+import type {
+  AuthFormAction,
+  AuthFormState,
+  AuthFormStatus,
+  FieldErrors,
+} from "@/types/form-state"
 
 type UseAuthFormOptions<Field extends string> = {
-  /** Server Action to run once client-side validation passes. */
+  /** Async form callback to run once client-side validation passes. */
   action?: AuthFormAction<Field>
   validate: (formData: FormData) => FieldErrors<Field>
 }

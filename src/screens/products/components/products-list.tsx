@@ -5,7 +5,7 @@ import { toast } from "sonner"
 
 import { LoadError } from "@/components/shared/load-error"
 import { TablePagination } from "@/components/shared/table-pagination"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { getTotalPages } from "@/utils/pagination"
 import { useArchiveProductsMutation } from "@/hooks/products/product.mutations"
@@ -13,7 +13,7 @@ import {
   useCategoriesQuery,
   useProductsQuery,
 } from "@/hooks/products/product.queries"
-import { defaultProductsQuery } from "@/lib/products/product.query"
+import { defaultProductsQuery } from "@/screens/products/product.filters"
 import type { ProductsQuery } from "@/types/product.types"
 import { ProductsBulkActions } from "@/screens/products/components/products-bulk-actions"
 import { ProductsTable } from "@/screens/products/components/products-table"

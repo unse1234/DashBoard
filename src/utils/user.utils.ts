@@ -1,5 +1,4 @@
-import type { EditUserValues } from "@/types/user.types";
-import type { User } from "@/types/user.types"
+import type { EditUserValues, User } from "@/types/user.types"
 
 /**
  * The edit-form values that differ from the user as it is now. Sending only

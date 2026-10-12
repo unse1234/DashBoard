@@ -7,8 +7,7 @@ import {
   updateProduct,
 } from "@/services/products/product.api"
 import { productKeys } from "@/hooks/products/product.keys"
-import type { ProductFormValues } from "@/types/product.types";
-import type { Product } from "@/types/product.types"
+import type { ProductFormValues, Product } from "@/types/product.types"
 
 // A product appears on some page of the list, in its details, and in its edit
 // history. Any change refetches the lists (not awaited: the screen keeps its

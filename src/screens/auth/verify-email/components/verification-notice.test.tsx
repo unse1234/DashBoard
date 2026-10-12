@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import { resendVerification } from "@/services/auth/auth.api"
 import { signOut } from "@/lib/auth/auth-store"
@@ -10,7 +10,7 @@ import { VerificationNotice } from "@/screens/auth/verify-email/components/verif
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { renderWithQuery } from "@/test-utils/render"
 
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 vi.mock("@/services/auth/auth.api")
 vi.mock("@/lib/auth/auth-store")
 

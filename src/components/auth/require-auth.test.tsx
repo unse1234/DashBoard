@@ -2,13 +2,13 @@ import { render, screen } from "@testing-library/react"
 import { vi } from "vitest"
 
 import { RequireAuth } from "@/components/auth/require-auth"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 
 const replace = vi.fn()
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }))
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 
 function renderGuard() {
   return render(

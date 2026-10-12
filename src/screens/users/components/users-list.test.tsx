@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { toast } from "sonner"
 import { vi } from "vitest"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import {
   deleteUser,
@@ -19,7 +19,7 @@ import { renderWithQuery } from "@/test-utils/render"
 import { createUser } from "@/test-utils/user-fixtures"
 
 vi.mock("@/services/users/user.api")
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), warning: vi.fn(), error: vi.fn() },
 }))

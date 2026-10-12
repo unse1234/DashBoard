@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react"
 import { vi } from "vitest"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import { getAuthState, updateSessionUser } from "@/lib/auth/auth-store"
 import {
@@ -20,7 +20,7 @@ import {
   useUpdateProfileMutation,
   useUpdateUserMutation,
 } from "@/hooks/users/user.mutations"
-import { defaultUsersQuery } from "@/lib/users/user.query"
+import { defaultUsersQuery } from "@/screens/users/user.filters"
 import { useUsersQuery } from "@/hooks/users/user.queries"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { createQueryWrapper, createTestQueryClient } from "@/test-utils/render"
@@ -28,7 +28,7 @@ import { createUser } from "@/test-utils/user-fixtures"
 
 vi.mock("@/services/users/user.api")
 vi.mock("@/lib/auth/auth-store")
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 
 const ada = createUser({ uid: "u-ada", name: "Ada" })
 const me = createAuthUser({ id: "u-me", name: "Me Myself", role: "ADMIN" })

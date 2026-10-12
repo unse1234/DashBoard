@@ -4,7 +4,7 @@ import { notFound } from "next/navigation"
 import {
   getMockImportFailedRows,
   getMockImportJobById,
-} from "@/lib/imports/import.mock-data"
+} from "@/mocks/imports/import.mock-data"
 import { getImportTimeline } from "@/utils/import.utils"
 import { ImportDetailsScreen } from "@/screens/imports/details"
 

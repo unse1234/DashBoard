@@ -2,7 +2,7 @@ import { StrictMode } from "react"
 import { screen } from "@testing-library/react"
 import { vi } from "vitest"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import { verifyEmail } from "@/services/auth/auth.api"
 import {
@@ -16,7 +16,7 @@ import { renderWithQuery } from "@/test-utils/render"
 
 vi.mock("@/services/auth/auth.api")
 vi.mock("@/lib/auth/auth-store")
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 
 function signedOut() {
   const state = { status: "unauthenticated", user: null } as const

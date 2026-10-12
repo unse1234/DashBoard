@@ -1,12 +1,5 @@
-import type { OrderPage } from "@/types/order.types"
+import type { OrderPage, Order, OrderListItem, OrderStatus, OrdersQuery, PaymentStatus } from "@/types/order.types"
 import { apiClient } from "@/lib/api/axios"
-import type {
-  Order,
-  OrderListItem,
-  OrderStatus,
-  OrdersQuery,
-  PaymentStatus,
-} from "@/types/order.types"
 
 // The API sends enums as stored, in upper case; the UI uses lower case.
 type ApiOrderStatus =

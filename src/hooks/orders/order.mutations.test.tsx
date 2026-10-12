@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react"
 import { vi } from "vitest"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import { customerKeys } from "@/hooks/customers/customer.keys"
 import {
@@ -16,14 +16,14 @@ import {
   useUpdateOrderStatusMutation,
 } from "@/hooks/orders/order.mutations"
 import { useOrderQuery, useOrdersQuery } from "@/hooks/orders/order.queries"
-import { defaultOrdersQuery } from "@/lib/orders/order.query"
+import { defaultOrdersQuery } from "@/screens/orders/order.filters"
 import { productKeys } from "@/hooks/products/product.keys"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { createOrder, createOrderListItem } from "@/test-utils/order-fixtures"
 import { createQueryWrapper, createTestQueryClient } from "@/test-utils/render"
 
 vi.mock("@/services/orders/order.api")
-vi.mock("@/hooks/use-auth")
+vi.mock("@/hooks/auth/use-auth")
 
 const pending = createOrder({ status: "pending", paymentStatus: "pending" })
 

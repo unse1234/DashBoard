@@ -27,7 +27,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import { describeApiError } from "@/lib/api/api-error"
 import { useLogoutMutation } from "@/hooks/auth/auth.mutations"
 

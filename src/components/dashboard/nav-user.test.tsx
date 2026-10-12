@@ -5,7 +5,7 @@ import { vi } from "vitest"
 
 import { NavUser } from "@/components/dashboard/nav-user"
 import { SidebarProvider } from "@/components/ui/sidebar"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/auth/use-auth"
 import type { AuthUser } from "@/types/auth.types"
 import { getAuthState, resetAuthStore, signIn } from "@/lib/auth/auth-store"
 import { createAuthUser } from "@/test-utils/auth-fixtures"

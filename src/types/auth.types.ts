@@ -28,9 +28,7 @@ export type MessageResponse = {
 }
 
 /**
- * Client-side session. The access token lives only in this module's memory
- * (never in localStorage or a readable cookie), so a page reload starts
- * "loading" and silently trades the HttpOnly refresh cookie for a new token.
+ * Session status while the in-memory auth store restores or ends a session.
  */
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated"
 
@@ -38,11 +36,6 @@ export type AuthState = {
   status: AuthStatus
   user: AuthUser | null
 }
-
-// The session itself (token, status, refresh) stays in the auth store. These
-// hooks give the screens React Query's pending and error handling around the
-// calls that change it. Cached server data is dropped by `clearCacheOnAccountChange`
-// when the signed-in account changes, so no mutation here has to clean up.
 
 export type LoginCredentials = {
   email: string
@@ -55,9 +48,8 @@ export type ResetPasswordRequest = {
 }
 
 /**
- * What the client needs from the session. The auth store registers itself here
- * (see `attachSessionHandlers`) instead of being imported, because the store
- * calls the auth API through this very client.
+ * Session contract registered by the auth store with the shared Axios client
+ * through `attachSessionHandlers`, avoiding a client-to-store runtime import.
  */
 export type SessionHandlers = {
   /** A valid access token, renewing it first when it is missing or about to expire. */

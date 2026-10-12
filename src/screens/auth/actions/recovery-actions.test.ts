@@ -5,7 +5,7 @@ import {
   createForgotPasswordAction,
   createResetPasswordAction,
   INVALID_RESET_LINK_MESSAGE,
-} from "@/lib/auth/auth.actions"
+} from "@/screens/auth/actions/auth.actions"
 import { initialAuthFormState } from "@/utils/auth-form";
 
 function formWith(values: Record<string, string>) {

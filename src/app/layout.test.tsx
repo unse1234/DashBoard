@@ -8,7 +8,7 @@ vi.mock("next/font/google", () => ({
   Geist: () => ({ variable: "font-sans" }),
   Geist_Mono: () => ({ variable: "font-mono" }),
 }))
-vi.mock("@/components/auth/session-restorer", () => ({
+vi.mock("@/providers/session-restorer", () => ({
   SessionRestorer: () => null,
 }))
 
