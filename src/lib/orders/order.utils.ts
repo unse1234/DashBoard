@@ -1,9 +1,4 @@
-import type { Order, OrderAddress } from "@/lib/orders/order.types"
-
-/** Units across all lines, so two bottles and a notebook count as three items. */
-export function getOrderItemCount({ items }: Pick<Order, "items">) {
-  return items.reduce((count, item) => count + item.quantity, 0)
-}
+import type { OrderAddress } from "@/lib/orders/order.types"
 
 /**
  * The lines of an address below the recipient: the street, the city line and

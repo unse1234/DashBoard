@@ -1,23 +1,17 @@
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { PageContent } from "@/components/dashboard/page-content"
-import type { Order } from "@/lib/orders/order.types"
 import { OrdersList } from "@/screens/orders/components/orders-list"
+import { OrdersTotal } from "@/screens/orders/components/orders-total"
 
-type OrdersScreenProps = {
-  orders: Order[]
-  totalRecords: number
-}
-
-export function OrdersScreen({ orders, totalRecords }: OrdersScreenProps) {
+export function OrdersScreen() {
   return (
     <>
       <DashboardHeader title="Orders" />
       <PageContent>
         <p className="text-sm text-muted-foreground">
-          Review and track what your customers have ordered. {totalRecords}{" "}
-          orders in total.
+          Review and track what your customers have ordered. <OrdersTotal />
         </p>
-        <OrdersList orders={orders} totalRecords={totalRecords} />
+        <OrdersList />
       </PageContent>
     </>
   )

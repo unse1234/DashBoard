@@ -51,12 +51,22 @@ export type OrderItem = {
   total: number
 }
 
-export type Order = {
+/** What the list shows of an order. */
+export type OrderListItem = {
   /** Public identifier and order number, also used in the details route. */
   id: string
   customer: OrderCustomer
   status: OrderStatus
   paymentStatus: PaymentStatus
+  /** Units across all lines, so two bottles and a notebook count as three. */
+  itemCount: number
+  /** `subtotal` + `shipping` - `discount` + `tax`, in USD. */
+  total: number
+  /** ISO 8601 timestamp. */
+  createdAt: string
+}
+
+export type Order = OrderListItem & {
   items: OrderItem[]
   /** All amounts are in USD. */
   subtotal: number
@@ -64,12 +74,8 @@ export type Order = {
   /** The amount taken off, as a positive number. */
   discount: number
   tax: number
-  /** `subtotal` + `shipping` - `discount` + `tax`. */
-  total: number
   shippingAddress: OrderAddress
   billingAddress: OrderAddress
-  /** ISO 8601 timestamp. */
-  createdAt: string
 }
 
 export type OrderStatusFilter = OrderStatus | "all"
@@ -88,7 +94,7 @@ export type OrderSortColumn =
 
 export type OrderSort = Sort<OrderSortColumn>
 
-/** Everything that decides which orders are listed; maps 1:1 to future API or URL params. */
+/** Everything that decides which orders are listed; maps 1:1 to the API's query parameters. */
 export type OrdersQuery = {
   search: string
   status: OrderStatusFilter

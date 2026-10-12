@@ -8,11 +8,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import type { Order } from "@/lib/orders/order.types"
+import type { OrderListItem } from "@/lib/orders/order.types"
 import { getOrderRoute } from "@/lib/routes"
 
 type OrderActionsProps = {
-  order: Order
+  order: Pick<OrderListItem, "id">
 }
 
 export function OrderActions({ order }: OrderActionsProps) {

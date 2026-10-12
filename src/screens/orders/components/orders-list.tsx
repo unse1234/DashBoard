@@ -2,26 +2,41 @@
 
 import { useState } from "react"
 
+import { LoadError } from "@/components/shared/load-error"
 import { TablePagination } from "@/components/shared/table-pagination"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { useOrdersQuery } from "@/lib/orders/order.queries"
 import { defaultOrdersQuery } from "@/lib/orders/order.query"
-import type { Order, OrdersQuery } from "@/lib/orders/order.types"
+import type { OrdersQuery } from "@/lib/orders/order.types"
+import { getTotalPages } from "@/lib/pagination"
 import { getNextSort } from "@/lib/sort"
 import { OrdersTable } from "@/screens/orders/components/orders-table"
 import { OrdersTableToolbar } from "@/screens/orders/components/orders-table-toolbar"
 
-type OrdersListProps = {
-  /** The rows for the current query, as the server would return them. */
-  orders: Order[]
-  totalRecords: number
-}
+const SEARCH_DEBOUNCE_MS = 300
 
 /**
- * Owns the list controls' state. It does not search, filter, sort or page
- * `orders` itself: once the API exists, `query` is what gets sent to it (or
- * written to the URL) and `orders` / `totalRecords` come back for that query.
+ * Owns the list controls' state and shows the matching page. Searching,
+ * filtering, sorting and paging all happen in the API; the search text is sent
+ * only once the user pauses typing.
  */
-export function OrdersList({ orders, totalRecords }: OrdersListProps) {
+export function OrdersList() {
   const [query, setQuery] = useState<OrdersQuery>(defaultOrdersQuery)
+  const search = useDebouncedValue(query.search, SEARCH_DEBOUNCE_MS)
+  const { data, error, isFetching, isPlaceholderData, refetch } =
+    useOrdersQuery({ ...query, search })
+
+  const totalRecords = data?.totalRecords ?? 0
+  const lastPage = getTotalPages(totalRecords, query.pageSize)
+
+  // If the list shrinks while a later page is open (orders are placed and
+  // cancelled outside the dashboard too), step back to the last page that
+  // exists. Adjusting state while rendering (rather than in an effect) avoids a
+  // frame of the empty page. Only fresh data counts: placeholder data is the
+  // previous page's, with the previous page's total.
+  if (data && !isPlaceholderData && query.page > lastPage) {
+    setQuery((current) => ({ ...current, page: lastPage }))
+  }
 
   // Anything that changes which orders are listed starts again from page one.
   function updateQuery(changes: Partial<Omit<OrdersQuery, "page">>) {
@@ -38,27 +53,38 @@ export function OrdersList({ orders, totalRecords }: OrdersListProps) {
         search={query.search}
         status={query.status}
         paymentStatus={query.paymentStatus}
-        onSearchChange={(search) => updateQuery({ search })}
+        onSearchChange={(next) => updateQuery({ search: next })}
         onStatusChange={(status) => updateQuery({ status })}
         onPaymentStatusChange={(paymentStatus) =>
           updateQuery({ paymentStatus })
         }
       />
-      <OrdersTable
-        orders={orders}
-        sort={query.sort}
-        onSortChange={(column) =>
-          updateQuery({ sort: getNextSort(query.sort, column) })
-        }
-      />
-      <TablePagination
-        resourceName="orders"
-        page={query.page}
-        pageSize={query.pageSize}
-        totalRecords={totalRecords}
-        onPageChange={goToPage}
-        onPageSizeChange={(pageSize) => updateQuery({ pageSize })}
-      />
+      {error ? (
+        <LoadError
+          resourceName="orders"
+          error={error}
+          onRetry={() => void refetch()}
+        />
+      ) : (
+        <>
+          <OrdersTable
+            orders={data?.orders ?? []}
+            isLoading={isFetching}
+            sort={query.sort}
+            onSortChange={(column) =>
+              updateQuery({ sort: getNextSort(query.sort, column) })
+            }
+          />
+          <TablePagination
+            resourceName="orders"
+            page={query.page}
+            pageSize={query.pageSize}
+            totalRecords={totalRecords}
+            onPageChange={goToPage}
+            onPageSizeChange={(pageSize) => updateQuery({ pageSize })}
+          />
+        </>
+      )}
     </div>
   )
 }

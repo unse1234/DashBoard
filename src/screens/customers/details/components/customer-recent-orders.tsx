@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 import { TableScrollRegion } from "@/components/shared/table-scroll-region"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -12,6 +14,7 @@ import {
 import type { CustomerOrderSummary } from "@/lib/customers/customer.types"
 import { formatDate } from "@/lib/format-date"
 import { formatCurrency, formatInteger } from "@/lib/format-number"
+import { getOrderRoute } from "@/lib/routes"
 import { CustomerOrderStatusBadge } from "@/screens/customers/details/components/customer-order-status-badge"
 
 // On a narrow card the date moves under the order ID instead of taking a column
@@ -59,10 +62,13 @@ export function CustomerRecentOrders({
                 <TableBody>
                   {orders.map((order) => (
                     <TableRow key={order.id}>
-                      {/* The ID is plain text until the Orders module has a
-                          details route to link the order to. */}
                       <TableCell>
-                        <span className="font-mono text-xs">{order.id}</span>
+                        <Link
+                          href={getOrderRoute(order.id)}
+                          className="font-mono text-xs underline-offset-4 hover:underline"
+                        >
+                          {order.id}
+                        </Link>
                         <time
                           dateTime={order.createdAt}
                           className="block text-muted-foreground @md:hidden"

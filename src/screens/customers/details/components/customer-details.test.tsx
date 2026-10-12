@@ -406,10 +406,14 @@ describe("CustomerRecentOrders", () => {
     expect(within(region).getByRole("table")).toBeInTheDocument()
   })
 
-  it("does not link orders until there is an Orders page to link to", () => {
+  it("links each order ID to the order's details page", () => {
     renderOrders()
 
-    expect(screen.queryByRole("link")).toBeNull()
+    expect(screen.getByRole("link", { name: "ORD-31656" })).toHaveAttribute(
+      "href",
+      "/dashboard/orders/ORD-31656"
+    )
+    expect(screen.getAllByRole("link")).toHaveLength(latest.length)
   })
 
   it("shows the empty state for a customer without orders", () => {

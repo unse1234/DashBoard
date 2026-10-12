@@ -1,62 +1,134 @@
 import { render, screen, within } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import { vi } from "vitest"
 
-import { getMockOrderById } from "@/lib/orders/order.mock-data"
+import { useAuth } from "@/hooks/use-auth"
+import { ApiError } from "@/lib/api/api-error"
+import { getOrder } from "@/lib/orders/order.api"
 import { OrderAddresses } from "@/screens/orders/details/components/order-addresses"
 import { OrderCustomerInformation } from "@/screens/orders/details/components/order-customer-information"
-import { OrderDetailsHeader } from "@/screens/orders/details/components/order-details-header"
+import { OrderDetails } from "@/screens/orders/details/components/order-details"
 import { OrderItemsTable } from "@/screens/orders/details/components/order-items-table"
 import { OrderPriceBreakdown } from "@/screens/orders/details/components/order-price-breakdown"
+import { createAuthUser } from "@/test-utils/auth-fixtures"
+import {
+  createOrder,
+  createOrderAddress,
+  createOrderCustomer,
+  createOrderItem,
+} from "@/test-utils/order-fixtures"
+import { renderWithQuery } from "@/test-utils/render"
 
-function getOrder(orderId: string) {
-  return getMockOrderById(orderId)!
-}
+vi.mock("@/lib/orders/order.api")
+vi.mock("@/hooks/use-auth")
+
+beforeEach(() => {
+  vi.resetAllMocks()
+  vi.mocked(useAuth).mockReturnValue({
+    status: "authenticated",
+    user: createAuthUser(),
+  })
+})
 
 function getValue(label: string) {
   const term = screen.getByText(label, { selector: "dt" })
   return term.nextElementSibling as HTMLElement
 }
 
-describe("OrderDetailsHeader summary", () => {
-  it("shows the order ID as the heading", () => {
-    render(<OrderDetailsHeader order={getOrder("ORD-31620")} />)
+const bottle = createOrderItem()
+const dripper = createOrderItem({
+  id: "item-2",
+  productId: "PRD-2126",
+  productName:
+    "Stainless Steel Pour-Over Coffee Dripper Set with Reusable Filter",
+  sku: "HK-DRP-SET",
+  quantity: 1,
+  unitPrice: 54,
+  total: 54,
+})
+
+describe("OrderDetails", () => {
+  it("shows the page's outline until the order arrives, then the order", async () => {
+    let resolve: (value: ReturnType<typeof createOrder>) => void = () => {}
+    vi.mocked(getOrder).mockReturnValue(new Promise((res) => (resolve = res)))
+    const { container } = renderWithQuery(<OrderDetails orderId="ORD-10001" />)
+
+    expect(container.querySelector("[aria-busy='true']")).not.toBeNull()
+    expect(screen.queryByRole("heading", { level: 2 })).toBeNull()
+
+    resolve(createOrder())
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Order ORD-10001" })
+    ).toBeInTheDocument()
+    expect(getOrder).toHaveBeenCalledWith("ORD-10001", expect.any(AbortSignal))
+  })
+
+  it("lays the order out: items, price, customer and addresses", async () => {
+    vi.mocked(getOrder).mockResolvedValue(
+      createOrder({ items: [bottle, dripper] })
+    )
+    renderWithQuery(<OrderDetails orderId="ORD-10001" />)
+
+    await screen.findByRole("heading", { level: 2, name: "Order ORD-10001" })
+    expect(
+      screen.getByRole("heading", { level: 3, name: "Order items" })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { level: 3, name: "Price breakdown" })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { level: 3, name: "Customer" })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: "Shipping address" })
+    ).toBeInTheDocument()
+    expect(screen.getAllByRole("row")).toHaveLength(3)
+  })
+
+  it.each([404, 400])(
+    "says the order was not found for a %s",
+    async (status) => {
+      vi.mocked(getOrder).mockRejectedValue(new ApiError(status, ["nope"]))
+      renderWithQuery(<OrderDetails orderId="ORD-9" />)
+
+      expect(await screen.findByText("Order not found")).toBeInTheDocument()
+      expect(screen.queryByRole("alert")).toBeNull()
+    }
+  )
+
+  it("explains any other failure and retries on request", async () => {
+    vi.mocked(getOrder).mockRejectedValueOnce(
+      new ApiError(500, ["internal detail"])
+    )
+    vi.mocked(getOrder).mockResolvedValue(createOrder())
+    renderWithQuery(<OrderDetails orderId="ORD-10001" />)
+
+    const alert = await screen.findByRole("alert")
+    expect(alert).toHaveTextContent("Couldn't load this order")
+    expect(alert).not.toHaveTextContent("internal detail")
+
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }))
 
     expect(
-      screen.getByRole("heading", { level: 2, name: "Order ORD-31620" })
+      await screen.findByRole("heading", { level: 2, name: "Order ORD-10001" })
     ).toBeInTheDocument()
-  })
-
-  it("shows the statuses, creation date and total", () => {
-    render(<OrderDetailsHeader order={getOrder("ORD-31620")} />)
-
-    expect(within(getValue("Order Status")).getByText("Shipped")).toBeInTheDocument()
-    expect(within(getValue("Payment Status")).getByText("Paid")).toBeInTheDocument()
-    expect(getValue("Created At")).toHaveTextContent("Sep 29, 2026, 8:40 AM UTC")
-    expect(getValue("Total")).toHaveTextContent("$189.90")
-  })
-
-  it("shows a pending payment next to a pending order without mixing them up", () => {
-    render(<OrderDetailsHeader order={getOrder("ORD-31640")} />)
-
-    expect(within(getValue("Order Status")).getByText("Pending")).toBeInTheDocument()
-    expect(within(getValue("Payment Status")).getByText("Pending")).toBeInTheDocument()
   })
 })
 
 describe("OrderItemsTable", () => {
   it("shows the columns and one row per item", () => {
-    const order = getOrder("ORD-31624")
-    render(<OrderItemsTable items={order.items} />)
+    render(<OrderItemsTable items={[bottle, dripper]} />)
 
     expect(
       screen
         .getAllByRole("columnheader")
         .map((header) => header.textContent?.trim())
     ).toEqual(["Product", "SKU", "Quantity", "Unit Price", "Total"])
-    expect(screen.getAllByRole("row")).toHaveLength(order.items.length + 1)
+    expect(screen.getAllByRole("row")).toHaveLength(3)
   })
 
   it("shows each item's SKU, quantity, unit price and line total", () => {
-    render(<OrderItemsTable items={getOrder("ORD-31624").items} />)
+    render(<OrderItemsTable items={[bottle, dripper]} />)
     const row = within(
       screen.getByRole("row", { name: /Trail Insulated Water Bottle/ })
     )
@@ -68,7 +140,7 @@ describe("OrderItemsTable", () => {
   })
 
   it("links each product to its details page", () => {
-    render(<OrderItemsTable items={getOrder("ORD-31624").items} />)
+    render(<OrderItemsTable items={[bottle, dripper]} />)
 
     expect(
       screen.getByRole("link", { name: "Trail Insulated Water Bottle, 750 ml" })
@@ -81,7 +153,7 @@ describe("OrderItemsTable", () => {
   })
 
   it("is a named, focusable region so a narrow table can be scrolled by keyboard", () => {
-    render(<OrderItemsTable items={getOrder("ORD-31656").items} />)
+    render(<OrderItemsTable items={[bottle]} />)
 
     expect(screen.getByRole("region", { name: "Order items" })).toHaveAttribute(
       "tabindex",
@@ -92,7 +164,17 @@ describe("OrderItemsTable", () => {
 
 describe("OrderPriceBreakdown", () => {
   it("shows each part of the price and the total", () => {
-    render(<OrderPriceBreakdown order={getOrder("ORD-31624")} />)
+    render(
+      <OrderPriceBreakdown
+        order={{
+          subtotal: 103,
+          shipping: 6.5,
+          discount: 15,
+          tax: 0,
+          total: 94.5,
+        }}
+      />
+    )
 
     expect(getValue("Subtotal")).toHaveTextContent("$103.00")
     expect(getValue("Shipping")).toHaveTextContent("$6.50")
@@ -102,14 +184,16 @@ describe("OrderPriceBreakdown", () => {
   })
 
   it("shows tax when the order has some", () => {
-    render(<OrderPriceBreakdown order={getOrder("ORD-31620")} />)
+    render(
+      <OrderPriceBreakdown order={createOrder({ tax: 11, total: 189.9 })} />
+    )
 
     expect(getValue("Tax")).toHaveTextContent("$11.00")
     expect(getValue("Total")).toHaveTextContent("$189.90")
   })
 
   it("shows no minus sign without a discount", () => {
-    render(<OrderPriceBreakdown order={getOrder("ORD-31656")} />)
+    render(<OrderPriceBreakdown order={createOrder({ discount: 0 })} />)
 
     expect(getValue("Discount")).toHaveTextContent("$0.00")
     expect(getValue("Discount")).not.toHaveTextContent("−")
@@ -118,20 +202,18 @@ describe("OrderPriceBreakdown", () => {
 
 describe("OrderCustomerInformation", () => {
   it("shows the customer's details", () => {
-    render(
-      <OrderCustomerInformation customer={getOrder("ORD-31656").customer} />
-    )
+    render(<OrderCustomerInformation customer={createOrderCustomer()} />)
 
     expect(getValue("Name")).toHaveTextContent("Margaret Okafor-Williams")
     expect(getValue("Customer ID")).toHaveTextContent("CUS-1001")
-    expect(getValue("Email")).toHaveTextContent("margaret.okafor@brightwater.co.uk")
+    expect(getValue("Email")).toHaveTextContent(
+      "margaret.okafor@brightwater.co.uk"
+    )
     expect(getValue("Phone")).toHaveTextContent("+44 20 7946 0958")
   })
 
   it("links the name to the customer's details page", () => {
-    render(
-      <OrderCustomerInformation customer={getOrder("ORD-31656").customer} />
-    )
+    render(<OrderCustomerInformation customer={createOrderCustomer()} />)
 
     expect(
       screen.getByRole("link", { name: "Margaret Okafor-Williams" })
@@ -140,7 +222,9 @@ describe("OrderCustomerInformation", () => {
 
   it("says when there is no phone number", () => {
     render(
-      <OrderCustomerInformation customer={getOrder("ORD-31416").customer} />
+      <OrderCustomerInformation
+        customer={createOrderCustomer({ phone: null })}
+      />
     )
 
     expect(getValue("Phone")).toHaveTextContent("Not provided")
@@ -153,10 +237,35 @@ describe("OrderAddresses", () => {
       .nextElementSibling as HTMLElement
   }
 
-  it("shows the shipping and billing addresses under their own headings", () => {
-    render(<OrderAddresses order={getOrder("ORD-31604")} />)
+  const order = createOrder({
+    shippingAddress: createOrderAddress({
+      recipientName: "Isabella Fontaine",
+      phone: "+1 (604) 555-0163",
+      addressLine1: "1450 West Georgia Street",
+      addressLine2: null,
+      city: "Vancouver",
+      region: "BC",
+      postalCode: "V6G 2T6",
+      country: "Canada",
+    }),
+    billingAddress: createOrderAddress({
+      recipientName: "Fontaine & Daughters Boutique Hotels Ltd.",
+      phone: null,
+      addressLine1: "900 Burrard Street",
+      addressLine2: null,
+      city: "Vancouver",
+      region: "BC",
+      postalCode: "V6Z 2J9",
+      country: "Canada",
+    }),
+  })
 
-    expect(getAddress("Shipping address")).toHaveTextContent("Isabella Fontaine")
+  it("shows the shipping and billing addresses under their own headings", () => {
+    render(<OrderAddresses order={order} />)
+
+    expect(getAddress("Shipping address")).toHaveTextContent(
+      "Isabella Fontaine"
+    )
     expect(getAddress("Shipping address")).toHaveTextContent(
       "1450 West Georgia Street"
     )
@@ -170,14 +279,31 @@ describe("OrderAddresses", () => {
   })
 
   it("shows the recipient's phone number when there is one", () => {
-    render(<OrderAddresses order={getOrder("ORD-31604")} />)
+    render(<OrderAddresses order={order} />)
 
-    expect(getAddress("Shipping address")).toHaveTextContent("+1 (604) 555-0163")
+    expect(getAddress("Shipping address")).toHaveTextContent(
+      "+1 (604) 555-0163"
+    )
     expect(getAddress("Billing address")).not.toHaveTextContent("555")
   })
 
   it("leaves out the lines that are not set", () => {
-    render(<OrderAddresses order={getOrder("ORD-31640")} />)
+    render(
+      <OrderAddresses
+        order={createOrder({
+          shippingAddress: createOrderAddress({
+            recipientName: "Omar Haddad",
+            phone: "+971 4 555 0176",
+            addressLine1: "Villa 22, Street 14, Al Barsha 2",
+            addressLine2: null,
+            city: "Dubai",
+            region: null,
+            postalCode: null,
+            country: "United Arab Emirates",
+          }),
+        })}
+      />
+    )
 
     // No second street line and no postcode or region.
     expect(

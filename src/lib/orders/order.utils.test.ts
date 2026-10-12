@@ -1,32 +1,4 @@
-import type { OrderItem } from "@/lib/orders/order.types"
-import {
-  getOrderAddressLines,
-  getOrderItemCount,
-} from "@/lib/orders/order.utils"
-
-function createItem(quantity: number): OrderItem {
-  return {
-    id: "item",
-    productId: "PRD-2041",
-    productName: "Product",
-    sku: "SKU",
-    quantity,
-    unitPrice: 10,
-    total: quantity * 10,
-  }
-}
-
-describe("getOrderItemCount", () => {
-  it("adds up the quantities, not the lines", () => {
-    expect(
-      getOrderItemCount({ items: [createItem(2), createItem(1), createItem(4)] })
-    ).toBe(7)
-  })
-
-  it("is zero without items", () => {
-    expect(getOrderItemCount({ items: [] })).toBe(0)
-  })
-})
+import { getOrderAddressLines } from "@/lib/orders/order.utils"
 
 describe("getOrderAddressLines", () => {
   it("lists the street, the city line and the country", () => {

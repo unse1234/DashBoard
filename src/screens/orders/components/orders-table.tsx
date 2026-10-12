@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { SortableTableHead } from "@/components/shared/sortable-table-head"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -12,25 +13,34 @@ import {
 import { formatDate } from "@/lib/format-date"
 import { formatCurrency, formatInteger } from "@/lib/format-number"
 import type {
-  Order,
+  OrderListItem,
   OrderSort,
   OrderSortColumn,
 } from "@/lib/orders/order.types"
-import { getOrderItemCount } from "@/lib/orders/order.utils"
 import { getOrderRoute } from "@/lib/routes"
 import { OrderActions } from "@/screens/orders/components/order-actions"
 import { OrderStatusBadge } from "@/screens/orders/components/order-status-badge"
 import { PaymentStatusBadge } from "@/screens/orders/components/payment-status-badge"
 
 const COLUMN_COUNT = 8
+const SKELETON_ROW_COUNT = 5
 
 type OrdersTableProps = {
-  orders: Order[]
+  orders: OrderListItem[]
+  /** True while the first page loads or a newer page is being fetched. */
+  isLoading: boolean
   sort: OrderSort | null
   onSortChange: (column: OrderSortColumn) => void
 }
 
-export function OrdersTable({ orders, sort, onSortChange }: OrdersTableProps) {
+export function OrdersTable({
+  orders,
+  isLoading,
+  sort,
+  onSortChange,
+}: OrdersTableProps) {
+  const isFirstLoad = isLoading && orders.length === 0
+
   function getSortProps(column: OrderSortColumn) {
     return {
       direction: sort?.column === column ? sort.direction : null,
@@ -40,7 +50,7 @@ export function OrdersTable({ orders, sort, onSortChange }: OrdersTableProps) {
 
   return (
     <div className="overflow-hidden rounded-lg border">
-      <Table>
+      <Table aria-busy={isLoading}>
         <TableHeader className="bg-muted">
           <TableRow className="hover:bg-transparent">
             <SortableTableHead label="Order ID" {...getSortProps("id")} />
@@ -66,8 +76,10 @@ export function OrdersTable({ orders, sort, onSortChange }: OrdersTableProps) {
             </TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {orders.length === 0 ? (
+        <TableBody className={isLoading && !isFirstLoad ? "opacity-60" : ""}>
+          {isFirstLoad ? (
+            <SkeletonRows />
+          ) : orders.length === 0 ? (
             <TableRow className="hover:bg-transparent">
               <TableCell colSpan={COLUMN_COUNT} className="h-40 text-center">
                 <p className="font-medium">No orders found</p>
@@ -85,7 +97,19 @@ export function OrdersTable({ orders, sort, onSortChange }: OrdersTableProps) {
   )
 }
 
-function OrderRow({ order }: { order: Order }) {
+function SkeletonRows() {
+  return Array.from({ length: SKELETON_ROW_COUNT }, (_, row) => (
+    <TableRow key={row} className="hover:bg-transparent">
+      {Array.from({ length: COLUMN_COUNT }, (_, cell) => (
+        <TableCell key={cell}>
+          <Skeleton className="h-4 w-full max-w-32" />
+        </TableCell>
+      ))}
+    </TableRow>
+  ))
+}
+
+function OrderRow({ order }: { order: OrderListItem }) {
   return (
     <TableRow className="group/row [--row-tint:color-mix(in_oklab,var(--muted)_50%,var(--background))] hover:bg-(--row-tint) has-aria-expanded:bg-(--row-tint)">
       <TableCell>
@@ -114,7 +138,7 @@ function OrderRow({ order }: { order: Order }) {
         <time dateTime={order.createdAt}>{formatDate(order.createdAt)}</time>
       </TableCell>
       <TableCell className="text-right tabular-nums">
-        {formatInteger(getOrderItemCount(order))}
+        {formatInteger(order.itemCount)}
       </TableCell>
       <TableCell className="text-right tabular-nums">
         {formatCurrency(order.total)}
