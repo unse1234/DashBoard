@@ -3,7 +3,7 @@
 import { LoadError } from "@/components/shared/load-error"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useProductHistoryQuery } from "@/lib/products/product.queries"
+import { useProductHistoryQuery } from "@/hooks/products/product.queries"
 import { ProductHistory } from "@/screens/products/details/components/product-history"
 
 const PLACEHOLDER_ROW_COUNT = 3

@@ -3,26 +3,26 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { customerKeys } from "@/lib/customers/customer.keys"
+import { customerKeys } from "@/hooks/customers/customer.keys"
 import {
   getOrder,
   listOrders,
   markOrderPaid,
   updateOrderStatus,
-} from "@/lib/orders/order.api"
-import { orderKeys } from "@/lib/orders/order.keys"
+} from "@/services/orders/order.api"
+import { orderKeys } from "@/hooks/orders/order.keys"
 import {
   useMarkOrderPaidMutation,
   useUpdateOrderStatusMutation,
-} from "@/lib/orders/order.mutations"
-import { useOrderQuery, useOrdersQuery } from "@/lib/orders/order.queries"
+} from "@/hooks/orders/order.mutations"
+import { useOrderQuery, useOrdersQuery } from "@/hooks/orders/order.queries"
 import { defaultOrdersQuery } from "@/lib/orders/order.query"
-import { productKeys } from "@/lib/products/product.keys"
+import { productKeys } from "@/hooks/products/product.keys"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { createOrder, createOrderListItem } from "@/test-utils/order-fixtures"
 import { createQueryWrapper, createTestQueryClient } from "@/test-utils/render"
 
-vi.mock("@/lib/orders/order.api")
+vi.mock("@/services/orders/order.api")
 vi.mock("@/hooks/use-auth")
 
 const pending = createOrder({ status: "pending", paymentStatus: "pending" })

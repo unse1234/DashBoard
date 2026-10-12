@@ -2,11 +2,11 @@ import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
-import { resetPassword } from "@/lib/auth/auth.api"
+import { resetPassword } from "@/services/auth/auth.api"
 import { ResetPasswordScreen } from "@/screens/auth/reset-password"
 import { renderWithQuery } from "@/test-utils/render"
 
-vi.mock("@/lib/auth/auth.api")
+vi.mock("@/services/auth/auth.api")
 vi.mock("@/lib/auth/auth-store")
 
 describe("ResetPasswordScreen", () => {

@@ -10,7 +10,7 @@ import {
   resendVerification,
   resetPassword,
   verifyEmail,
-} from "@/lib/auth/auth.api"
+} from "@/services/auth/auth.api"
 import { mockApi } from "@/test-utils/mock-api"
 
 const getAccessToken = vi.fn<() => Promise<string>>()

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCustomersQuery } from "@/lib/customers/customer.queries"
+import { useCustomersQuery } from "@/hooks/customers/customer.queries"
 import { defaultCustomersQuery } from "@/lib/customers/customer.query"
 
 /**

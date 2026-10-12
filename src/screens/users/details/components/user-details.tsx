@@ -4,7 +4,7 @@ import { LoadError } from "@/components/shared/load-error"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { isApiError } from "@/lib/api/api-error"
-import { useUserQuery } from "@/lib/users/user.queries"
+import { useUserQuery } from "@/hooks/users/user.queries"
 import { UserDetailsCard } from "@/screens/users/details/components/user-details-card"
 import { UserNotFound } from "@/screens/users/details/components/user-not-found"
 

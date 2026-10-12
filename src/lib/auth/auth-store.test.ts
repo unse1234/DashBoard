@@ -2,7 +2,7 @@ import { vi } from "vitest"
 
 import type { AuthResponse, AuthUser } from "@/types/auth.types"
 
-vi.mock("@/lib/auth/auth.api")
+vi.mock("@/services/auth/auth.api")
 
 const user: AuthUser = {
   id: "user-1",
@@ -26,7 +26,7 @@ async function loadModules() {
   vi.resetModules()
   const { ApiError } = await import("@/lib/api/api-error")
   const store = await import("@/lib/auth/auth-store")
-  const api = await import("@/lib/auth/auth.api")
+  const api = await import("@/services/auth/auth.api")
   return {
     store,
     api: vi.mocked(api),

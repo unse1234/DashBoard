@@ -2,15 +2,15 @@ import { renderHook, waitFor } from "@testing-library/react"
 import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
-import { getOrder, listOrders } from "@/lib/orders/order.api";
+import { getOrder, listOrders } from "@/services/orders/order.api";
 import { type OrderPage } from "@/types/order.types";
-import { useOrderQuery, useOrdersQuery } from "@/lib/orders/order.queries"
+import { useOrderQuery, useOrdersQuery } from "@/hooks/orders/order.queries"
 import { defaultOrdersQuery } from "@/lib/orders/order.query"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { createOrder, createOrderListItem } from "@/test-utils/order-fixtures"
 import { createQueryWrapper } from "@/test-utils/render"
 
-vi.mock("@/lib/orders/order.api")
+vi.mock("@/services/orders/order.api")
 vi.mock("@/hooks/use-auth")
 
 function page(...ids: string[]): OrderPage {

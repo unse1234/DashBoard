@@ -3,14 +3,14 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { getProduct, getProductHistory, listCategories, listProducts } from "@/lib/products/product.api";
+import { getProduct, getProductHistory, listCategories, listProducts } from "@/services/products/product.api";
 import { type ProductPage } from "@/types/product.types";
 import {
   useCategoriesQuery,
   useProductHistoryQuery,
   useProductQuery,
   useProductsQuery,
-} from "@/lib/products/product.queries"
+} from "@/hooks/products/product.queries"
 import { defaultProductsQuery } from "@/lib/products/product.query"
 import { shouldRetryQuery } from "@/lib/query/query-client"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
@@ -21,7 +21,7 @@ import {
 } from "@/test-utils/product-fixtures"
 import { createQueryWrapper } from "@/test-utils/render"
 
-vi.mock("@/lib/products/product.api")
+vi.mock("@/services/products/product.api")
 vi.mock("@/hooks/use-auth")
 
 function page(...names: string[]): ProductPage {

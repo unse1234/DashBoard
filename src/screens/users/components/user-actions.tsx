@@ -28,7 +28,7 @@ import {
   useDeleteUserMutation,
   useSetUserActiveMutation,
   useUpdateUserMutation,
-} from "@/lib/users/user.mutations"
+} from "@/hooks/users/user.mutations"
 import type { EditUserValues } from "@/types/user.types";
 import type { User } from "@/types/user.types"
 import { getChangedFields } from "@/utils/user.utils"

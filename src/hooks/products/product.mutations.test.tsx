@@ -10,18 +10,18 @@ import {
   getProductHistory,
   listProducts,
   updateProduct,
-} from "@/lib/products/product.api"
-import { productKeys } from "@/lib/products/product.keys"
+} from "@/services/products/product.api"
+import { productKeys } from "@/hooks/products/product.keys"
 import {
   useArchiveProductsMutation,
   useCreateProductMutation,
   useUpdateProductMutation,
-} from "@/lib/products/product.mutations"
+} from "@/hooks/products/product.mutations"
 import {
   useProductHistoryQuery,
   useProductQuery,
   useProductsQuery,
-} from "@/lib/products/product.queries"
+} from "@/hooks/products/product.queries"
 import { defaultProductsQuery } from "@/lib/products/product.query"
 import type { ProductFormValues } from "@/types/product.types";
 import { createAuthUser } from "@/test-utils/auth-fixtures"
@@ -31,7 +31,7 @@ import {
 } from "@/test-utils/product-fixtures"
 import { createQueryWrapper, createTestQueryClient } from "@/test-utils/render"
 
-vi.mock("@/lib/products/product.api")
+vi.mock("@/services/products/product.api")
 vi.mock("@/hooks/use-auth")
 
 const mug = createProduct({ id: "PRD-1001", name: "Mug" })

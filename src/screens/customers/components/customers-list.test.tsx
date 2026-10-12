@@ -4,7 +4,7 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { listCustomers } from "@/lib/customers/customer.api";
+import { listCustomers } from "@/services/customers/customer.api";
 import { type CustomerPage } from "@/types/customer.types";
 import { CustomersList } from "@/screens/customers/components/customers-list"
 import { CustomersTotal } from "@/screens/customers/components/customers-total"
@@ -12,7 +12,7 @@ import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { createCustomer } from "@/test-utils/customer-fixtures"
 import { renderWithQuery } from "@/test-utils/render"
 
-vi.mock("@/lib/customers/customer.api")
+vi.mock("@/services/customers/customer.api")
 vi.mock("@/hooks/use-auth")
 
 const olivia = createCustomer({ id: "CUS-1001", name: "Olivia Martin" })

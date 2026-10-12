@@ -5,7 +5,7 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { archiveProducts, listCategories, listProducts } from "@/lib/products/product.api";
+import { archiveProducts, listCategories, listProducts } from "@/services/products/product.api";
 import { type ProductPage } from "@/types/product.types";
 import { ProductsList } from "@/screens/products/components/products-list"
 import { ProductsTotal } from "@/screens/products/components/products-total"
@@ -13,7 +13,7 @@ import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { categoryFixtures, createProduct } from "@/test-utils/product-fixtures"
 import { renderWithQuery } from "@/test-utils/render"
 
-vi.mock("@/lib/products/product.api")
+vi.mock("@/services/products/product.api")
 vi.mock("@/hooks/use-auth")
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), warning: vi.fn(), error: vi.fn() },

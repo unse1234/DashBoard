@@ -4,12 +4,12 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { getCustomerDetails, listCustomers } from "@/lib/customers/customer.api";
+import { getCustomerDetails, listCustomers } from "@/services/customers/customer.api";
 import { type CustomerPage } from "@/types/customer.types";
 import {
   useCustomerDetailsQuery,
   useCustomersQuery,
-} from "@/lib/customers/customer.queries"
+} from "@/hooks/customers/customer.queries"
 import { defaultCustomersQuery } from "@/lib/customers/customer.query"
 import { shouldRetryQuery } from "@/lib/query/query-client"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
@@ -19,7 +19,7 @@ import {
 } from "@/test-utils/customer-fixtures"
 import { createQueryWrapper } from "@/test-utils/render"
 
-vi.mock("@/lib/customers/customer.api")
+vi.mock("@/services/customers/customer.api")
 vi.mock("@/hooks/use-auth")
 
 const details = createCustomerDetails()

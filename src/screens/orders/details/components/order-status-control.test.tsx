@@ -5,7 +5,7 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { markOrderPaid, updateOrderStatus } from "@/lib/orders/order.api"
+import { markOrderPaid, updateOrderStatus } from "@/services/orders/order.api"
 import type { Order } from "@/types/order.types"
 import { OrderDetailsHeader } from "@/screens/orders/details/components/order-details-header"
 import { OrderStatusControl } from "@/screens/orders/details/components/order-status-control"
@@ -13,7 +13,7 @@ import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { createOrder } from "@/test-utils/order-fixtures"
 import { renderWithQuery } from "@/test-utils/render"
 
-vi.mock("@/lib/orders/order.api")
+vi.mock("@/services/orders/order.api")
 vi.mock("@/hooks/use-auth")
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() },

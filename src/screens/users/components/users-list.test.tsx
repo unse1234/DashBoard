@@ -11,14 +11,14 @@ import {
   listUsers,
   setUserActive,
   updateUser,
-} from "@/lib/users/user.api"
+} from "@/services/users/user.api"
 import type { UserPage } from "@/types/user.types";
 import { UsersList } from "@/screens/users/components/users-list"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { renderWithQuery } from "@/test-utils/render"
 import { createUser } from "@/test-utils/user-fixtures"
 
-vi.mock("@/lib/users/user.api")
+vi.mock("@/services/users/user.api")
 vi.mock("@/hooks/use-auth")
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), warning: vi.fn(), error: vi.fn() },

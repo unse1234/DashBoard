@@ -11,7 +11,7 @@ import {
   toUser,
   updateProfile,
   updateUser,
-} from "@/lib/users/user.api"
+} from "@/services/users/user.api"
 import { defaultUsersQuery } from "@/lib/users/user.query"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { mockApi } from "@/test-utils/mock-api"

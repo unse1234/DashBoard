@@ -3,7 +3,7 @@
 import { LoadError } from "@/components/shared/load-error"
 import { Skeleton } from "@/components/ui/skeleton"
 import { isApiError } from "@/lib/api/api-error"
-import { useProductQuery } from "@/lib/products/product.queries"
+import { useProductQuery } from "@/hooks/products/product.queries"
 import { ProductDetailsHeader } from "@/screens/products/details/components/product-details-header"
 import { ProductDetailsTabs } from "@/screens/products/details/components/product-details-tabs"
 import { ProductNotFound } from "@/screens/products/details/components/product-not-found"

@@ -4,7 +4,7 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { verifyEmail } from "@/lib/auth/auth.api"
+import { verifyEmail } from "@/services/auth/auth.api"
 import {
   getAuthState,
   refreshSession,
@@ -14,7 +14,7 @@ import { TokenVerification } from "@/screens/auth/verify-email/components/token-
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { renderWithQuery } from "@/test-utils/render"
 
-vi.mock("@/lib/auth/auth.api")
+vi.mock("@/services/auth/auth.api")
 vi.mock("@/lib/auth/auth-store")
 vi.mock("@/hooks/use-auth")
 

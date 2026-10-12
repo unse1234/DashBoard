@@ -5,8 +5,8 @@ import {
   archiveProducts,
   createProduct,
   updateProduct,
-} from "@/lib/products/product.api"
-import { productKeys } from "@/lib/products/product.keys"
+} from "@/services/products/product.api"
+import { productKeys } from "@/hooks/products/product.keys"
 import type { ProductFormValues } from "@/types/product.types";
 import type { Product } from "@/types/product.types"
 

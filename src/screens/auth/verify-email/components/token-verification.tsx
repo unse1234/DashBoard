@@ -8,7 +8,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useAuth } from "@/hooks/use-auth"
 import { describeApiError, isApiError } from "@/lib/api/api-error"
-import { useVerifyEmailMutation } from "@/lib/auth/auth.mutations"
+import { useVerifyEmailMutation } from "@/hooks/auth/auth.mutations"
 import { routes } from "@/config/routes"
 
 const INVALID_LINK_MESSAGE =

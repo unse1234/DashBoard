@@ -1,6 +1,6 @@
 "use client"
 
-import { useProductsQuery } from "@/lib/products/product.queries"
+import { useProductsQuery } from "@/hooks/products/product.queries"
 import { defaultProductsQuery } from "@/lib/products/product.query"
 
 /**

@@ -18,7 +18,7 @@ import { FieldGroup } from "@/components/ui/field"
 import { useAuth } from "@/hooks/use-auth"
 import { describeApiError } from "@/lib/api/api-error"
 import type { AuthUser } from "@/types/auth.types"
-import { useUpdateProfileMutation } from "@/lib/users/user.mutations"
+import { useUpdateProfileMutation } from "@/hooks/users/user.mutations"
 import { profileSchema } from "@/validations/user.schemas";
 import { type ProfileValues } from "@/types/user.types";
 

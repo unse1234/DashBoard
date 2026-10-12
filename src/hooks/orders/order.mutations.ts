@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { QueryClient } from "@tanstack/react-query"
 
-import { customerKeys } from "@/lib/customers/customer.keys"
-import { markOrderPaid, updateOrderStatus } from "@/lib/orders/order.api"
-import { orderKeys } from "@/lib/orders/order.keys"
+import { customerKeys } from "@/hooks/customers/customer.keys"
+import { markOrderPaid, updateOrderStatus } from "@/services/orders/order.api"
+import { orderKeys } from "@/hooks/orders/order.keys"
 import type { Order, OrderStatus } from "@/types/order.types"
-import { productKeys } from "@/lib/products/product.keys"
+import { productKeys } from "@/hooks/products/product.keys"
 
 // What an order change touches:
 // - the order itself, which the API returns whole, so its detail entry is

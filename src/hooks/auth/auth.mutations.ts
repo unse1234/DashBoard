@@ -1,7 +1,7 @@
 import type { LoginCredentials, ResetPasswordRequest } from "@/types/auth.types"
 import { useMutation } from "@tanstack/react-query"
 
-import * as authApi from "@/lib/auth/auth.api"
+import * as authApi from "@/services/auth/auth.api"
 import {
   getAuthState,
   refreshSession,

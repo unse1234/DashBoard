@@ -4,7 +4,7 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { getProduct, getProductHistory } from "@/lib/products/product.api"
+import { getProduct, getProductHistory } from "@/services/products/product.api"
 import { ProductDetails } from "@/screens/products/details/components/product-details"
 import { ProductDetailsHeader } from "@/screens/products/details/components/product-details-header"
 import { ProductDetailsTabs } from "@/screens/products/details/components/product-details-tabs"
@@ -15,7 +15,7 @@ import {
 } from "@/test-utils/product-fixtures"
 import { renderWithQuery } from "@/test-utils/render"
 
-vi.mock("@/lib/products/product.api")
+vi.mock("@/services/products/product.api")
 vi.mock("@/hooks/use-auth")
 
 beforeEach(() => {

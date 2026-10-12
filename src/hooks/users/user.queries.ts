@@ -1,8 +1,8 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 
 import { useAuth } from "@/hooks/use-auth"
-import { getUser, listUsers } from "@/lib/users/user.api"
-import { userKeys } from "@/lib/users/user.keys"
+import { getUser, listUsers } from "@/services/users/user.api"
+import { userKeys } from "@/hooks/users/user.keys"
 import type { UsersQuery } from "@/types/user.types"
 
 // The dashboard only renders for a signed-in user, but `enabled` also keeps

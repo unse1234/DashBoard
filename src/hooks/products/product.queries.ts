@@ -6,8 +6,8 @@ import {
   getProductHistory,
   listCategories,
   listProducts,
-} from "@/lib/products/product.api"
-import { categoryKeys, productKeys } from "@/lib/products/product.keys"
+} from "@/services/products/product.api"
+import { categoryKeys, productKeys } from "@/hooks/products/product.keys"
 import type { ProductsQuery } from "@/types/product.types"
 
 // `enabled` keeps these from firing while the session is still being restored,

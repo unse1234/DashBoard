@@ -8,8 +8,8 @@ import {
   setUserActive,
   updateProfile,
   updateUser,
-} from "@/lib/users/user.api"
-import { userKeys } from "@/lib/users/user.keys"
+} from "@/services/users/user.api"
+import { userKeys } from "@/hooks/users/user.keys"
 import type { CreateUserValues, EditUserValues, ProfileValues } from "@/types/user.types";
 import type { User } from "@/types/user.types"
 

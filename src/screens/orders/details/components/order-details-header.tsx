@@ -6,7 +6,7 @@ import { ORDER_STATUS_LABELS } from "@/constants/order.constants"
 import {
   useMarkOrderPaidMutation,
   useUpdateOrderStatusMutation,
-} from "@/lib/orders/order.mutations"
+} from "@/hooks/orders/order.mutations"
 import type { Order, OrderStatus } from "@/types/order.types"
 import { OrderPaymentControl } from "@/screens/orders/details/components/order-payment-control"
 import { OrderStatusControl } from "@/screens/orders/details/components/order-status-control"

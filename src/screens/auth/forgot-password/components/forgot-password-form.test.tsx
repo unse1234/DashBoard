@@ -2,11 +2,11 @@ import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
-import { forgotPassword } from "@/lib/auth/auth.api"
+import { forgotPassword } from "@/services/auth/auth.api"
 import { ForgotPasswordForm } from "@/screens/auth/forgot-password/components/forgot-password-form"
 import { renderWithQuery } from "@/test-utils/render"
 
-vi.mock("@/lib/auth/auth.api")
+vi.mock("@/services/auth/auth.api")
 vi.mock("@/lib/auth/auth-store")
 
 describe("ForgotPasswordForm", () => {

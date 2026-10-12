@@ -6,7 +6,7 @@ import { AuthForm } from "@/components/auth/auth-form"
 import { useAuthForm } from "@/components/auth/use-auth-form"
 import { FormField } from "@/components/shared/form-field"
 import { createForgotPasswordAction } from "@/lib/auth/auth.actions"
-import { useForgotPasswordMutation } from "@/lib/auth/auth.mutations"
+import { useForgotPasswordMutation } from "@/hooks/auth/auth.mutations"
 import type { AuthFormAction } from "@/types/form-state"
 import { validateForgotPassword } from "@/validations/auth.validation";
 import { type ForgotPasswordField } from "@/types/form-state";

@@ -8,11 +8,11 @@ import { TablePagination } from "@/components/shared/table-pagination"
 import { useAuth } from "@/hooks/use-auth"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { getTotalPages } from "@/utils/pagination"
-import { useArchiveProductsMutation } from "@/lib/products/product.mutations"
+import { useArchiveProductsMutation } from "@/hooks/products/product.mutations"
 import {
   useCategoriesQuery,
   useProductsQuery,
-} from "@/lib/products/product.queries"
+} from "@/hooks/products/product.queries"
 import { defaultProductsQuery } from "@/lib/products/product.query"
 import type { ProductsQuery } from "@/types/product.types"
 import { ProductsBulkActions } from "@/screens/products/components/products-bulk-actions"

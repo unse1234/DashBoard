@@ -5,11 +5,11 @@ import { toast } from "sonner"
 
 import { LoadError } from "@/components/shared/load-error"
 import { isApiError } from "@/lib/api/api-error"
-import { useUpdateProductMutation } from "@/lib/products/product.mutations"
+import { useUpdateProductMutation } from "@/hooks/products/product.mutations"
 import {
   useCategoriesQuery,
   useProductQuery,
-} from "@/lib/products/product.queries"
+} from "@/hooks/products/product.queries"
 import type { ProductFormValues } from "@/types/product.types";
 import { getProductRoute } from "@/config/routes"
 import { ProductForm } from "@/screens/products/components/product-form"

@@ -4,7 +4,7 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { getCustomerDetails } from "@/lib/customers/customer.api"
+import { getCustomerDetails } from "@/services/customers/customer.api"
 import type { CustomerDetails as CustomerDetailsData } from "@/types/customer.types"
 import { CustomerAddresses } from "@/screens/customers/details/components/customer-addresses"
 import { CustomerDetails } from "@/screens/customers/details/components/customer-details"
@@ -21,7 +21,7 @@ import {
 } from "@/test-utils/customer-fixtures"
 import { renderWithQuery } from "@/test-utils/render"
 
-vi.mock("@/lib/customers/customer.api")
+vi.mock("@/services/customers/customer.api")
 vi.mock("@/hooks/use-auth")
 
 const daniel = createCustomer({

@@ -12,7 +12,7 @@ import { describeApiError } from "@/lib/api/api-error"
 import {
   useLogoutMutation,
   useResendVerificationMutation,
-} from "@/lib/auth/auth.mutations"
+} from "@/hooks/auth/auth.mutations"
 import type { AuthFormState } from "@/types/form-state"
 import { routes } from "@/config/routes"
 

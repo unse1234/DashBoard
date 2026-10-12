@@ -8,7 +8,7 @@ import {
   listCustomers,
   toCustomerAddress,
   toCustomerOrderSummary,
-} from "@/lib/customers/customer.api"
+} from "@/services/customers/customer.api"
 import { defaultCustomersQuery } from "@/lib/customers/customer.query"
 import {
   createCustomer,

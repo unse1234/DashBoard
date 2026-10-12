@@ -4,7 +4,7 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { getOrder } from "@/lib/orders/order.api"
+import { getOrder } from "@/services/orders/order.api"
 import { OrderAddresses } from "@/screens/orders/details/components/order-addresses"
 import { OrderCustomerInformation } from "@/screens/orders/details/components/order-customer-information"
 import { OrderDetails } from "@/screens/orders/details/components/order-details"
@@ -19,7 +19,7 @@ import {
 } from "@/test-utils/order-fixtures"
 import { renderWithQuery } from "@/test-utils/render"
 
-vi.mock("@/lib/orders/order.api")
+vi.mock("@/services/orders/order.api")
 vi.mock("@/hooks/use-auth")
 
 beforeEach(() => {

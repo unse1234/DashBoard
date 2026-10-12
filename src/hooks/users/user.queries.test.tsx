@@ -5,15 +5,15 @@ import { vi } from "vitest"
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import { shouldRetryQuery } from "@/lib/query/query-client"
-import { getUser, listUsers } from "@/lib/users/user.api"
+import { getUser, listUsers } from "@/services/users/user.api"
 import type { UserPage } from "@/types/user.types";
-import { useUserQuery, useUsersQuery } from "@/lib/users/user.queries"
+import { useUserQuery, useUsersQuery } from "@/hooks/users/user.queries"
 import { defaultUsersQuery } from "@/lib/users/user.query"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { createQueryWrapper } from "@/test-utils/render"
 import { createUser } from "@/test-utils/user-fixtures"
 
-vi.mock("@/lib/users/user.api")
+vi.mock("@/services/users/user.api")
 vi.mock("@/hooks/use-auth")
 
 const ada = createUser({ uid: "u-ada", name: "Ada" })

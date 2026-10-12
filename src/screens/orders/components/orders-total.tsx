@@ -1,6 +1,6 @@
 "use client"
 
-import { useOrdersQuery } from "@/lib/orders/order.queries"
+import { useOrdersQuery } from "@/hooks/orders/order.queries"
 import { defaultOrdersQuery } from "@/lib/orders/order.query"
 
 /**

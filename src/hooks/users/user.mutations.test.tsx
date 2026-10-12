@@ -11,22 +11,22 @@ import {
   setUserActive,
   updateProfile,
   updateUser,
-} from "@/lib/users/user.api"
-import { userKeys } from "@/lib/users/user.keys"
+} from "@/services/users/user.api"
+import { userKeys } from "@/hooks/users/user.keys"
 import {
   useDeleteUserMutation,
   useInviteUserMutation,
   useSetUserActiveMutation,
   useUpdateProfileMutation,
   useUpdateUserMutation,
-} from "@/lib/users/user.mutations"
+} from "@/hooks/users/user.mutations"
 import { defaultUsersQuery } from "@/lib/users/user.query"
-import { useUsersQuery } from "@/lib/users/user.queries"
+import { useUsersQuery } from "@/hooks/users/user.queries"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { createQueryWrapper, createTestQueryClient } from "@/test-utils/render"
 import { createUser } from "@/test-utils/user-fixtures"
 
-vi.mock("@/lib/users/user.api")
+vi.mock("@/services/users/user.api")
 vi.mock("@/lib/auth/auth-store")
 vi.mock("@/hooks/use-auth")
 

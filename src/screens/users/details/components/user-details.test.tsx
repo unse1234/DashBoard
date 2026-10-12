@@ -4,13 +4,13 @@ import { vi } from "vitest"
 
 import { useAuth } from "@/hooks/use-auth"
 import { ApiError } from "@/lib/api/api-error"
-import { getUser } from "@/lib/users/user.api"
+import { getUser } from "@/services/users/user.api"
 import { UserDetails } from "@/screens/users/details/components/user-details"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { renderWithQuery } from "@/test-utils/render"
 import { createUser } from "@/test-utils/user-fixtures"
 
-vi.mock("@/lib/users/user.api")
+vi.mock("@/services/users/user.api")
 vi.mock("@/hooks/use-auth")
 
 const ada = createUser({ uid: "u-ada", name: "Ada Lovelace" })

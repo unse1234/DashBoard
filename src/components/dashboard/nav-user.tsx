@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/use-auth"
 import { describeApiError } from "@/lib/api/api-error"
-import { useLogoutMutation } from "@/lib/auth/auth.mutations"
+import { useLogoutMutation } from "@/hooks/auth/auth.mutations"
 
 function getInitials(name: string) {
   return name

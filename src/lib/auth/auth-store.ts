@@ -1,7 +1,7 @@
 import type { AuthState } from "@/types/auth.types"
 import { ApiError, isApiError } from "@/lib/api/api-error"
 import { attachSessionHandlers } from "@/lib/api/axios"
-import * as authApi from "@/lib/auth/auth.api"
+import * as authApi from "@/services/auth/auth.api"
 import type { AuthResponse, AuthUser } from "@/types/auth.types"
 
 /** Renew this long before expiry so a request never carries a dying token. */
