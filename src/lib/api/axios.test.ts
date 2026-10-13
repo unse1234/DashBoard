@@ -149,6 +149,40 @@ describe("apiClient errors", () => {
     expect(error.message).toBe("Something went wrong. Please try again.")
   })
 
+  it("reads a JSON error body that arrived as text, as a CSV download's does", async () => {
+    respondWith(() => ({
+      status: 410,
+      data: JSON.stringify({
+        statusCode: 410,
+        message: "The error report has expired.",
+      }),
+    }))
+
+    const error = (await apiClient
+      .get("/imports/IMP-1/errors", { responseType: "text" })
+      .catch((e: unknown) => e)) as ApiError
+
+    expect(error).toMatchObject({
+      status: 410,
+      message: "The error report has expired.",
+    })
+  })
+
+  it.each([
+    ["an HTML page", "<html>Bad gateway</html>"],
+    ["broken JSON", '{"message": "cut off'],
+    ["a JSON array", '["message"]'],
+    ["an oversized body", `{"message": "${"x".repeat(20_000)}"}`],
+  ])("does not trust %s that arrives as text", async (_label, body) => {
+    respondWith(() => ({ status: 500, data: body }))
+
+    const error = (await apiClient
+      .get("/imports/IMP-1/errors", { responseType: "text" })
+      .catch((e: unknown) => e)) as ApiError
+
+    expect(error.message).toBe("Something went wrong. Please try again.")
+  })
+
   it("reports an unreachable server as a network error without ending the session", async () => {
     respondWith(() => networkError())
 

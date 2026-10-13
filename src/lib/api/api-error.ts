@@ -26,8 +26,30 @@ export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError
 }
 
+// A request that asked for plain text (a CSV download) gets its error body back
+// unparsed. Only a short JSON object is worth reading; anything else is not an
+// API error body.
+const MAX_ERROR_TEXT_LENGTH = 10_000
+
+function parseJsonText(text: string): unknown {
+  if (
+    text.length > MAX_ERROR_TEXT_LENGTH ||
+    !text.trimStart().startsWith("{")
+  ) {
+    return undefined
+  }
+
+  try {
+    return JSON.parse(text)
+  } catch {
+    return undefined
+  }
+}
+
 /** Reads the `{ statusCode, message, error }` body that NestJS returns. */
-export function parseErrorMessages(body: unknown): string[] {
+export function parseErrorMessages(rawBody: unknown): string[] {
+  const body = typeof rawBody === "string" ? parseJsonText(rawBody) : rawBody
+
   if (typeof body !== "object" || body === null || !("message" in body)) {
     return []
   }
