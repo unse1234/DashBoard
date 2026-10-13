@@ -2,13 +2,12 @@ import type { Route } from "next"
 import Link from "next/link"
 
 import { APP_NAME } from "@/config/app.constants"
-import { routes } from "@/config/routes"
 
 type AppLogoProps = {
-  href?: Route
+  href: Route
 }
 
-export function AppLogo({ href = routes.home }: AppLogoProps) {
+export function AppLogo({ href }: AppLogoProps) {
   return (
     <Link
       href={href}
