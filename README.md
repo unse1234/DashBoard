@@ -29,7 +29,8 @@ API integration has three layers:
 src/
 ├── app/                         # route pages, layouts, metadata, parameters, boundaries
 │   ├── (auth)/                  # login, forgot-password, reset-password, verify-email
-│   └── (dashboard)/dashboard/   # overview, users, products, customers, orders, imports
+│   ├── (dashboard)/dashboard/   # overview, users, products, customers, orders, imports
+│   └── (storefront)/            # public shop, bag, checkout (no sign-in, no dashboard shell)
 ├── services/                    # typed HTTP functions and their API tests
 │   ├── auth/auth.api.ts
 │   ├── users/user.api.ts
@@ -39,6 +40,7 @@ src/
 │   └── imports/import.api.ts    # product CSV validation, confirmation, history, downloads
 ├── hooks/                       # query keys, query hooks, mutation hooks, and tests
 │   ├── auth/                    # use-auth.ts and auth.mutations.ts
+│   ├── storefront/              # use-bag.ts: the bag in the BagProvider
 │   ├── users/                   # user.keys/queries/mutations.ts
 │   ├── products/                # product.keys/queries/mutations.ts
 │   ├── customers/               # customer.keys/queries.ts; read-only
@@ -54,24 +56,31 @@ src/
 │   ├── products/product.filters.ts
 │   ├── customers/customer.filters.ts
 │   ├── orders/order.filters.ts
-│   └── imports/
+│   ├── imports/
+│   └── storefront/              # catalog and bag (built); product-details, checkout, shipping-address, payment-method (see their sections)
 ├── components/                  # reusable presentation components
 │   ├── auth/                    # guards, auth shell/form, local form controller
 │   ├── dashboard/               # sidebar, navigation, profile dialog, header
 │   ├── shared/                  # form controls, confirmation, pagination, load errors
+│   ├── storefront/              # product card, add-to-bag button, icons
+│   │   └── layout/              # shell, navigation rail, menu, bag preview, font
 │   └── ui/                      # shadcn/Base UI primitives
 ├── types/                       # shared domain, form, navigation, pagination, sort types
+│   └── storefront/              # product and bag types
 ├── utils/                       # cn.ts, formatters, pagination, sort, pure domain helpers
+│   └── storefront/              # bag, catalog search, and price helpers
 ├── constants/                   # domain labels/options, password policy, page sizes
 ├── validations/                 # auth validation, user/product Zod schemas, CSV validation
+│   └── storefront/              # reserved; empty
 ├── config/                      # app.constants.ts and routes.ts
 ├── lib/                         # shared infrastructure only
 │   ├── api/                     # Axios client, base URL resolution, normalized API errors
 │   ├── auth/                    # in-memory session/token store and infrastructure tests
 │   └── query/                   # QueryClient policy and account cache cleanup
-├── providers/                   # query-provider.tsx and session-restorer.tsx
-├── mocks/                       # existing demo data only
-│   └── overview/data.json
+├── providers/                   # query-provider.tsx, session-restorer.tsx, and bag-provider.tsx (storefront)
+├── mocks/                       # demo data
+│   ├── overview/data.json
+│   └── storefront/              # products.ts and the seeded demo bag
 └── test-utils/                  # fixtures, fake Axios transport, query rendering helpers
 ```
 
@@ -85,7 +94,13 @@ List defaults are screen-local `*.filters.ts` files. Existing exports such as `d
 
 | Path | Screen |
 | --- | --- |
-| `/` | Redirects to `/dashboard`; the auth guard then handles access |
+| `/` | Redirects to `/shop` |
+| `/shop` | Storefront catalog: search, product tiles, add to bag, bag preview (public; mock data) |
+| `/shop/[productId]` | Storefront product details (public placeholder) |
+| `/bag` | Storefront bag: lines with quantity steppers, bag total, checkout link (public; mock data) |
+| `/checkout` | Checkout (public placeholder) |
+| `/checkout/address` | Checkout shipping address (public placeholder) |
+| `/checkout/payment` | Checkout payment method (public placeholder) |
 | `/login` | Sign in |
 | `/forgot-password` | Request a password reset link |
 | `/reset-password` | Set a password from a reset/invitation token |
@@ -105,6 +120,32 @@ List defaults are screen-local `*.filters.ts` files. Existing exports such as `d
 | `/dashboard/imports/[jobId]` | Import job details |
 
 Route constants and ID-encoding helpers live in `src/config/routes.ts`. `typedRoutes` remains enabled. Route groups organize layouts without changing URLs. Accounts are invited by administrators; there is no self-service registration route.
+
+### Storefront routes
+
+The customer-facing storefront lives in the `(storefront)` route group, beside `(auth)` and `(dashboard)`. Route protection is per group: `RequireAuth` is mounted only by `(dashboard)/layout.tsx`, so the storefront has no sign-in requirement and renders neither the dashboard shell nor its sidebar providers. Signed-in staff who open a storefront URL stay on it; only `/login` sends them on to `/dashboard`.
+
+`/shop` is the first built screen. The other storefront pages are placeholders showing their screen name; each Figma screen replaces its placeholder in turn. Checkout is public during this UI phase. That does not settle whether customers will need an account later.
+
+### Storefront catalog
+
+- **Data.** Products come from `mocks/storefront/products.ts`; there is no API, service, or query for them yet. Images are in `public/images/storefront/products/` and are tile-sized canvases (175 × 216, and 412 × 216 for the laptop that spans two columns), so `object-contain` reproduces the design's padding.
+- **Shell.** `StorefrontShell` (rail, content, bag preview) is rendered only by the screens that opt in (catalog, bag, product details), so checkout does not inherit it. `bagPreviewAction="checkout"` turns the preview's button into the bag total and a Checkout link, as the bag screen does. From `xl` it is the three-area desktop layout with four columns; the bag preview appears from `lg`; below `md` the rail becomes a bar across the top and the bag shows as a count on its icon. The rail and the bag stay at the window's edges at any width; only the catalog between them stops growing (at 1136 px) and is centered.
+- **Bag.** `BagProvider` (mounted in the storefront layout, so it survives navigation between storefront routes) holds the bag in memory. The storefront layout seeds it with `demoBagReviewItems` from `mocks/storefront/bag.ts`: the bag design's four lines, seven units, "$ 5,849.93". `demoBagItems` (four single catalog items) is kept for tests. There is no persistence: a reload restores the seed. Adding a product already in the bag raises its quantity; `changeQuantity(productId, delta)` moves a line and removes it at zero. A polite live region announces each change without moving focus.
+
+### Storefront bag screen
+
+- **Lines.** One card per bag line: picture, name, subtitle, placeholder blurb (`demoBagLineBlurb`), rating, `$ unit x quantity`, and a minus / quantity / plus stepper. At one unit the minus is labelled "Remove … from bag" and removes the line.
+- **Total.** The bag preview on this screen shows the total (`getBagTotal`, summed in cents; grouped as `$ 5,849.93` by `formatStorefrontTotal`) and a Checkout link. An empty bag shows an empty state, a zero total, and an unavailable Checkout.
+- **Data.** The design's Dell XPS 13 and iPhone 11 Navy Blue are not catalog products, so they live only in `mocks/storefront/bag.ts` (pictures `dell-xps-13-white.png`, `iphone-11-navy-blue.png`, 236 × 272 canvases cropped from the design) and have no item view; the line does not link to one.
+- **Reuse.** Ratings come from the product-details screen's `ProductRating` and `getProductDetails`; a product it does not know shows the design's 4.5.
+- **Styling.** The storefront palette, typeface (Cabin, via `storefrontFont`), radii, and shadow are theme tokens named `store-*` in `globals.css`; only storefront components use them, and the dashboard and auth screens are unaffected.
+- **Sign-out.** The rail's red button is rendered unavailable (`aria-disabled`, with a description) and is not connected to staff logout.
+- **Price format.** Prices follow the design (`$ 3249.99`, no thousands separator) via `formatStorefrontPrice`, not `formatCurrency`.
+
+The root layout still mounts `SessionRestorer` for every route, so a storefront page load also attempts a session restore. Storefront rendering does not wait for it and does not read the session. An anonymous visitor's restore is rejected by the API; the client retries it once after 300 ms, so each such page load sends two `POST /auth/refresh` requests.
+
+`AppLogo` takes a required `href`: the dashboard sidebar and the auth screens pass `routes.dashboard`; the storefront chrome should pass `routes.shop`. Dynamic `params` reach a page still percent-encoded, as they do on the dashboard pages.
 
 ## Session and cache infrastructure
 
