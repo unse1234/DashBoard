@@ -63,5 +63,5 @@ export const IMPORT_GUIDELINES = [
   `Keep the file under ${IMPORT_MAX_FILE_SIZE_LABEL} with at most ${IMPORT_MAX_ROWS} product rows.`,
   "Include every required product column. The CSV template shows the expected columns.",
   "Give each product a unique SKU, including against products already in the catalogue.",
-  "Use an existing category name exactly. Prices have at most two decimals; stock is a whole number.",
+  "Use any category name. An existing one is matched ignoring case; a new one is created when you confirm. Prices have at most two decimals; stock is a whole number.",
 ] as const

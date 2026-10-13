@@ -6,7 +6,7 @@ import {
   useConfirmImportMutation,
   usePreviewImportMutation,
 } from "@/hooks/imports/import.mutations"
-import { productKeys } from "@/hooks/products/product.keys"
+import { categoryKeys, productKeys } from "@/hooks/products/product.keys"
 import { ApiError } from "@/lib/api/api-error"
 import { confirmImport, previewImport } from "@/services/imports/import.api"
 import {
@@ -144,6 +144,7 @@ describe("useConfirmImportMutation", () => {
     )
     const keys = invalidatedKeys(invalidate)
     expect(keys).toContainEqual(productKeys.lists())
+    expect(keys).toContainEqual(categoryKeys.all)
     expect(keys).toContainEqual(importKeys.lists())
   })
 

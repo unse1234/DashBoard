@@ -107,7 +107,8 @@ export function ImportsScreen() {
               .filter((column) => column.required)
               .map((column) => column.name)
               .join(", ")}
-            . Category names must match an existing category.
+            . A category name that does not exist yet is created when you
+            confirm the import.
           </p>
         )}
         {error && (

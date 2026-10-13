@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { importKeys } from "@/hooks/imports/import.keys"
-import { productKeys } from "@/hooks/products/product.keys"
+import { categoryKeys, productKeys } from "@/hooks/products/product.keys"
 import { confirmImport, previewImport } from "@/services/imports/import.api"
 
 type PreviewVariables = {
@@ -38,9 +38,10 @@ export function usePreviewImportMutation() {
 }
 
 /**
- * Creates the validated products, all or none. The job is replaced with what
- * the API returned. When it completed, the products exist: their lists are
- * refreshed and the rows the preview held are dropped.
+ * Creates the validated products, and any new categories they name, all or
+ * none. The job is replaced with what the API returned. When it completed, the
+ * products exist: their lists and the categories are refreshed and the rows the
+ * preview held are dropped.
  */
 export function useConfirmImportMutation() {
   const queryClient = useQueryClient()
@@ -62,6 +63,8 @@ export function useConfirmImportMutation() {
       if (job.status === "completed") {
         queryClient.removeQueries({ queryKey: importKeys.previews(job.id) })
         void queryClient.invalidateQueries({ queryKey: productKeys.lists() })
+        // The file may have introduced categories the filter and form should offer.
+        void queryClient.invalidateQueries({ queryKey: categoryKeys.all })
       }
     },
   })

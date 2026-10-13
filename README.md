@@ -134,7 +134,7 @@ The Orders API integration already present before this structural refactor is pr
 
 Imports create new products from a CSV file. They never update or delete existing products. The flow is validate, review, confirm: `POST /imports/preview` checks the file and creates nothing, the screen shows every row and each problem, and only the person who validated it can confirm. A confirmation creates every product and its `Created` history entry, or none of them.
 
-- **Limits come from the API.** A file may hold up to 250 rows and 10 MB; the screen reads them from `GET /imports/types`. Category names must match an existing category exactly.
+- **Limits come from the API.** A file may hold up to 250 rows and 10 MB; the screen reads them from `GET /imports/types`. A category name matches an existing category ignoring case; one that does not exist yet is created when the import is confirmed.
 - **Progress is real.** Upload bytes show a percentage; the server's checks and the creation are indeterminate. There is no queue and no partial success.
 - **A lost response is safe.** Sending the same file again reuses one request id and returns the same job, and an interrupted confirmation is read from the job's status rather than repeated.
 - **Retention.** Validated rows are kept for 15 minutes, the error report for 7 days, and the job's history for 90 days. After the first deadline the file must be validated again.
