@@ -2,7 +2,11 @@ import type { Route } from "next"
 
 /** App paths in one place; `typedRoutes` checks them against real routes. */
 export const routes = {
-  home: "/",
+  shop: "/shop",
+  bag: "/bag",
+  checkout: "/checkout",
+  checkoutAddress: "/checkout/address",
+  checkoutPayment: "/checkout/payment",
   dashboard: "/dashboard",
   users: "/dashboard/users",
   products: "/dashboard/products",
@@ -17,6 +21,10 @@ export const routes = {
 } as const satisfies Record<string, Route>
 
 // A dynamic segment can't be checked statically, hence the cast.
+export function getShopProductRoute(productId: string) {
+  return `${routes.shop}/${encodeURIComponent(productId)}` as Route
+}
+
 export function getUserRoute(uid: string) {
   return `${routes.users}/${encodeURIComponent(uid)}` as Route
 }
