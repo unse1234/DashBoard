@@ -35,14 +35,17 @@ src/
 │   ├── users/user.api.ts
 │   ├── products/product.api.ts  # products, categories, and product history
 │   ├── customers/customer.api.ts
-│   └── orders/order.api.ts
+│   ├── orders/order.api.ts
+│   └── imports/import.api.ts    # product CSV validation, confirmation, history, downloads
 ├── hooks/                       # query keys, query hooks, mutation hooks, and tests
 │   ├── auth/                    # use-auth.ts and auth.mutations.ts
 │   ├── users/                   # user.keys/queries/mutations.ts
 │   ├── products/                # product.keys/queries/mutations.ts
 │   ├── customers/               # customer.keys/queries.ts; read-only
 │   ├── orders/                  # order.keys/queries/mutations.ts
+│   ├── imports/                 # import.keys/queries/mutations.ts; polls a job being created
 │   ├── use-debounced-value.ts
+│   ├── use-now.ts
 │   └── use-mobile.ts
 ├── screens/                     # screen entry points and feature-specific UI/tests
 │   ├── auth/actions/            # auth form-action adapters and tests
@@ -68,8 +71,7 @@ src/
 │   └── query/                   # QueryClient policy and account cache cleanup
 ├── providers/                   # query-provider.tsx and session-restorer.tsx
 ├── mocks/                       # existing demo data only
-│   ├── overview/data.json
-│   └── imports/import.mock-data.ts
+│   └── overview/data.json
 └── test-utils/                  # fixtures, fake Axios transport, query rendering helpers
 ```
 
@@ -123,10 +125,22 @@ TanStack Query owns server data. Its existing query-key values, stale times, ret
 | Products | Backend list/details/categories/history, create/edit, and bulk archive |
 | Customers | Read-only backend list/details with addresses and recent orders |
 | Orders | Existing backend list/details, status updates, and payment recording |
-| Imports | Existing mock jobs/failed rows; CSV file selection and validation |
+| Imports | Backend product CSV import: validate, review every row, confirm, history, error report, template |
 | Overview | Existing demo cards/chart and table rows from `mocks/overview/data.json` |
 
-The Orders API integration already present before this structural refactor is preserved. Imports retain their existing lookup, missing-job boundary, and unavailable-action notices. Product analytics and product export remain unconnected. No additional integration is introduced by the folder moves.
+The Orders API integration already present before this structural refactor is preserved. Product analytics and product export remain unconnected.
+
+### Imports
+
+Imports create new products from a CSV file. They never update or delete existing products. The flow is validate, review, confirm: `POST /imports/preview` checks the file and creates nothing, the screen shows every row and each problem, and only the person who validated it can confirm. A confirmation creates every product and its `Created` history entry, or none of them.
+
+- **Limits come from the API.** A file may hold up to 250 rows and 10 MB; the screen reads them from `GET /imports/types`. Category names must match an existing category exactly.
+- **Progress is real.** Upload bytes show a percentage; the server's checks and the creation are indeterminate. There is no queue and no partial success.
+- **A lost response is safe.** Sending the same file again reuses one request id and returns the same job, and an interrupted confirmation is read from the job's status rather than repeated.
+- **Retention.** Validated rows are kept for 15 minutes, the error report for 7 days, and the job's history for 90 days. After the first deadline the file must be validated again.
+- **Access.** Staff see their own imports; administrators can also list everyone's. A job someone else owns answers 404.
+
+Products lists are refreshed when an import completes, including when the completion is only noticed later by reading the job.
 
 ## Tests
 
