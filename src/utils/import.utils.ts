@@ -1,18 +1,44 @@
 import type {
   ImportJob,
-  ImportStatus,
+  ImportJobDetails,
   ImportTimelineEvent,
 } from "@/types/import.types"
 
-/** Whole percent of the rows handled so far; stays below 100 until every row is. */
-export function getImportProgress(
-  job: Pick<ImportJob, "processedRows" | "totalRows">
+/**
+ * Whether the validated rows are still held and can be reviewed. After the
+ * preview expires the API has already dropped them.
+ */
+export function isPreviewHeld(
+  job: Pick<ImportJob, "status" | "previewExpiresAt">,
+  now: number
 ) {
-  if (job.totalRows === 0) return 0
+  return (
+    (job.status === "ready" ||
+      job.status === "validation-failed" ||
+      job.status === "failed") &&
+    Date.parse(job.previewExpiresAt) > now
+  )
+}
 
-  const percentage = Math.floor((job.processedRows / job.totalRows) * 100)
+/** Only the owner receives the hash, and only while confirming can still work. */
+export function canConfirmImport(
+  job: Pick<ImportJobDetails, "status" | "previewExpiresAt" | "retryable"> & {
+    previewHash: string | null
+  },
+  now: number
+) {
+  if (!job.previewHash) return false
+  if (Date.parse(job.previewExpiresAt) <= now) return false
 
-  return Math.min(100, Math.max(0, percentage))
+  return job.status === "ready" || (job.status === "failed" && job.retryable)
+}
+
+/** Whether the row-by-row error report can still be read or downloaded. */
+export function isReportAvailable(
+  job: Pick<ImportJob, "errorCount" | "errorsExpiresAt">,
+  now: number
+) {
+  return job.errorCount > 0 && Date.parse(job.errorsExpiresAt) > now
 }
 
 /** Null until the job has both started and finished. */
@@ -27,46 +53,46 @@ export function getImportDurationSeconds(
   )
 }
 
-/** Keeps the order of `jobs` within each status; every status is present. */
-export function groupImportsByStatus(jobs: ImportJob[]) {
-  const groups: Record<ImportStatus, ImportJob[]> = {
-    processing: [],
-    queued: [],
-    completed: [],
-    failed: [],
-  }
-
-  for (const job of jobs) {
-    groups[job.status].push(job)
-  }
-
-  return groups
-}
-
-/** The three stages every job moves through; stages it has not reached have no timestamp. */
+/** Only the steps the job has reached, plus the one it is waiting on. */
 export function getImportTimeline(
   job: Pick<ImportJob, "status" | "createdAt" | "startedAt" | "completedAt">
 ): ImportTimelineEvent[] {
-  const hasFailed = job.status === "failed"
-
-  return [
+  const events: ImportTimelineEvent[] = [
     {
       id: "created",
-      label: "Created",
+      label: "File validated",
       timestamp: job.createdAt,
       state: "done",
     },
-    {
-      id: "started",
-      label: "Started Processing",
-      timestamp: job.startedAt,
-      state: job.startedAt ? "done" : "pending",
-    },
-    {
-      id: "finished",
-      label: hasFailed ? "Failed" : "Completed",
-      timestamp: job.completedAt,
-      state: job.completedAt ? (hasFailed ? "failed" : "done") : "pending",
-    },
   ]
+
+  if (job.status === "ready") {
+    events.push({
+      id: "awaiting",
+      label: "Waiting for confirmation",
+      timestamp: null,
+      state: "pending",
+    })
+  }
+
+  if (job.startedAt) {
+    events.push({
+      id: "started",
+      label: "Started creating products",
+      timestamp: job.startedAt,
+      state: "done",
+    })
+  }
+
+  if (job.completedAt) {
+    const failed = job.status === "failed"
+    events.push({
+      id: "finished",
+      label: failed ? "Failed" : "Completed",
+      timestamp: job.completedAt,
+      state: failed ? "failed" : "done",
+    })
+  }
+
+  return events
 }

@@ -1,9 +1,10 @@
 import { DetailItem } from "@/components/shared/detail-item"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatDuration } from "@/utils/format-duration"
-import type { ImportJob } from "@/types/import.types"
-import { getImportDurationSeconds } from "@/utils/import.utils"
 import { ImportStatusBadge } from "@/screens/imports/components/import-status-badge"
+import type { ImportJob } from "@/types/import.types"
+import { formatDateTime } from "@/utils/format-date"
+import { formatDuration } from "@/utils/format-duration"
+import { getImportDurationSeconds } from "@/utils/import.utils"
 
 type ImportJobInfoProps = {
   job: ImportJob
@@ -14,7 +15,7 @@ function getDurationLabel(job: ImportJob) {
 
   if (seconds !== null) return formatDuration(seconds)
 
-  return job.status === "queued" ? "Not started" : "In progress"
+  return job.status === "processing" ? "In progress" : "Not started"
 }
 
 export function ImportJobInfo({ job }: ImportJobInfoProps) {
@@ -34,7 +35,20 @@ export function ImportJobInfo({ job }: ImportJobInfoProps) {
           <DetailItem label="Status">
             <ImportStatusBadge status={job.status} />
           </DetailItem>
+          <DetailItem label="Started By">
+            {job.initiatedBy.isCurrentUser ? "You" : job.initiatedBy.name}
+          </DetailItem>
           <DetailItem label="Duration">{getDurationLabel(job)}</DetailItem>
+          <DetailItem label="Rows Held Until">
+            <time dateTime={job.previewExpiresAt}>
+              {formatDateTime(job.previewExpiresAt)}
+            </time>
+          </DetailItem>
+          <DetailItem label="Error Report Until">
+            <time dateTime={job.errorsExpiresAt}>
+              {formatDateTime(job.errorsExpiresAt)}
+            </time>
+          </DetailItem>
         </dl>
       </CardContent>
     </Card>

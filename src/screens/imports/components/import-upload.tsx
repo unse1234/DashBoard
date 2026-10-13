@@ -18,25 +18,48 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  Progress,
+  ProgressLabel,
+  ProgressValue,
+} from "@/components/ui/progress"
 import { formatFileSize } from "@/utils/format-file-size"
 import {
   IMPORT_FILE_EXTENSION,
   IMPORT_MAX_FILE_SIZE_LABEL,
 } from "@/constants/import.constants"
 import { validateImportFile } from "@/validations/import.validation"
-import { ImportActionButton } from "@/screens/imports/components/import-action-button"
 import { ImportGuidelinesDialog } from "@/screens/imports/components/import-guidelines-dialog"
 
 function isDraggingFiles(event: DragEvent) {
   return Array.from(event.dataTransfer.types).includes("Files")
 }
 
+type ImportUploadProps = {
+  /** Sends the chosen file for validation. Nothing is created by it. */
+  onValidate: (file: File) => void
+  onTemplate: () => void
+  /** Called whenever the chosen file is replaced or removed. */
+  onSelectionChanged?: () => void
+  /** Stops a validation that is in progress. */
+  onCancel?: () => void
+  validating?: boolean
+  /** Whole percent of the file's bytes sent so far; null before the first report. */
+  uploadProgress?: number | null
+}
+
 /**
- * Lets an admin pick a product CSV, with the file dialog or by dropping it.
- * The chosen file only lives in this component's state: nothing is uploaded
- * or read until the API exists, and Import does not start anything yet.
+ * Lets a signed-in user pick a product CSV, with the file dialog or by
+ * dropping it. Selection stays local until they choose to validate the CSV.
  */
-export function ImportUpload() {
+export function ImportUpload({
+  onValidate,
+  onTemplate,
+  onSelectionChanged,
+  onCancel,
+  validating = false,
+  uploadProgress = null,
+}: ImportUploadProps) {
   const chooseButtonRef = useRef<HTMLButtonElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const errorId = useId()
@@ -46,6 +69,7 @@ export function ImportUpload() {
 
   function selectFile(selectedFile: File) {
     const message = validateImportFile(selectedFile)
+    onSelectionChanged?.()
     setError(message)
     setFile(message ? null : selectedFile)
   }
@@ -97,6 +121,7 @@ export function ImportUpload() {
     if (!droppedFile) return
 
     if (otherFiles.length > 0) {
+      onSelectionChanged?.()
       setFile(null)
       setError("Drop one file at a time.")
       return
@@ -106,6 +131,7 @@ export function ImportUpload() {
   }
 
   function removeFile() {
+    onSelectionChanged?.()
     setFile(null)
     setError(null)
     // The remove button is about to disappear, so keep focus somewhere useful.
@@ -119,7 +145,7 @@ export function ImportUpload() {
           <h2>Import products</h2>
         </CardTitle>
         <CardDescription>
-          Drag a CSV file into the box or choose one, then import it. Only{" "}
+          Drag a CSV file into the box or choose one, then validate it. Only{" "}
           {IMPORT_FILE_EXTENSION} files up to {IMPORT_MAX_FILE_SIZE_LABEL} are
           accepted.
         </CardDescription>
@@ -167,15 +193,19 @@ export function ImportUpload() {
             >
               {file ? "Replace File" : "Choose File"}
             </Button>
-            {/* Not connected until the imports API exists. */}
-            <ImportActionButton
-              disabled={!file}
-              aria-label={file ? `Import ${file.name}` : undefined}
+            <Button
+              type="button"
+              disabled={!file || validating}
+              aria-label={file ? `Validate ${file.name}` : undefined}
+              onClick={() => file && onValidate(file)}
             >
-              Import
-            </ImportActionButton>
+              {validating ? "Validating…" : "Validate CSV"}
+            </Button>
           </div>
         </div>
+        {validating && (
+          <UploadProgress progress={uploadProgress} onCancel={onCancel} />
+        )}
         {error && (
           <p id={errorId} role="alert" className="text-destructive">
             {error}
@@ -183,13 +213,48 @@ export function ImportUpload() {
         )}
       </CardContent>
       <CardFooter className="flex-wrap gap-2">
-        <ImportActionButton variant="outline" size="sm">
+        <Button type="button" variant="outline" size="sm" onClick={onTemplate}>
           <DownloadIcon aria-hidden="true" />
           Download CSV Template
-        </ImportActionButton>
+        </Button>
         <ImportGuidelinesDialog />
       </CardFooter>
     </Card>
+  )
+}
+
+type UploadProgressProps = {
+  progress: number | null
+  onCancel?: () => void
+}
+
+/**
+ * Real upload progress, then an indeterminate bar while the server checks the
+ * rows: how long that takes is not known, so no percentage is invented for it.
+ */
+function UploadProgress({ progress, onCancel }: UploadProgressProps) {
+  const checking = progress !== null && progress >= 100
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Progress value={checking ? null : progress}>
+        <ProgressLabel>
+          {checking ? "Checking every row" : "Uploading file"}
+        </ProgressLabel>
+        {!checking && progress !== null && <ProgressValue />}
+      </Progress>
+      {onCancel && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="self-start"
+          onClick={onCancel}
+        >
+          Cancel
+        </Button>
+      )}
+    </div>
   )
 }
 
@@ -199,7 +264,11 @@ type SelectionSummaryProps = {
   onRemove: () => void
 }
 
-function SelectionSummary({ file, isDragging, onRemove }: SelectionSummaryProps) {
+function SelectionSummary({
+  file,
+  isDragging,
+  onRemove,
+}: SelectionSummaryProps) {
   if (isDragging) {
     return <p className="font-medium">Drop the file to select it</p>
   }

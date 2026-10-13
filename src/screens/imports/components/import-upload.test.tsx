@@ -1,11 +1,17 @@
-import { createEvent, fireEvent, render, screen, within } from "@testing-library/react"
+import {
+  createEvent,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { toast } from "sonner"
 
 import { IMPORT_MAX_FILE_SIZE_BYTES } from "@/constants/import.constants"
 import { ImportUpload } from "@/screens/imports/components/import-upload"
 
-vi.mock("sonner", () => ({ toast: { info: vi.fn() } }))
+const onValidate = vi.fn()
+const onTemplate = vi.fn()
 
 // The browser's file dialog filters by `accept`, but users can still pick any
 // file, so the tests must be able to hand the input a non-CSV.
@@ -27,20 +33,27 @@ afterEach(() => {
 
 describe("ImportUpload", () => {
   it("explains what can be selected", () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
 
     expect(
       screen.getByRole("heading", { level: 2, name: "Import products" })
     ).toBeInTheDocument()
     expect(screen.getByText(/up to 10 MB are accepted/)).toBeInTheDocument()
-    expect(screen.getByText("Drag and drop a CSV file here")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Choose File" })).toBeInTheDocument()
+    expect(
+      screen.getByText("Drag and drop a CSV file here")
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Choose File" })
+    ).toBeInTheDocument()
     expect(getFileInput()).toHaveAttribute("type", "file")
-    expect(getFileInput()).toHaveAttribute("accept", expect.stringContaining(".csv"))
+    expect(getFileInput()).toHaveAttribute(
+      "accept",
+      expect.stringContaining(".csv")
+    )
   })
 
   it("opens the file picker from the Choose File button", async () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
     const click = vi.spyOn(getFileInput(), "click")
 
     await user.click(screen.getByRole("button", { name: "Choose File" }))
@@ -49,7 +62,7 @@ describe("ImportUpload", () => {
   })
 
   it("shows the name and size of a valid CSV", async () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
 
     await user.upload(getFileInput(), createFile("products_batch.csv", 49_459))
 
@@ -57,11 +70,13 @@ describe("ImportUpload", () => {
     expect(screen.getByText("48.3 KB")).toBeInTheDocument()
     expect(screen.queryByText("Drag and drop a CSV file here")).toBeNull()
     expect(screen.queryByRole("alert")).toBeNull()
-    expect(screen.getByRole("button", { name: "Replace File" })).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Replace File" })
+    ).toBeInTheDocument()
   })
 
   it("accepts a file of exactly the maximum size", async () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
 
     await user.upload(
       getFileInput(),
@@ -73,21 +88,23 @@ describe("ImportUpload", () => {
   })
 
   it("rejects a file that is not a CSV and says why", async () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
 
     await user.upload(getFileInput(), createFile("products.xlsx"))
 
     expect(screen.getByRole("alert")).toHaveTextContent(
       "“products.xlsx” is not a CSV file. Choose a file that ends in .csv."
     )
-    expect(screen.getByText("Drag and drop a CSV file here")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Choose File" })).toHaveAccessibleDescription(
-      /is not a CSV file/
-    )
+    expect(
+      screen.getByText("Drag and drop a CSV file here")
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Choose File" })
+    ).toHaveAccessibleDescription(/is not a CSV file/)
   })
 
   it("rejects a CSV over 10 MB and says why", async () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
 
     await user.upload(
       getFileInput(),
@@ -101,7 +118,7 @@ describe("ImportUpload", () => {
   })
 
   it("replaces the selected file and clears an earlier error", async () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
 
     await user.upload(getFileInput(), createFile("notes.txt"))
     expect(screen.getByRole("alert")).toBeInTheDocument()
@@ -116,7 +133,7 @@ describe("ImportUpload", () => {
   })
 
   it("drops the selection when a replacement is invalid", async () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
 
     await user.upload(getFileInput(), createFile("first.csv"))
     await user.upload(getFileInput(), createFile("second.pdf"))
@@ -126,41 +143,44 @@ describe("ImportUpload", () => {
   })
 
   it("removes the selected file and returns focus to Choose File", async () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
     await user.upload(getFileInput(), createFile("products.csv"))
 
-    await user.click(screen.getByRole("button", { name: "Remove products.csv" }))
+    await user.click(
+      screen.getByRole("button", { name: "Remove products.csv" })
+    )
 
-    expect(screen.getByText("Drag and drop a CSV file here")).toBeInTheDocument()
+    expect(
+      screen.getByText("Drag and drop a CSV file here")
+    ).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Choose File" })).toHaveFocus()
   })
 
   it("can pick the same file again after removing it", async () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
     const file = createFile("products.csv")
 
     await user.upload(getFileInput(), file)
-    await user.click(screen.getByRole("button", { name: "Remove products.csv" }))
+    await user.click(
+      screen.getByRole("button", { name: "Remove products.csv" })
+    )
     await user.upload(getFileInput(), file)
 
     expect(screen.getByText("products.csv")).toBeInTheDocument()
   })
 
-  it("does not claim to download the template yet", async () => {
-    render(<ImportUpload />)
+  it("downloads the template when asked", async () => {
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
 
     await user.click(
       screen.getByRole("button", { name: "Download CSV Template" })
     )
 
-    expect(toast.info).toHaveBeenCalledWith(
-      "Not available yet",
-      expect.objectContaining({ description: expect.any(String) })
-    )
+    expect(onTemplate).toHaveBeenCalledOnce()
   })
 
   it("opens the guidelines in a dialog", async () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
 
     await user.click(screen.getByRole("button", { name: "Import Guidelines" }))
 
@@ -168,38 +188,122 @@ describe("ImportUpload", () => {
       name: "Import guidelines",
     })
     expect(within(dialog).getAllByRole("listitem")).toHaveLength(5)
-    expect(within(dialog).getByText(/Keep the file under 10 MB/)).toBeInTheDocument()
+    expect(
+      within(dialog).getByText(/Keep the file under 10 MB/)
+    ).toBeInTheDocument()
   })
 
-  it("keeps Import disabled until a valid file is selected", async () => {
-    render(<ImportUpload />)
-    const importButton = screen.getByRole("button", { name: "Import" })
+  it("keeps validation disabled until a valid file is selected", async () => {
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
+    const importButton = screen.getByRole("button", { name: "Validate CSV" })
 
     expect(importButton).toBeDisabled()
 
     await user.upload(getFileInput(), createFile("notes.txt"))
-    expect(screen.getByRole("button", { name: "Import" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Validate CSV" })).toBeDisabled()
 
     await user.upload(getFileInput(), createFile("products.csv"))
     expect(
-      screen.getByRole("button", { name: "Import products.csv" })
+      screen.getByRole("button", { name: "Validate products.csv" })
     ).toBeEnabled()
 
-    await user.click(screen.getByRole("button", { name: "Remove products.csv" }))
-    expect(screen.getByRole("button", { name: "Import" })).toBeDisabled()
+    await user.click(
+      screen.getByRole("button", { name: "Remove products.csv" })
+    )
+    expect(screen.getByRole("button", { name: "Validate CSV" })).toBeDisabled()
   })
 
-  it("does not claim to start the import yet", async () => {
-    render(<ImportUpload />)
+  it("sends the selected CSV to validation when asked", async () => {
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
     await user.upload(getFileInput(), createFile("products.csv"))
 
-    await user.click(screen.getByRole("button", { name: "Import products.csv" }))
+    await user.click(
+      screen.getByRole("button", { name: "Validate products.csv" })
+    )
 
-    expect(toast.info).toHaveBeenCalledWith(
-      "Not available yet",
-      expect.objectContaining({ description: expect.any(String) })
+    expect(onValidate).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "products.csv" })
     )
     expect(screen.getByText("products.csv")).toBeInTheDocument()
+  })
+})
+
+describe("ImportUpload while validating", () => {
+  const onCancel = vi.fn()
+
+  function renderValidating(uploadProgress: number | null) {
+    render(
+      <ImportUpload
+        onValidate={onValidate}
+        onTemplate={onTemplate}
+        onCancel={onCancel}
+        validating
+        uploadProgress={uploadProgress}
+      />
+    )
+  }
+
+  it("shows no progress when nothing is being validated", () => {
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
+
+    expect(screen.queryByRole("progressbar")).toBeNull()
+    expect(screen.queryByRole("button", { name: "Cancel" })).toBeNull()
+  })
+
+  it("reports the bytes sent as a real percentage", () => {
+    renderValidating(40)
+
+    const bar = screen.getByRole("progressbar", { name: "Uploading file" })
+    expect(bar).toHaveAttribute("aria-valuenow", "40")
+    expect(screen.getByRole("button", { name: "Validating…" })).toBeDisabled()
+  })
+
+  it("does not invent a percentage for the server's checks", () => {
+    renderValidating(100)
+
+    const bar = screen.getByRole("progressbar", { name: "Checking every row" })
+    expect(bar).not.toHaveAttribute("aria-valuenow")
+  })
+
+  it("is indeterminate, and still an upload, before the first report", () => {
+    renderValidating(null)
+
+    const bar = screen.getByRole("progressbar", { name: "Uploading file" })
+    expect(bar).not.toHaveAttribute("aria-valuenow")
+  })
+
+  it("lets the user cancel", async () => {
+    renderValidating(10)
+
+    await user.click(screen.getByRole("button", { name: "Cancel" }))
+
+    expect(onCancel).toHaveBeenCalledOnce()
+  })
+
+  it("tells its owner when a multi-file drop clears the selection", async () => {
+    const onSelectionChanged = vi.fn()
+    render(
+      <ImportUpload
+        onValidate={onValidate}
+        onTemplate={onTemplate}
+        onSelectionChanged={onSelectionChanged}
+      />
+    )
+    await user.upload(getFileInput(), createFile("first.csv"))
+    onSelectionChanged.mockClear()
+
+    fireEvent.drop(
+      screen.getByRole("group", { name: "Product CSV drop area" }),
+      {
+        dataTransfer: {
+          files: [createFile("a.csv"), createFile("b.csv")],
+          types: ["Files"],
+        },
+      }
+    )
+
+    expect(onSelectionChanged).toHaveBeenCalledOnce()
+    expect(screen.queryByText("first.csv")).toBeNull()
   })
 })
 
@@ -215,7 +319,7 @@ describe("ImportUpload drag and drop", () => {
   }
 
   it("selects a dropped CSV like a chosen one", () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
 
     dropFiles(createFile("dropped.csv", 49_459))
 
@@ -223,12 +327,12 @@ describe("ImportUpload drag and drop", () => {
     expect(screen.getByText("48.3 KB")).toBeInTheDocument()
     expect(screen.queryByRole("alert")).toBeNull()
     expect(
-      screen.getByRole("button", { name: "Import dropped.csv" })
+      screen.getByRole("button", { name: "Validate dropped.csv" })
     ).toBeEnabled()
   })
 
   it("validates a dropped file the same way", () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
 
     dropFiles(createFile("report.pdf"))
     expect(screen.getByRole("alert")).toHaveTextContent(
@@ -236,12 +340,14 @@ describe("ImportUpload drag and drop", () => {
     )
 
     dropFiles(createFile("big.csv", IMPORT_MAX_FILE_SIZE_BYTES + 1))
-    expect(screen.getByRole("alert")).toHaveTextContent("“big.csv” is too large.")
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "“big.csv” is too large."
+    )
     expect(screen.queryByText("big.csv")).toBeNull()
   })
 
   it("replaces the current file with a dropped one", async () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
     await user.upload(getFileInput(), createFile("first.csv"))
 
     dropFiles(createFile("second.csv"))
@@ -251,16 +357,18 @@ describe("ImportUpload drag and drop", () => {
   })
 
   it("asks for one file at a time instead of silently picking one", () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
 
     dropFiles(createFile("a.csv"), createFile("b.csv"))
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Drop one file at a time.")
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Drop one file at a time."
+    )
     expect(screen.queryByText("a.csv")).toBeNull()
   })
 
   it("highlights the area only while files are dragged over it", () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
     const area = getDropArea()
 
     fireEvent.dragEnter(area, { dataTransfer: { types: ["Files"] } })
@@ -269,11 +377,13 @@ describe("ImportUpload drag and drop", () => {
 
     fireEvent.dragLeave(area, { dataTransfer: { types: ["Files"] } })
     expect(area).not.toHaveAttribute("data-dragging")
-    expect(screen.getByText("Drag and drop a CSV file here")).toBeInTheDocument()
+    expect(
+      screen.getByText("Drag and drop a CSV file here")
+    ).toBeInTheDocument()
   })
 
   it("stays highlighted when the drag moves over a child of the area", () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
     const area = getDropArea()
     const child = screen.getByRole("button", { name: "Choose File" })
 
@@ -289,7 +399,7 @@ describe("ImportUpload drag and drop", () => {
   })
 
   it("clears the highlight after a drop", () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
 
     fireEvent.dragEnter(getDropArea(), { dataTransfer: { types: ["Files"] } })
     dropFiles(createFile("dropped.csv"))
@@ -298,7 +408,7 @@ describe("ImportUpload drag and drop", () => {
   })
 
   it("ignores drags that are not files, such as selected text", () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
     const area = getDropArea()
 
     fireEvent.dragEnter(area, { dataTransfer: { types: ["text/plain"] } })
@@ -307,7 +417,7 @@ describe("ImportUpload drag and drop", () => {
   })
 
   it("allows a drop only when files are being dragged", () => {
-    render(<ImportUpload />)
+    render(<ImportUpload onValidate={onValidate} onTemplate={onTemplate} />)
     const area = getDropArea()
 
     const filesDrag = createEvent.dragOver(area, {

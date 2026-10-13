@@ -1,4 +1,10 @@
-import { CircleCheckIcon, CircleXIcon, ClockIcon, LoaderIcon } from "lucide-react"
+import {
+  CircleAlertIcon,
+  CircleCheckIcon,
+  CircleXIcon,
+  ClockIcon,
+  LoaderIcon,
+} from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { IMPORT_STATUS_LABELS } from "@/constants/import.constants"
@@ -19,13 +25,17 @@ export function ImportStatusBadge({ status }: ImportStatusBadgeProps) {
 
 function StatusIcon({ status }: ImportStatusBadgeProps) {
   switch (status) {
+    case "ready":
+      return <CircleCheckIcon />
+    case "validation-failed":
+      return <CircleAlertIcon className="fill-amber-500 dark:fill-amber-400" />
     case "processing":
       return <LoaderIcon />
-    case "queued":
-      return <ClockIcon />
     case "completed":
       return <CircleCheckIcon className="fill-green-500 dark:fill-green-400" />
     case "failed":
       return <CircleXIcon className="fill-red-500 dark:fill-red-400" />
+    case "expired":
+      return <ClockIcon />
   }
 }
