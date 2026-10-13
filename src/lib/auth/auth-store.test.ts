@@ -16,8 +16,12 @@ const user: AuthUser = {
   updatedAt: "2026-01-01T00:00:00Z",
 }
 
-function authResponse(accessToken = "token-1", expiresIn = 900): AuthResponse {
-  return { accessToken, tokenType: "Bearer", expiresIn, user }
+function authResponse(
+  accessToken = "token-1",
+  expiresIn = 900,
+  account: AuthUser = user
+): AuthResponse {
+  return { accessToken, tokenType: "Bearer", expiresIn, user: account }
 }
 
 // The store keeps module-level state, so every test gets a fresh copy. Errors
@@ -66,7 +70,7 @@ describe("auth store", () => {
     expect(api.login).toHaveBeenCalledWith("ada@example.com", "secret")
     expect(store.getAuthState()).toEqual({ status: "authenticated", user })
     expect(listener).toHaveBeenCalled()
-    await expect(store.getAccessToken()).resolves.toBe("fresh-token")
+    expect(store.getAccessToken()).toBe("fresh-token")
     expect(api.refresh).not.toHaveBeenCalled()
   })
 
@@ -83,61 +87,21 @@ describe("auth store", () => {
     expect(store.getAuthState().status).toBe("loading")
   })
 
-  it("shares one refresh call between concurrent callers", async () => {
+  it("renews the session through the API client and keeps the new token and user", async () => {
     const { store, api } = await loadModules()
-    api.refresh.mockResolvedValue(authResponse())
+    api.login.mockResolvedValue(authResponse("old-token"))
+    api.refresh.mockResolvedValue(
+      authResponse("new-token", 900, { ...user, name: "Ada King" })
+    )
+    await store.signIn("ada@example.com", "secret")
 
-    const results = await Promise.all([
-      store.refreshSession(),
-      store.refreshSession(),
-      store.refreshSession(),
-    ])
+    await expect(store.refreshSession()).resolves.toBe(true)
 
-    expect(results).toEqual([true, true, true])
-    expect(api.refresh).toHaveBeenCalledTimes(1)
-  })
-
-  it("retries once when a concurrent tab won the refresh race", async () => {
-    const { store, api, unauthorized } = await loadModules()
-    api.refresh
-      .mockRejectedValueOnce(unauthorized())
-      .mockResolvedValueOnce(authResponse("second-try"))
-
-    const pending = store.refreshSession()
-    await vi.advanceTimersByTimeAsync(300)
-
-    await expect(pending).resolves.toBe(true)
-    expect(api.refresh).toHaveBeenCalledTimes(2)
-    await expect(store.getAccessToken()).resolves.toBe("second-try")
-  })
-
-  it("gives up after the retry is also rejected", async () => {
-    const { store, api, unauthorized } = await loadModules()
-    api.refresh.mockRejectedValue(unauthorized())
-
-    const pending = store.refreshSession()
-    await vi.advanceTimersByTimeAsync(300)
-
-    await expect(pending).resolves.toBe(false)
-    expect(api.refresh).toHaveBeenCalledTimes(2)
-  })
-
-  it("does not retry other failures", async () => {
-    const { store, api, unreachable } = await loadModules()
-    api.refresh.mockRejectedValue(unreachable())
-
-    await expect(store.refreshSession()).rejects.toMatchObject({ status: 0 })
-    expect(api.refresh).toHaveBeenCalledTimes(1)
-  })
-
-  it("allows a new refresh after the previous one settles", async () => {
-    const { store, api } = await loadModules()
-    api.refresh.mockResolvedValue(authResponse())
-
-    await store.refreshSession()
-    await store.refreshSession()
-
-    expect(api.refresh).toHaveBeenCalledTimes(2)
+    expect(store.getAccessToken()).toBe("new-token")
+    expect(store.getAuthState()).toEqual({
+      status: "authenticated",
+      user: { ...user, name: "Ada King" },
+    })
   })
 
   describe("restoreSession", () => {
@@ -185,31 +149,21 @@ describe("auth store", () => {
   })
 
   describe("getAccessToken", () => {
-    it("renews a token that is about to expire", async () => {
+    it("is null without a session, and never triggers a refresh", async () => {
       const { store, api } = await loadModules()
-      api.login.mockResolvedValue(authResponse("old-token", 60))
-      api.refresh.mockResolvedValue(authResponse("new-token", 900))
-      await store.signIn("ada@example.com", "secret")
 
-      // 31 s later only 29 s remain, inside the 30 s renewal margin.
-      vi.advanceTimersByTime(31_000)
-
-      await expect(store.getAccessToken()).resolves.toBe("new-token")
-      expect(api.refresh).toHaveBeenCalledTimes(1)
+      expect(store.getAccessToken()).toBeNull()
+      expect(api.refresh).not.toHaveBeenCalled()
     })
 
-    it("clears the session and rejects when it cannot be renewed", async () => {
-      const { store, api, unauthorized } = await loadModules()
-      api.refresh.mockRejectedValue(unauthorized())
+    it("is null again once the session is cleared", async () => {
+      const { store, api } = await loadModules()
+      api.login.mockResolvedValue(authResponse("token-1"))
+      await store.signIn("ada@example.com", "secret")
 
-      const pending = store.getAccessToken().catch((e: unknown) => e)
-      await vi.advanceTimersByTimeAsync(300)
+      store.clearSession()
 
-      expect(await pending).toMatchObject({ status: 401 })
-      expect(store.getAuthState()).toEqual({
-        status: "unauthenticated",
-        user: null,
-      })
+      expect(store.getAccessToken()).toBeNull()
     })
   })
 
@@ -229,7 +183,7 @@ describe("auth store", () => {
       })
       expect(listener).toHaveBeenCalledTimes(1)
       // The token is untouched: no refresh was needed to show the change.
-      await expect(store.getAccessToken()).resolves.toBe("token-1")
+      expect(store.getAccessToken()).toBe("token-1")
       expect(api.refresh).not.toHaveBeenCalled()
     })
 

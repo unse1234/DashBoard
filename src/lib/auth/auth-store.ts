@@ -1,28 +1,19 @@
 import type { AuthState, AuthResponse, AuthUser } from "@/types/auth.types"
-import { ApiError, isApiError } from "@/lib/api/api-error"
-import { attachSessionHandlers } from "@/lib/api/axios"
+import { attachSessionHandlers, refreshSession } from "@/lib/api/axios"
 import * as authApi from "@/services/auth/auth.api"
 
 /**
  * The access token lives only in this module's memory, never in localStorage
  * or a readable cookie. Page loads restore it using the HttpOnly refresh cookie.
+ *
+ * The store only holds the session. Renewing it is the API client's job: it
+ * refreshes when a request is rejected and tells this module the outcome.
  */
-
-/** Renew this long before expiry so a request never carries a dying token. */
-const TOKEN_EXPIRY_SKEW_MS = 30_000
-
-/**
- * The API answers 401 (without ending the session) when a second tab refreshes
- * at the same moment, because the cookie was rotated a moment earlier. Waiting
- * briefly and retrying once picks up the new cookie.
- */
-const REFRESH_RACE_RETRY_DELAY_MS = 300
 
 const SERVER_STATE: AuthState = { status: "loading", user: null }
 
 let state: AuthState = SERVER_STATE
-let accessToken: { value: string; expiresAt: number } | null = null
-let refreshInFlight: Promise<boolean> | null = null
+let accessToken: string | null = null
 let restoreInFlight: Promise<void> | null = null
 const listeners = new Set<() => void>()
 
@@ -31,8 +22,8 @@ function setState(next: AuthState) {
   listeners.forEach((listener) => listener())
 }
 
-function startSession({ accessToken: value, expiresIn, user }: AuthResponse) {
-  accessToken = { value, expiresAt: Date.now() + expiresIn * 1000 }
+function startSession({ accessToken: value, user }: AuthResponse) {
+  accessToken = value
   setState({ status: "authenticated", user })
 }
 
@@ -84,36 +75,12 @@ export async function signOut() {
   await authApi.logout()
 }
 
-async function refreshOnce(): Promise<boolean> {
-  for (let attempt = 0; ; attempt++) {
-    try {
-      startSession(await authApi.refresh())
-      return true
-    } catch (error) {
-      const rejected = isApiError(error) && error.status === 401
-      if (!rejected) throw error
-      if (attempt === 1) return false
-      await new Promise((resolve) =>
-        setTimeout(resolve, REFRESH_RACE_RETRY_DELAY_MS)
-      )
-    }
-  }
-}
-
 /**
- * Exchanges the refresh cookie for a new access token. Concurrent callers (for
- * example React Strict Mode's double effects, or several requests expiring at
- * once) share one network call: the API rotates the cookie on every refresh,
- * so parallel calls would otherwise trip its reuse detection.
- *
- * Resolves `false` when there is no valid session; rejects on network errors.
+ * Exchanges the refresh cookie for a new access token; the API client shares
+ * one call between concurrent callers. Resolves `false` when there is no valid
+ * session and rejects on network or server failures.
  */
-export function refreshSession() {
-  refreshInFlight ??= refreshOnce().finally(() => {
-    refreshInFlight = null
-  })
-  return refreshInFlight
-}
+export { refreshSession }
 
 /** Runs once per page load to restore a session from the refresh cookie. */
 export function restoreSession() {
@@ -129,31 +96,24 @@ export function restoreSession() {
   return restoreInFlight
 }
 
-/** A valid access token, renewing it first when it is missing or about to expire. */
-export async function getAccessToken() {
-  if (
-    accessToken &&
-    accessToken.expiresAt - Date.now() > TOKEN_EXPIRY_SKEW_MS
-  ) {
-    return accessToken.value
-  }
-
-  if (!(await refreshSession()) || !accessToken) {
-    clearSession()
-    throw new ApiError(401, ["Your session has expired. Please log in again."])
-  }
-  return accessToken.value
+/** The current access token, or null without a session. It is never renewed here. */
+export function getAccessToken() {
+  return accessToken
 }
 
 // The API client attaches the token to authenticated requests and, on a 401,
-// asks for a refresh through these. They are registered here rather than
+// renews the session through these. They are registered here rather than
 // imported by the client because this module calls the auth API through it.
-attachSessionHandlers({ getAccessToken, refreshSession, clearSession })
+attachSessionHandlers({
+  getAccessToken,
+  requestRefresh: () => authApi.refresh(),
+  updateSession: startSession,
+  clearSession,
+})
 
 /** Test helper: forgets everything, as if the page had just loaded. */
 export function resetAuthStore() {
   state = SERVER_STATE
   accessToken = null
-  refreshInFlight = null
   restoreInFlight = null
 }

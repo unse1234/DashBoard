@@ -52,13 +52,16 @@ export type ResetPasswordRequest = {
  * through `attachSessionHandlers`, avoiding a client-to-store runtime import.
  */
 export type SessionHandlers = {
-  /** A valid access token, renewing it first when it is missing or about to expire. */
-  getAccessToken: () => Promise<string>
+  /** The in-memory access token, or null when there is no session. */
+  getAccessToken: () => string | null
   /**
-   * Exchanges the refresh cookie for a new access token. Concurrent callers must
-   * share one network call. Resolves `false` when there is no valid session.
+   * Asks the API to exchange the HttpOnly refresh cookie for a new access
+   * token. The client decides when to call it and shares one call between
+   * concurrent requests.
    */
-  refreshSession: () => Promise<boolean>
+  requestRefresh: () => Promise<AuthResponse>
+  /** Stores a renewed token and user as the current session. */
+  updateSession: (response: AuthResponse) => void
   /** Forgets the session after it could not be renewed. */
   clearSession: () => void
 }

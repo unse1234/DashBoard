@@ -1,9 +1,14 @@
 import type { SessionHandlers } from "@/types/auth.types"
-import axios, { isAxiosError, isCancel } from "axios"
+import axios, {
+  isAxiosError,
+  isCancel,
+  type InternalAxiosRequestConfig,
+} from "axios"
 
 import { API_URL } from "@/lib/api/api.config"
 import {
   ApiError,
+  isApiError,
   NETWORK_ERROR_STATUS,
   parseErrorMessages,
 } from "@/lib/api/api-error"
@@ -26,7 +31,15 @@ declare module "axios" {
 const NETWORK_ERROR_MESSAGE =
   "Unable to reach the server. Check your connection and try again."
 
+/**
+ * The API answers 401 (without ending the session) when a second tab refreshes
+ * at the same moment, because the cookie was rotated a moment earlier. Waiting
+ * briefly and retrying once picks up the new cookie.
+ */
+const REFRESH_RACE_RETRY_DELAY_MS = 300
+
 let sessionHandlers: SessionHandlers | null = null
+let refreshInFlight: Promise<boolean> | null = null
 
 export function attachSessionHandlers(handlers: SessionHandlers) {
   sessionHandlers = handlers
@@ -59,14 +72,53 @@ export function toApiError(error: unknown): unknown {
   )
 }
 
+async function refreshOnce(session: SessionHandlers): Promise<boolean> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      session.updateSession(await session.requestRefresh())
+      return true
+    } catch (error) {
+      const rejected = isApiError(error) && error.status === 401
+      if (!rejected) throw error
+      if (attempt === 1) return false
+      await new Promise((resolve) =>
+        setTimeout(resolve, REFRESH_RACE_RETRY_DELAY_MS)
+      )
+    }
+  }
+}
+
+/**
+ * Exchanges the HttpOnly refresh cookie for a new access token and hands it to
+ * the session. Concurrent callers (several requests expiring at once, or React
+ * Strict Mode's double effects) share one network call: the API rotates the
+ * cookie on every refresh, so parallel calls would trip its reuse detection.
+ *
+ * Resolves `false` when there is no valid session; rejects on network errors
+ * and server failures, which say nothing about whether the session is valid.
+ */
+export function refreshSession(): Promise<boolean> {
+  refreshInFlight ??= refreshOnce(requireSessionHandlers()).finally(() => {
+    refreshInFlight = null
+  })
+  return refreshInFlight
+}
+
+function bearerOf(config: InternalAxiosRequestConfig) {
+  const value: unknown = config.headers?.get("Authorization")
+  return typeof value === "string" ? value.replace(/^Bearer /, "") : null
+}
+
 /**
  * The one HTTP client for the backend API.
  *
- * - Authenticated requests carry the in-memory access token, renewed before it
- *   expires (see `SessionHandlers`).
- * - A 401 answered by an authenticated request refreshes the session once and
- *   replays the request once. Parallel 401s share one refresh, because the
- *   store's refresh is single-flight and the API rotates the cookie on use.
+ * - Authenticated requests carry the in-memory access token. Nothing renews it
+ *   ahead of time: it is renewed when the API rejects it.
+ * - A 401 answered by an authenticated request refreshes the session and
+ *   replays the request once (`retriedAfterRefresh` stops a second replay).
+ *   Parallel 401s share one refresh (see `refreshSession`).
+ * - Only a 401 refreshes. A 403 means the user is known but not allowed, and a
+ *   refresh would change nothing.
  * - Failures reject with an `ApiError`.
  *
  * Cookies are not sent by default: only the endpoints that read or set the
@@ -80,8 +132,15 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(async (config) => {
   if (config.skipAuth) return config
 
-  const accessToken = await requireSessionHandlers().getAccessToken()
-  config.headers.set("Authorization", `Bearer ${accessToken}`)
+  const session = requireSessionHandlers()
+  // Before the page's session is restored there is no token yet. Wait for the
+  // restore instead of sending a request that can only be rejected.
+  if (!session.getAccessToken() && refreshInFlight) {
+    await refreshInFlight.catch(() => false)
+  }
+
+  const accessToken = session.getAccessToken()
+  if (accessToken) config.headers.set("Authorization", `Bearer ${accessToken}`)
   return config
 })
 
@@ -94,7 +153,13 @@ apiClient.interceptors.response.use(undefined, async (error: unknown) => {
     !error.config.retriedAfterRefresh
   ) {
     const session = requireSessionHandlers()
-    if (await session.refreshSession()) {
+    // A token newer than the one this request carried means another request's
+    // refresh already finished; use it instead of rotating the cookie again.
+    const renewedMeanwhile =
+      session.getAccessToken() !== null &&
+      session.getAccessToken() !== bearerOf(error.config)
+
+    if (renewedMeanwhile || (await refreshSession())) {
       // The request interceptor attaches the renewed token on the way out.
       return apiClient.request({ ...error.config, retriedAfterRefresh: true })
     }

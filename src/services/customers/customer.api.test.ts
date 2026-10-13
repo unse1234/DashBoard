@@ -84,8 +84,9 @@ describe("customers API calls", () => {
 
   beforeEach(() => {
     attachSessionHandlers({
-      getAccessToken: vi.fn().mockResolvedValue("token-1"),
-      refreshSession: vi.fn().mockResolvedValue(false),
+      getAccessToken: () => "token-1",
+      requestRefresh: vi.fn(),
+      updateSession: vi.fn(),
       clearSession: vi.fn(),
     })
   })

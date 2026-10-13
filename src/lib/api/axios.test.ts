@@ -2,23 +2,51 @@ import { CanceledError, isCancel } from "axios"
 import { vi } from "vitest"
 
 import { ApiError } from "@/lib/api/api-error"
-import { apiClient, attachSessionHandlers } from "@/lib/api/axios"
+import {
+  apiClient,
+  attachSessionHandlers,
+  refreshSession,
+} from "@/lib/api/axios"
+import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { mockApi, networkError } from "@/test-utils/mock-api"
+import type { AuthResponse } from "@/types/auth.types"
 
-const getAccessToken = vi.fn<() => Promise<string>>()
-const refreshSession = vi.fn<() => Promise<boolean>>()
+function authResponse(accessToken: string): AuthResponse {
+  return {
+    accessToken,
+    tokenType: "Bearer",
+    expiresIn: 900,
+    user: createAuthUser(),
+  }
+}
+
+// A stand-in session: `token` is what the store would hold in memory.
+let token: string | null
+const getAccessToken = vi.fn<() => string | null>(() => token)
+const requestRefresh = vi.fn<() => Promise<AuthResponse>>()
+const updateSession = vi.fn<(response: AuthResponse) => void>()
 const clearSession = vi.fn<() => void>()
 
 let api: ReturnType<typeof mockApi>
 
 beforeEach(() => {
   vi.resetAllMocks()
-  getAccessToken.mockResolvedValue("token-1")
-  attachSessionHandlers({ getAccessToken, refreshSession, clearSession })
+  token = "token-1"
+  getAccessToken.mockImplementation(() => token)
+  updateSession.mockImplementation((response) => {
+    token = response.accessToken
+  })
+  attachSessionHandlers({
+    getAccessToken,
+    requestRefresh,
+    updateSession,
+    clearSession,
+  })
 })
 
 afterEach(() => {
   api.restore()
+  vi.useRealTimers()
 })
 
 function respondWith(...replies: Parameters<typeof mockApi>[0][]) {
@@ -66,7 +94,7 @@ describe("apiClient requests", () => {
 
     expect(api.requests[0].headers.authorization).toBe("Bearer token-1")
     expect(api.requests[0].params).toEqual({ page: 2 })
-    expect(refreshSession).not.toHaveBeenCalled()
+    expect(requestRefresh).not.toHaveBeenCalled()
   })
 
   it("never attaches a token to public endpoints", async () => {
@@ -98,7 +126,7 @@ describe("apiClient requests", () => {
     expect(api.requests[0].signal).toBe(controller.signal)
     expect(isCancel(error)).toBe(true)
     expect(error).not.toBeInstanceOf(ApiError)
-    expect(refreshSession).not.toHaveBeenCalled()
+    expect(requestRefresh).not.toHaveBeenCalled()
   })
 })
 
@@ -193,7 +221,7 @@ describe("apiClient errors", () => {
     expect(error).toBeInstanceOf(ApiError)
     expect(error.isNetworkError).toBe(true)
     expect(error.message).toMatch(/unable to reach the server/i)
-    expect(refreshSession).not.toHaveBeenCalled()
+    expect(requestRefresh).not.toHaveBeenCalled()
     expect(clearSession).not.toHaveBeenCalled()
   })
 
@@ -205,27 +233,36 @@ describe("apiClient errors", () => {
       await expect(apiClient.get("/users")).rejects.toMatchObject({ status })
 
       expect(api.requests).toHaveLength(1)
-      expect(refreshSession).not.toHaveBeenCalled()
+      expect(requestRefresh).not.toHaveBeenCalled()
       expect(clearSession).not.toHaveBeenCalled()
     }
   )
 })
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+const bearer = (token: string) => `Bearer ${token}`
+const expired = () => ({
+  status: 401,
+  data: { statusCode: 401, message: "Invalid or expired token" },
+})
+
 describe("apiClient session refresh", () => {
   it("refreshes once and replays the request with the renewed token after a 401", async () => {
-    getAccessToken
-      .mockResolvedValueOnce("stale-token")
-      .mockResolvedValueOnce("fresh-token")
-    refreshSession.mockResolvedValue(true)
-    respondWith(failWith(401, "Invalid or expired token"), ok({ id: "1" }))
+    requestRefresh.mockResolvedValue(authResponse("token-2"))
+    api = mockApi((request) =>
+      request.headers.authorization === bearer("token-2")
+        ? { data: { id: "1" } }
+        : expired()
+    )
 
     const { data } = await apiClient.patch("/users/1", { name: "Ada" })
 
     expect(data).toEqual({ id: "1" })
-    expect(refreshSession).toHaveBeenCalledTimes(1)
+    expect(requestRefresh).toHaveBeenCalledTimes(1)
+    expect(updateSession).toHaveBeenCalledWith(authResponse("token-2"))
     expect(api.requests.map((r) => r.headers.authorization)).toEqual([
-      "Bearer stale-token",
-      "Bearer fresh-token",
+      bearer("token-1"),
+      bearer("token-2"),
     ])
     // The replay is the same request, body included, not a re-encoded copy.
     expect(api.requests[1]).toMatchObject({
@@ -236,67 +273,204 @@ describe("apiClient session refresh", () => {
     expect(clearSession).not.toHaveBeenCalled()
   })
 
+  it("answers parallel 401s with one refresh and replays each request once", async () => {
+    requestRefresh.mockImplementation(async () => {
+      await delay(10)
+      return authResponse("token-2")
+    })
+    api = mockApi((request) =>
+      request.headers.authorization === bearer("token-2")
+        ? { data: { ok: true } }
+        : expired()
+    )
+
+    const results = await Promise.all(
+      ["/users", "/users/1", "/users/2"].map((url) => apiClient.get(url))
+    )
+
+    expect(results.map((r) => r.data)).toEqual(Array(3).fill({ ok: true }))
+    expect(requestRefresh).toHaveBeenCalledTimes(1)
+    expect(api.requests).toHaveLength(6) // 3 rejected + 3 replays
+  })
+
+  it("replays a request that was rejected after another request's refresh finished, without refreshing again", async () => {
+    requestRefresh.mockResolvedValue(authResponse("token-2"))
+    api = mockApi(async (request) => {
+      const renewed = request.headers.authorization === bearer("token-2")
+      if (request.url === "/slow" && !renewed) await delay(30)
+      return renewed ? { data: { ok: true } } : expired()
+    })
+
+    const [fast, slow] = await Promise.all([
+      apiClient.get("/fast"),
+      apiClient.get("/slow"),
+    ])
+
+    expect([fast.data, slow.data]).toEqual([{ ok: true }, { ok: true }])
+    expect(requestRefresh).toHaveBeenCalledTimes(1)
+  })
+
   it("replays at most once: a second 401 is final and cannot loop", async () => {
-    refreshSession.mockResolvedValue(true)
-    respondWith(failWith(401, "Invalid or expired token"))
+    requestRefresh.mockResolvedValue(authResponse("token-2"))
+    api = mockApi(() => expired())
 
     await expect(apiClient.get("/users")).rejects.toMatchObject({
       status: 401,
     })
 
     expect(api.requests).toHaveLength(2)
-    expect(refreshSession).toHaveBeenCalledTimes(1)
+    expect(requestRefresh).toHaveBeenCalledTimes(1)
+    // The session itself is still good; only this request was refused.
+    expect(clearSession).not.toHaveBeenCalled()
   })
 
-  it("clears the session and rejects when the refresh is refused", async () => {
-    refreshSession.mockResolvedValue(false)
-    respondWith(failWith(401, "Invalid or expired token"))
+  it("never refreshes after a 403", async () => {
+    api = mockApi(() => ({
+      status: 403,
+      data: { statusCode: 403, message: "Insufficient permissions" },
+    }))
 
     await expect(apiClient.get("/users")).rejects.toMatchObject({
+      status: 403,
+    })
+
+    expect(api.requests).toHaveLength(1)
+    expect(requestRefresh).not.toHaveBeenCalled()
+  })
+
+  it.each(["/auth/login", "/auth/refresh", "/auth/forgot-password"])(
+    "does not answer a 401 from %s with a refresh",
+    async (url) => {
+      respondWith(failWith(401, "Invalid email or password"))
+
+      await expect(
+        apiClient.post(url, {}, { skipAuth: true })
+      ).rejects.toMatchObject({ status: 401 })
+
+      expect(requestRefresh).not.toHaveBeenCalled()
+      expect(clearSession).not.toHaveBeenCalled()
+      expect(api.requests).toHaveLength(1)
+    }
+  )
+
+  it("clears the session and rejects with the original 401 when the refresh is refused", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout"] })
+    requestRefresh.mockRejectedValue(
+      new ApiError(401, ["Invalid refresh token"])
+    )
+    respondWith(failWith(401, "Invalid or expired token"))
+
+    const outcome = apiClient.get("/users").catch((e: unknown) => e)
+    // A refused refresh is retried once, after a short pause (see below).
+    await vi.advanceTimersByTimeAsync(300)
+
+    expect(await outcome).toMatchObject({
       status: 401,
       message: "Invalid or expired token",
     })
-
+    expect(requestRefresh).toHaveBeenCalledTimes(2)
     expect(clearSession).toHaveBeenCalledTimes(1)
     expect(api.requests).toHaveLength(1)
   })
 
-  it("does not sign the user out when the refresh fails for a network reason", async () => {
-    refreshSession.mockRejectedValue(
-      new ApiError(0, ["Unable to reach the server."])
+  it("retries a refused refresh once, in case another tab just rotated the cookie", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout"] })
+    requestRefresh
+      .mockRejectedValueOnce(new ApiError(401, ["Invalid refresh token"]))
+      .mockResolvedValueOnce(authResponse("token-2"))
+    api = mockApi((request) =>
+      request.headers.authorization === bearer("token-2")
+        ? { data: { ok: true } }
+        : expired()
     )
-    respondWith(failWith(401, "Invalid or expired token"))
 
-    await expect(apiClient.get("/users")).rejects.toMatchObject({ status: 0 })
+    const outcome = apiClient.get("/users")
+    await vi.advanceTimersByTimeAsync(300)
 
+    await expect(outcome).resolves.toMatchObject({ data: { ok: true } })
+    expect(requestRefresh).toHaveBeenCalledTimes(2)
     expect(clearSession).not.toHaveBeenCalled()
   })
 
-  it("does not answer a wrong password or a refused refresh token with a refresh", async () => {
-    respondWith(failWith(401, "Invalid email or password"))
+  it.each([
+    ["the server is unreachable", new ApiError(0, ["Unable to reach."])],
+    ["the server fails", new ApiError(503, ["Service unavailable."])],
+  ])(
+    "keeps the session when the refresh fails because %s",
+    async (_label, failure) => {
+      requestRefresh.mockRejectedValue(failure)
+      respondWith(failWith(401, "Invalid or expired token"))
 
-    await expect(
-      apiClient.post("/auth/login", {}, { skipAuth: true })
-    ).rejects.toMatchObject({ status: 401 })
+      await expect(apiClient.get("/users")).rejects.toBe(failure)
 
-    expect(refreshSession).not.toHaveBeenCalled()
-    expect(clearSession).not.toHaveBeenCalled()
-    expect(api.requests).toHaveLength(1)
+      expect(requestRefresh).toHaveBeenCalledTimes(1)
+      expect(clearSession).not.toHaveBeenCalled()
+    }
+  )
+
+  it("refreshes a request that carried no token, then replays it with the new one", async () => {
+    token = null
+    requestRefresh.mockResolvedValue(authResponse("token-2"))
+    api = mockApi((request) =>
+      request.headers.authorization === bearer("token-2")
+        ? { data: { ok: true } }
+        : expired()
+    )
+
+    await apiClient.get("/users")
+
+    expect(api.requests[0].headers).not.toHaveProperty("authorization")
+    expect(api.requests[1].headers.authorization).toBe(bearer("token-2"))
   })
 
-  it("propagates the expired-session error raised while obtaining a token, sending nothing", async () => {
-    getAccessToken.mockRejectedValue(
-      new ApiError(401, ["Your session has expired. Please log in again."])
-    )
-    respondWith(ok())
-
-    await expect(apiClient.get("/users")).rejects.toMatchObject({
-      status: 401,
-      message: "Your session has expired. Please log in again.",
+  it("holds a request without a token until the refresh already running finishes", async () => {
+    token = null
+    requestRefresh.mockImplementation(async () => {
+      await delay(10)
+      return authResponse("token-2")
     })
+    respondWith(ok({ ok: true }))
 
-    expect(api.requests).toHaveLength(0)
-    // The session is already unrecoverable; do not try to refresh it again.
-    expect(refreshSession).not.toHaveBeenCalled()
+    const restoring = refreshSession()
+    await apiClient.get("/users")
+    await restoring
+
+    // Nothing was sent bare and rejected: one request, with the restored token.
+    expect(api.requests).toHaveLength(1)
+    expect(api.requests[0].headers.authorization).toBe(bearer("token-2"))
+    expect(requestRefresh).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("refreshSession", () => {
+  it("shares one call between concurrent callers", async () => {
+    requestRefresh.mockResolvedValue(authResponse("token-2"))
+
+    const results = await Promise.all([
+      refreshSession(),
+      refreshSession(),
+      refreshSession(),
+    ])
+
+    expect(results).toEqual([true, true, true])
+    expect(requestRefresh).toHaveBeenCalledTimes(1)
+    expect(updateSession).toHaveBeenCalledTimes(1)
+  })
+
+  it("allows a new refresh once the previous one has settled", async () => {
+    requestRefresh.mockResolvedValue(authResponse("token-2"))
+
+    await refreshSession()
+    await refreshSession()
+
+    expect(requestRefresh).toHaveBeenCalledTimes(2)
+  })
+
+  it("does not retry a failure that is not a refused cookie", async () => {
+    requestRefresh.mockRejectedValue(new ApiError(0, ["Unable to reach."]))
+
+    await expect(refreshSession()).rejects.toMatchObject({ status: 0 })
+
+    expect(requestRefresh).toHaveBeenCalledTimes(1)
   })
 })

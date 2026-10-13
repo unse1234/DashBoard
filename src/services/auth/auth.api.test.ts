@@ -11,18 +11,25 @@ import {
   resetPassword,
   verifyEmail,
 } from "@/services/auth/auth.api"
+import type { AuthResponse } from "@/types/auth.types"
 import { mockApi } from "@/test-utils/mock-api"
 
-const getAccessToken = vi.fn<() => Promise<string>>()
-const refreshSession = vi.fn<() => Promise<boolean>>()
+const getAccessToken = vi.fn<() => string | null>()
+const requestRefresh = vi.fn<() => Promise<AuthResponse>>()
+const updateSession = vi.fn<(response: AuthResponse) => void>()
 const clearSession = vi.fn<() => void>()
 
 let api: ReturnType<typeof mockApi>
 
 beforeEach(() => {
   vi.resetAllMocks()
-  getAccessToken.mockResolvedValue("token-1")
-  attachSessionHandlers({ getAccessToken, refreshSession, clearSession })
+  getAccessToken.mockReturnValue("token-1")
+  attachSessionHandlers({
+    getAccessToken,
+    requestRefresh,
+    updateSession,
+    clearSession,
+  })
 })
 
 afterEach(() => {
@@ -92,7 +99,7 @@ describe("cookie endpoints", () => {
       status: 401,
       message: "Invalid email or password",
     })
-    expect(refreshSession).not.toHaveBeenCalled()
+    expect(requestRefresh).not.toHaveBeenCalled()
     expect(clearSession).not.toHaveBeenCalled()
     expect(api.requests).toHaveLength(1)
   })
@@ -105,7 +112,7 @@ describe("cookie endpoints", () => {
 
     await expect(refresh()).rejects.toMatchObject({ status: 401 })
 
-    expect(refreshSession).not.toHaveBeenCalled()
+    expect(requestRefresh).not.toHaveBeenCalled()
     expect(api.requests).toHaveLength(1)
   })
 })

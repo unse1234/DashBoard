@@ -92,25 +92,40 @@ describe("session refresh through the API client", () => {
     ).toHaveLength(4)
   })
 
-  it("renews a token that is about to expire before sending, so nothing is rejected", async () => {
+  it("does not renew a token ahead of time, even one about to expire", async () => {
     api = mockApi((request) => {
       if (request.url === "/auth/login")
         return { data: authResponse("old", 20) }
-      if (request.url === "/auth/refresh") {
-        return { data: authResponse("fresh") }
-      }
       return { data: { ok: true } }
     })
     await signIn("ada@example.com", "secret")
 
-    // 20 s of life left is inside the 30 s renewal margin.
     await apiClient.get("/users")
 
-    expect(refreshCalls(api)).toHaveLength(1)
+    expect(refreshCalls(api)).toHaveLength(0)
     const [protectedCall] = api.requests.filter(
       (r) => !r.url.startsWith("/auth/")
     )
-    expect(bearerOf(protectedCall)).toBe("Bearer fresh")
+    expect(bearerOf(protectedCall)).toBe("Bearer old")
+  })
+
+  it("holds a request made while the session is being restored, so it is sent once with the restored token", async () => {
+    api = mockApi(async (request) => {
+      if (request.url === "/auth/refresh") {
+        await delay(10)
+        return { data: authResponse("restored") }
+      }
+      return bearerOf(request) === "Bearer restored"
+        ? { data: { ok: true } }
+        : { status: 401, data: { message: "Invalid or expired token" } }
+    })
+
+    const restoring = restoreSession()
+    await apiClient.get("/users")
+    await restoring
+
+    expect(refreshCalls(api)).toHaveLength(1)
+    expect(api.requests.filter((r) => r.url === "/users")).toHaveLength(1)
   })
 
   it("ends the session when the refresh cookie is no longer accepted, without looping", async () => {
