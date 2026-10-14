@@ -1,20 +1,31 @@
-import { notFound } from "next/navigation"
+"use client"
 
 import { StorefrontShell } from "@/components/storefront/layout/storefront-shell"
-import { ProductGallery } from "@/screens/storefront/product-details/components/product-gallery"
-import { ProductInfo } from "@/screens/storefront/product-details/components/product-info"
+import { StorefrontLoadError } from "@/components/storefront/storefront-load-error"
+import { useStorefrontProductQuery } from "@/hooks/storefront/catalog.queries"
+import { isApiError } from "@/lib/api/api-error"
+import { ProductNotFound } from "@/screens/storefront/product-details/components/product-not-found"
+import { ProductView } from "@/screens/storefront/product-details/components/product-view"
 import { ShopBackLink } from "@/screens/storefront/product-details/components/shop-back-link"
-import { getProductDetails } from "@/screens/storefront/product-details/product-details.mocks"
 
 type ProductDetailsScreenProps = {
   productId: string
 }
 
 export function ProductDetailsScreen({ productId }: ProductDetailsScreenProps) {
-  const details = getProductDetails(productId)
-  if (!details) notFound()
+  const {
+    data: product,
+    isPending,
+    isError,
+    error,
+    refetch,
+  } = useStorefrontProductQuery(productId)
 
-  const { product, gallery, description } = details
+  // The API answers 404 for an id that is unknown, malformed, switched off or
+  // not for sale here alike, so the shopper is told the same thing for all.
+  if (isError && isApiError(error) && error.status === 404) {
+    return <ProductNotFound />
+  }
 
   return (
     <StorefrontShell>
@@ -23,27 +34,32 @@ export function ProductDetailsScreen({ productId }: ProductDetailsScreenProps) {
       <div className="@container mx-auto w-full max-w-220 pt-4">
         <ShopBackLink>Back</ShopBackLink>
 
-        <div className="mt-6 flex flex-col gap-6 @xl:flex-row @2xl:gap-8 @3xl:gap-12">
-          {/* Keyed so the chosen thumbnail does not carry over to another product. */}
-          <ProductGallery key={product.id} images={gallery} />
-          <ProductInfo details={details} />
-        </div>
-
-        <hr className="mt-9.5 h-0.75 rounded-full border-0 bg-store-divider" />
-
-        <section aria-labelledby="product-description-heading" className="mt-8">
-          <h2
-            id="product-description-heading"
-            className="text-2xl leading-8 font-medium @3xl:text-[31px] @3xl:leading-10"
-          >
-            Description
-          </h2>
-          <div className="mt-2 text-base leading-6 text-store-muted @md:text-xl">
-            {description.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-          </div>
-        </section>
+        {isPending ? (
+          <>
+            <p role="status" className="sr-only">
+              Loading product
+            </p>
+            <div
+              aria-hidden="true"
+              className="mt-6 flex animate-pulse flex-col gap-6 @xl:flex-row"
+            >
+              <div className="aspect-4/3 w-full rounded-store-md bg-white @xl:h-79.5 @xl:w-64.5 @xl:shrink-0" />
+              <div className="flex flex-1 flex-col gap-4">
+                <div className="h-10 w-3/4 rounded-store-xs bg-white" />
+                <div className="h-8 w-1/2 rounded-store-xs bg-white" />
+                <div className="h-10 w-1/3 rounded-store-xs bg-white" />
+              </div>
+            </div>
+          </>
+        ) : isError ? (
+          <StorefrontLoadError
+            resourceName="this product"
+            error={error}
+            onRetry={() => void refetch()}
+          />
+        ) : (
+          <ProductView product={product} />
+        )}
       </div>
     </StorefrontShell>
   )

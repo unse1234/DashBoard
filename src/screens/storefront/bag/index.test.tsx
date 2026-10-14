@@ -147,7 +147,7 @@ describe("BagScreen", () => {
     expect(
       screen.getByRole("link", { name: "Continue shopping" })
     ).toHaveAttribute("href", "/shop")
-    expect(preview().getByText("$ 0.00")).toBeInTheDocument()
+    expect(preview().getByText("Rs 0.00")).toBeInTheDocument()
     expect(preview().queryByRole("link", { name: "Checkout" })).toBeNull()
   })
 

@@ -23,7 +23,7 @@ import { CheckoutReviewBag } from "./components/checkout-review-bag"
 import styles from "./checkout.module.css"
 
 export function CheckoutScreen() {
-  const { items, total } = useBag()
+  const { items, total, currency } = useBag()
   const { draft, setShippingAddress, setPaymentMethod } = useCheckoutDraft()
   const address = draft.shippingAddress ?? demoCheckoutAddress
   const payment = draft.paymentMethod ?? demoCheckoutPaymentMethods[0]
@@ -64,7 +64,7 @@ export function CheckoutScreen() {
             <div className={styles.detailsRow}>
               <div className={styles.paymentDetails}>
                 <p><DemoCardIcon /><span>{payment.brand} <span className={styles.muted}>ending in {payment.last4}</span></span></p>
-                <p><CheckoutGiftIcon /><span>{formatStorefrontPrice(demoCheckoutReviewPricing.giftCardBalance)} <span className={styles.muted}>gift card balance</span></span></p>
+                <p><CheckoutGiftIcon /><span>{formatStorefrontPrice(demoCheckoutReviewPricing.giftCardBalance, currency)} <span className={styles.muted}>gift card balance</span></span></p>
               </div>
               <Link href={routes.checkoutPayment} className={changeLinkClass} aria-label="Change payment method" onClick={() => setPaymentMethod(payment)}>
                 Change
@@ -80,7 +80,7 @@ export function CheckoutScreen() {
           </section>
           <CheckoutReviewBag items={items} />
         </div>
-        <CheckoutOrderSummary itemsTotal={total} hasItems={items.length > 0} isReviewed={isReviewed} onPlaceOrder={placeDemoOrder} />
+        <CheckoutOrderSummary itemsTotal={total} currency={currency} hasItems={items.length > 0} isReviewed={isReviewed} onPlaceOrder={placeDemoOrder} />
       </div>
     </section>
   )

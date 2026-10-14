@@ -1,110 +1,89 @@
 import type { StorefrontProduct } from "@/types/storefront/product.types"
 
+// Test fixtures for the screens that are not on the API yet (the bag and
+// checkout). The catalog and product details read the real API; nothing here
+// is shown to a shopper any more. The files are the 1x design crops in
+// public/images/storefront/products, which a product's imageUrl may point at.
 const IMAGE_DIRECTORY = "/images/storefront/products"
 
-// Image files are the tile area of the design, so regular products are 175 × 216
-// and the laptop, which spans two columns, is 412 × 216.
-const REGULAR_IMAGE_SIZE = { width: 175, height: 216 }
+function mockProduct(
+  fields: Pick<StorefrontProduct, "id" | "name" | "subtitle" | "price"> & {
+    file: string
+    alt: string
+  }
+): StorefrontProduct {
+  const { file, alt, ...product } = fields
+  return {
+    ...product,
+    description: null,
+    brand: null,
+    category: { id: "mock-category", name: "Electronics" },
+    currency: "USD",
+    image: { url: `${IMAGE_DIRECTORY}/${file}`, alt },
+    gallery: [],
+    inStock: true,
+  }
+}
 
-export const appleWatchSeries5: StorefrontProduct = {
+export const appleWatchSeries5 = mockProduct({
   id: "apple-watch-series-5-se",
   name: "Apple Watch",
   subtitle: "Series 5 SE",
   price: 529.99,
-  image: {
-    src: `${IMAGE_DIRECTORY}/apple-watch-series-5-se.png`,
-    ...REGULAR_IMAGE_SIZE,
-    alt: "Smartwatch with a dark band and an orange wallpaper on its face",
-  },
-  tile: "default",
-}
+  file: "apple-watch-series-5-se.png",
+  alt: "Smartwatch with a dark band and an orange wallpaper on its face",
+})
 
-export const sonyZx330bt: StorefrontProduct = {
+export const sonyZx330bt = mockProduct({
   id: "sony-zx330bt-light-grey",
   name: "Sony ZX330BT",
   subtitle: "Light Grey",
   price: 39.99,
-  image: {
-    src: `${IMAGE_DIRECTORY}/sony-zx330bt-light-grey.png`,
-    ...REGULAR_IMAGE_SIZE,
-    alt: "Light grey wired over-ear headphones",
-  },
-  tile: "default",
-}
+  file: "sony-zx330bt-light-grey.png",
+  alt: "Light grey wired over-ear headphones",
+})
 
-export const iphone11SeriousBlack: StorefrontProduct = {
+export const iphone11SeriousBlack = mockProduct({
   id: "iphone-11-serious-black",
   name: "iPhone 11",
   subtitle: "Serious Black",
   price: 619.99,
-  image: {
-    src: `${IMAGE_DIRECTORY}/iphone-11-serious-black.png`,
-    ...REGULAR_IMAGE_SIZE,
-    alt: "Black smartphone with a dual camera, shown from the back and the front",
-  },
-  tile: "default",
-}
+  file: "iphone-11-serious-black.png",
+  alt: "Black smartphone with a dual camera, shown from the back and the front",
+})
 
-export const iphone11SubwayBlue: StorefrontProduct = {
+export const iphone11SubwayBlue = mockProduct({
   id: "iphone-11-subway-blue",
   name: "iPhone 11",
   subtitle: "Subway Blue",
   price: 619.99,
-  image: {
-    src: `${IMAGE_DIRECTORY}/iphone-11-subway-blue.png`,
-    ...REGULAR_IMAGE_SIZE,
-    alt: "Mint green smartphone with a dual camera, shown from the back and the front",
-  },
-  tile: "default",
-}
+  file: "iphone-11-subway-blue.png",
+  alt: "Mint green smartphone with a dual camera, shown from the back and the front",
+})
 
-export const macbookPro16: StorefrontProduct = {
+export const macbookPro16 = mockProduct({
   id: "macbook-pro-16-silver-m1-pro",
   name: "MacBook Pro 16”",
   subtitle: "Silver - M1 Pro",
   price: 3249.99,
-  image: {
-    src: `${IMAGE_DIRECTORY}/macbook-pro-16-silver-m1-pro.png`,
-    width: 412,
-    height: 216,
-    alt: "Silver laptop open to a purple and pink wallpaper",
-  },
-  tile: "wide",
-}
+  file: "macbook-pro-16-silver-m1-pro.png",
+  alt: "Silver laptop open to a purple and pink wallpaper",
+})
 
-export const iphone11ProductRed: StorefrontProduct = {
+export const iphone11ProductRed = mockProduct({
   id: "iphone-11-product-red",
   name: "iPhone 11",
   subtitle: "Product RED",
   price: 619.99,
-  image: {
-    src: `${IMAGE_DIRECTORY}/iphone-11-product-red.png`,
-    ...REGULAR_IMAGE_SIZE,
-    alt: "Red smartphone with a dual camera, shown from the back and the front",
-  },
-  tile: "default",
-}
+  file: "iphone-11-product-red.png",
+  alt: "Red smartphone with a dual camera, shown from the back and the front",
+})
 
-export const iphone11MilkyWhite: StorefrontProduct = {
+export const iphone11MilkyWhite = mockProduct({
   id: "iphone-11-milky-white",
   name: "iPhone 11",
   subtitle: "Milky White",
   price: 619.99,
-  image: {
-    src: `${IMAGE_DIRECTORY}/iphone-11-milky-white.png`,
-    ...REGULAR_IMAGE_SIZE,
-    alt: "White smartphone with a dual camera, shown from the back and the front",
-  },
-  tile: "default",
-}
-
-/** In catalog order. */
-export const storefrontProducts: StorefrontProduct[] = [
-  appleWatchSeries5,
-  sonyZx330bt,
-  iphone11SeriousBlack,
-  iphone11SubwayBlue,
-  macbookPro16,
-  iphone11ProductRed,
-  iphone11MilkyWhite,
-]
+  file: "iphone-11-milky-white.png",
+  alt: "White smartphone with a dual camera, shown from the back and the front",
+})

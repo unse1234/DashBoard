@@ -6,9 +6,9 @@ import type { StorefrontProductImage } from "@/types/storefront/product.types"
 
 // Distinct pictures, so a change of the main image is observable.
 const images: StorefrontProductImage[] = [
-  { src: "/front.png", width: 175, height: 216, alt: "Front of the watch" },
-  { src: "/side.png", width: 175, height: 216, alt: "Side of the watch" },
-  { src: "/back.png", width: 175, height: 216, alt: "Back of the watch" },
+  { url: "/front.png", alt: "Front of the watch" },
+  { url: "/side.png", alt: "Side of the watch" },
+  { url: "/back.png", alt: "Back of the watch" },
 ]
 
 const thumbnails = () =>
@@ -80,9 +80,21 @@ describe("ProductGallery", () => {
     ).toBeInTheDocument()
   })
 
-  it("renders nothing without pictures", () => {
-    const { container } = render(<ProductGallery images={[]} />)
+  it("offers no chooser for a single picture", () => {
+    render(<ProductGallery images={[images[0]]} />)
 
-    expect(container).toBeEmptyDOMElement()
+    expect(
+      screen.getByRole("img", { name: "Front of the watch" })
+    ).toBeInTheDocument()
+    expect(screen.queryByRole("list")).not.toBeInTheDocument()
+    expect(screen.queryByRole("button")).not.toBeInTheDocument()
+  })
+
+  it("says there is no picture, and shows no image, for a product without any", () => {
+    render(<ProductGallery images={[]} />)
+
+    expect(screen.queryByRole("img")).not.toBeInTheDocument()
+    expect(screen.getByText("No image available")).toBeInTheDocument()
+    expect(screen.queryByRole("button")).not.toBeInTheDocument()
   })
 })

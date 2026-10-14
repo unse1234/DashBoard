@@ -119,5 +119,5 @@ it("handles an empty bag with zero charges and disables order placement", () => 
   expect(screen.getByText("Your bag is empty.")).toBeInTheDocument()
   expect(screen.getByRole("link", { name: "Continue shopping" })).toHaveAttribute("href", routes.shop)
   expect(screen.getByRole("button", { name: "Place your order" })).toBeDisabled()
-  expect(orderSummary().getAllByText("$ 0.00")).toHaveLength(5)
+  expect(orderSummary().getAllByText("Rs 0.00")).toHaveLength(5)
 })

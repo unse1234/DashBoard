@@ -1,3 +1,5 @@
+import type { StorefrontCurrency } from "@/types/storefront/product.types"
+
 // The design writes prices as "$ 3249.99": a space after the symbol and no
 // thousands separator, so `formatCurrency` ("$3,249.99") is not used here.
 const priceFormatter = new Intl.NumberFormat("en-US", {
@@ -12,10 +14,27 @@ const totalFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 })
 
-export function formatStorefrontPrice(amount: number) {
-  return `$ ${priceFormatter.format(amount)}`
+const SYMBOLS: Record<StorefrontCurrency, string> = {
+  PKR: "Rs",
+  USD: "$",
 }
 
-export function formatStorefrontTotal(amount: number) {
-  return `$ ${totalFormatter.format(amount)}`
+/**
+ * A unit price in the product's own currency. Rupee amounts run to five and six
+ * digits, so they are grouped ("Rs 159,999.00") where the design's dollar prices
+ * are not; without grouping they cannot be read at a glance.
+ */
+export function formatStorefrontPrice(
+  amount: number,
+  currency: StorefrontCurrency
+) {
+  const formatter = currency === "USD" ? priceFormatter : totalFormatter
+  return `${SYMBOLS[currency]} ${formatter.format(amount)}`
+}
+
+export function formatStorefrontTotal(
+  amount: number,
+  currency: StorefrontCurrency
+) {
+  return `${SYMBOLS[currency]} ${totalFormatter.format(amount)}`
 }

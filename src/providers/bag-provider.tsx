@@ -3,13 +3,20 @@
 import { createContext, useMemo, useReducer, type ReactNode } from "react"
 
 import type { BagItem } from "@/types/storefront/bag.types"
-import type { StorefrontProduct } from "@/types/storefront/product.types"
+import type {
+  StorefrontCurrency,
+  StorefrontProduct,
+} from "@/types/storefront/product.types"
 import {
   addProductToBag,
   changeBagItemQuantity,
   getBagItemCount,
   getBagTotal,
 } from "@/utils/storefront/bag.utils"
+import { getProductLabel } from "@/utils/storefront/product-label"
+
+// The shop sells in rupees; an empty bag is shown in them too.
+const DEFAULT_CURRENCY: StorefrontCurrency = "PKR"
 
 type BagState = {
   items: BagItem[]
@@ -29,7 +36,7 @@ function bagReducer(state: BagState, action: BagAction): BagState {
 
     return {
       items,
-      announcement: `${action.product.name}, ${action.product.subtitle}, added to bag. Quantity ${quantity}.`,
+      announcement: `${getProductLabel(action.product)}, added to bag. Quantity ${quantity}.`,
     }
   }
 
@@ -41,7 +48,7 @@ function bagReducer(state: BagState, action: BagAction): BagState {
     action.productId,
     action.delta
   )
-  const name = `${line.product.name}, ${line.product.subtitle}`
+  const name = getProductLabel(line.product)
   const quantity = line.quantity + action.delta
 
   return {
@@ -58,6 +65,8 @@ export type BagContextValue = {
   /** Units in the bag, not distinct products. */
   itemCount: number
   total: number
+  /** What `total` is in: the currency of the bag's first line. */
+  currency: StorefrontCurrency
   addProduct: (product: StorefrontProduct) => void
   /** Moves a line by `delta`; a line that reaches zero is removed. */
   changeQuantity: (productId: string, delta: number) => void
@@ -85,6 +94,7 @@ export function BagProvider({ initialItems, children }: BagProviderProps) {
       items: state.items,
       itemCount: getBagItemCount(state.items),
       total: getBagTotal(state.items),
+      currency: state.items[0]?.product.currency ?? DEFAULT_CURRENCY,
       addProduct: (product) => dispatch({ type: "add", product }),
       changeQuantity: (productId, delta) =>
         dispatch({ type: "change", productId, delta }),

@@ -1,14 +1,15 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
 
+import { ProductImage } from "@/components/storefront/product-image"
 import { BagIcon } from "@/components/storefront/storefront-icons"
 import { buttonVariants } from "@/components/ui/button"
 import { routes } from "@/config/routes"
 import { useBag } from "@/hooks/storefront/use-bag"
 import { cn } from "@/utils/cn"
 import { formatStorefrontTotal } from "@/utils/storefront/format-price"
+import { getProductLabel } from "@/utils/storefront/product-label"
 
 export type BagPreviewAction = "view-bag" | "checkout"
 
@@ -22,7 +23,7 @@ const actionLinkClassName =
 
 /** The bag beside the content from desktop width up; narrower screens use the navigation's bag link. */
 export function BagPreview({ action = "view-bag" }: BagPreviewProps) {
-  const { items, total } = useBag()
+  const { items, total, currency } = useBag()
   const isEmpty = items.length === 0
 
   return (
@@ -49,14 +50,12 @@ export function BagPreview({ action = "view-bag" }: BagPreviewProps) {
                 key={product.id}
                 className="relative aspect-square overflow-hidden rounded-store-md bg-white"
               >
-                <Image
-                  src={product.image.src}
-                  fill
-                  alt={`${product.name}, ${product.subtitle}`}
-                  sizes="96px"
-                  className="object-contain"
-                />
-                <span className="sr-only">Quantity {quantity}</span>
+                {/* The product is named for a screen reader whether or not it
+                    has a picture; the picture itself is decoration. */}
+                <ProductImage image={product.image} sizes="96px" decorative />
+                <span className="sr-only">
+                  {getProductLabel(product)}, quantity {quantity}
+                </span>
               </li>
             ))}
           </ul>
@@ -67,7 +66,7 @@ export function BagPreview({ action = "view-bag" }: BagPreviewProps) {
         {action === "checkout" && (
           <p className="mt-7.75 flex items-baseline gap-4 text-xl leading-7">
             <span>Bag Total:</span>
-            <span className="font-medium">{formatStorefrontTotal(total)}</span>
+            <span className="font-medium">{formatStorefrontTotal(total, currency)}</span>
           </p>
         )}
 

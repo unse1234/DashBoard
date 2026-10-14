@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
 import { storefrontFont } from "@/components/storefront/layout/storefront-font"
-import { demoBagReviewItems } from "@/mocks/storefront/bag"
 import { BagProvider } from "@/providers/bag-provider"
 import { cn } from "@/utils/cn"
 
@@ -17,7 +16,8 @@ type StorefrontLayoutProps = {
 }
 
 // The layout stays mounted while shoppers move between storefront routes, so
-// the bag held by the provider survives that navigation.
+// the bag held by the provider survives that navigation. It starts empty: what
+// is in it comes from the real catalog.
 export default function StorefrontLayout({ children }: StorefrontLayoutProps) {
   return (
     <div
@@ -26,7 +26,7 @@ export default function StorefrontLayout({ children }: StorefrontLayoutProps) {
         "flex flex-1 flex-col bg-store-canvas font-storefront text-store-ink"
       )}
     >
-      <BagProvider initialItems={demoBagReviewItems}>{children}</BagProvider>
+      <BagProvider initialItems={[]}>{children}</BagProvider>
     </div>
   )
 }
