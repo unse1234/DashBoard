@@ -7,6 +7,7 @@ export const routes = {
   checkout: "/checkout",
   checkoutAddress: "/checkout/address",
   checkoutPayment: "/checkout/payment",
+  checkoutConfirmation: "/checkout/confirmation",
   dashboard: "/dashboard",
   users: "/dashboard/users",
   products: "/dashboard/products",

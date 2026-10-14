@@ -1,86 +1,188 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
+import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 
-import { buttonVariants } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Field, FieldLabel } from "@/components/ui/field"
+import { BagNotice } from "@/components/storefront/layout/bag-notice"
 import { routes } from "@/config/routes"
+import { useCheckoutQuoteQuery } from "@/hooks/storefront/checkout.queries"
 import { useBag } from "@/hooks/storefront/use-bag"
 import { useCheckoutDraft } from "@/hooks/storefront/use-checkout-draft"
-import { demoCheckoutAddress } from "@/mocks/storefront/checkout-address-demo"
-import { demoCheckoutPaymentMethods } from "@/mocks/storefront/checkout-payment-demo"
-import { demoCheckoutReviewPricing } from "@/mocks/storefront/checkout-review-demo"
-import { DemoCardIcon } from "@/screens/storefront/payment-method/components/payment-icons"
-import type { BagLine } from "@/types/storefront/bag.types"
-import { cn } from "@/utils/cn"
-import { formatStorefrontPrice } from "@/utils/storefront/format-price"
+import { useOrderSubmission } from "@/hooks/storefront/use-order-submission"
+import { useNow } from "@/hooks/use-now"
+import {
+  RefusedPanel,
+  UnconfirmedPanel,
+} from "@/screens/storefront/checkout/components/checkout-attempt-panel"
+import { CheckoutDetailsPanel } from "@/screens/storefront/checkout/components/checkout-details-panel"
+import {
+  CheckoutOrderSummary,
+  type SummaryState,
+} from "@/screens/storefront/checkout/components/checkout-order-summary"
+import { CheckoutPaymentPanel } from "@/screens/storefront/checkout/components/checkout-payment-panel"
+import { CheckoutReviewBag } from "@/screens/storefront/checkout/components/checkout-review-bag"
+import {
+  toDraftLines,
+  toShippingAddressRequest,
+} from "@/utils/storefront/checkout-request"
+import {
+  describeOrderRefusal,
+  type OrderRefusal,
+} from "@/utils/storefront/order-refusal"
 
-import { CheckoutGiftIcon } from "./components/checkout-gift-icon"
-import { CheckoutOrderSummary } from "./components/checkout-order-summary"
-import { CheckoutReviewBag } from "./components/checkout-review-bag"
 import styles from "./checkout.module.css"
 
-export function CheckoutScreen() {
-  const { items, subtotal, currency, hasIssues } = useBag()
-  const { draft, setShippingAddress, setPaymentMethod } = useCheckoutDraft()
-  const address = draft.shippingAddress ?? demoCheckoutAddress
-  const payment = draft.paymentMethod ?? demoCheckoutPaymentMethods[0]
-  const [billingSameAsShipping, setBillingSameAsShipping] = useState(true)
-  const [reviewedItems, setReviewedItems] = useState<BagLine[] | null>(null)
-  const isReviewed = reviewedItems === items
-  const changeLinkClass = cn(buttonVariants({ variant: "outline" }), styles.changeLink)
+// How often the quote's lifetime is checked against the clock.
+const EXPIRY_CHECK_MS = 15_000
 
-  function placeDemoOrder() {
-    if (items.length === 0) return
-    setShippingAddress(address)
-    setPaymentMethod(payment)
-    setReviewedItems(items)
+/**
+ * The review before the order is placed. Everything it shows about money is the
+ * server's: the bag's lines, and the checkout quote's charges and total. What
+ * it keeps is what the shopper typed and what they pressed.
+ */
+export function CheckoutScreen() {
+  const router = useRouter()
+  const {
+    items,
+    subtotal,
+    currency,
+    hasIssues,
+    isRestoring,
+    refresh: refreshBag,
+  } = useBag()
+  const { draft, clear: clearDraft } = useCheckoutDraft()
+  const submission = useOrderSubmission()
+  const now = useNow(EXPIRY_CHECK_MS)
+  // A retry is on its way (the pending attempt is not "unconfirmed" any more
+  // while it is, but the shopper is still looking at its panel).
+  const [retrying, setRetrying] = useState(false)
+
+  // Prices and stock move: price the bag again when the review opens.
+  useEffect(() => {
+    refreshBag()
+  }, [refreshBag])
+
+  const { contact, shippingAddress } = draft
+  const hasDetails = contact !== null && shippingAddress !== null
+  const canQuote = hasDetails && items.length > 0 && !hasIssues && !isRestoring
+
+  // The request is the lines and the address, so the quote is a different one
+  // for a different bag or address (see `useCheckoutQuoteQuery`).
+  const quoteRequest = useMemo(
+    () =>
+      canQuote
+        ? {
+            items: toDraftLines(items),
+            shippingAddress: toShippingAddressRequest(shippingAddress),
+          }
+        : null,
+    [canQuote, items, shippingAddress]
+  )
+  const quote = useCheckoutQuoteQuery(quoteRequest)
+
+  const expired =
+    quote.data !== undefined && Date.parse(quote.data.expiresAt) <= now
+  const quoteIsCurrent =
+    quote.data !== undefined && !quote.isFetching && !quote.isError
+  const noAttemptPending =
+    submission.status === "idle" || submission.status === "rejected"
+  const canPlace = hasDetails && quoteIsCurrent && !expired && noAttemptPending
+
+  const summaryState: SummaryState =
+    items.length === 0
+      ? "empty"
+      : hasIssues
+        ? "blocked"
+        : !hasDetails
+          ? "needs-details"
+          : quote.isError
+            ? "error"
+            : quote.data
+              ? "ready"
+              : "loading"
+
+  const refusal: OrderRefusal | null = submission.rejection
+    ? describeOrderRefusal(submission.rejection)
+    : null
+
+  async function placeOrder() {
+    if (!canPlace || !quote.data || !contact || !shippingAddress) return
+
+    // The attempt is exactly what was quoted: the quote's own lines and token,
+    // and the address that produced it.
+    const outcome = await submission.submit({
+      contact,
+      items: toDraftLines(quote.data.items),
+      shippingAddress: toShippingAddressRequest(shippingAddress),
+      quoteToken: quote.data.quoteToken,
+    })
+    afterOutcome(outcome.type)
+  }
+
+  async function retryOrder() {
+    setRetrying(true)
+    try {
+      afterOutcome((await submission.retry()).type)
+    } finally {
+      setRetrying(false)
+    }
+  }
+
+  function afterOutcome(
+    type: "placed" | "rejected" | "unconfirmed" | "blocked"
+  ) {
+    if (type === "placed") {
+      clearDraft()
+      router.push(routes.checkoutConfirmation)
+    } else if (type === "rejected") {
+      // The refusal may be about prices or stock: ask again, so what is shown
+      // is what the server now says.
+      refreshBag()
+      void quote.refetch()
+    }
   }
 
   return (
     <section className={styles.page} aria-labelledby="checkout-heading">
-      <h1 id="checkout-heading" className="sr-only">Checkout</h1>
+      <h1 id="checkout-heading" className="sr-only">
+        Checkout
+      </h1>
       <div className={styles.content}>
         <div className={styles.sections}>
-          <section className={styles.shippingPanel} aria-labelledby="shipping-review-heading">
-            <h2 id="shipping-review-heading" className={styles.heading}>Shipping address</h2>
-            <div className={styles.detailsRow}>
-              <address className={styles.address}>
-                <span>{address.shippingName}</span>
-                <span>{address.streetName}</span>
-                <span>{address.city}, {address.stateProvince}</span>
-                <span>{address.country}</span>
-              </address>
-              <Link href={routes.checkoutAddress} className={changeLinkClass} aria-label="Change shipping address" onClick={() => setShippingAddress(address)}>
-                Change
-              </Link>
-            </div>
-          </section>
+          <BagNotice />
 
-          <section className={styles.paymentPanel} aria-labelledby="payment-review-heading">
-            <h2 id="payment-review-heading" className={styles.heading}>Payment method</h2>
-            <div className={styles.detailsRow}>
-              <div className={styles.paymentDetails}>
-                <p><DemoCardIcon /><span>{payment.brand} <span className={styles.muted}>ending in {payment.last4}</span></span></p>
-                <p><CheckoutGiftIcon /><span>{formatStorefrontPrice(demoCheckoutReviewPricing.giftCardBalance, currency)} <span className={styles.muted}>gift card balance</span></span></p>
-              </div>
-              <Link href={routes.checkoutPayment} className={changeLinkClass} aria-label="Change payment method" onClick={() => setPaymentMethod(payment)}>
-                Change
-              </Link>
-            </div>
-            <Field orientation="horizontal" className={styles.billingPreference}>
-              <Checkbox id="billing-same-as-shipping" checked={billingSameAsShipping} onCheckedChange={(checked) => {
-                setBillingSameAsShipping(checked)
-                setReviewedItems(null)
-              }} />
-              <FieldLabel htmlFor="billing-same-as-shipping">Billing address same as Shipping Address</FieldLabel>
-            </Field>
-          </section>
+          {(submission.status === "unconfirmed" || retrying) && (
+            <UnconfirmedPanel
+              retrying={retrying}
+              onRetry={() => void retryOrder()}
+            />
+          )}
+          {refusal && (
+            <RefusedPanel
+              refusal={refusal}
+              onDismiss={submission.dismissRejection}
+            />
+          )}
+
+          <CheckoutDetailsPanel draft={draft} />
+          <CheckoutPaymentPanel />
           <CheckoutReviewBag items={items} />
         </div>
-        <CheckoutOrderSummary itemsTotal={subtotal} currency={currency} hasItems={items.length > 0 && !hasIssues} isReviewed={isReviewed} onPlaceOrder={placeDemoOrder} />
+        <CheckoutOrderSummary
+          state={summaryState}
+          currency={quote.data?.currency ?? currency}
+          bagSubtotal={subtotal}
+          quote={quote.data}
+          quoteError={quote.error}
+          expired={expired}
+          placing={submission.status === "submitting"}
+          canPlace={canPlace}
+          onPlace={() => void placeOrder()}
+          onRefreshQuote={() => {
+            refreshBag()
+            void quote.refetch()
+          }}
+        />
       </div>
     </section>
   )

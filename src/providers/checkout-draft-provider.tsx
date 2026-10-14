@@ -1,57 +1,62 @@
 "use client"
 
-import { createContext, useCallback, useMemo, useState, type ReactNode } from "react"
+import {
+  createContext,
+  useCallback,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react"
 
 import type {
+  CheckoutDetails,
   CheckoutDraft,
   CheckoutDraftContextValue,
-  CheckoutShippingAddress,
-  MockPaymentMethodSummary,
-} from "@/types/storefront/checkout-draft.types"
+} from "@/types/storefront/checkout.types"
 
-export const CheckoutDraftContext = createContext<CheckoutDraftContextValue | null>(null)
+export const CheckoutDraftContext =
+  createContext<CheckoutDraftContextValue | null>(null)
 
-/** Lives only while the checkout layout is mounted; no storage, auth, or bag dependency. */
+const EMPTY_DRAFT: CheckoutDraft = { contact: null, shippingAddress: null }
+
+/**
+ * What the shopper has typed for this order: who they are and where it goes.
+ * It lives only while the checkout layout is mounted, holds no price (those
+ * come from the server's quote) and has no payment field (the only way to pay
+ * is cash on delivery).
+ */
 export function CheckoutDraftProvider({ children }: { children: ReactNode }) {
-  const [draft, setDraft] = useState<CheckoutDraft>({
-    shippingAddress: null,
-    paymentMethod: null,
-  })
+  const [draft, setDraft] = useState<CheckoutDraft>(EMPTY_DRAFT)
 
-  const setShippingAddress = useCallback((address: CheckoutShippingAddress) => {
-    setDraft((current) => ({
-      ...current,
+  const setDetails = useCallback((details: CheckoutDetails) => {
+    // Copied field by field, so nothing a caller attached rides along.
+    setDraft({
+      contact: {
+        name: details.contact.name,
+        email: details.contact.email,
+        phone: details.contact.phone,
+      },
       shippingAddress: {
-        shippingName: address.shippingName,
-        streetName: address.streetName,
-        city: address.city,
-        stateProvince: address.stateProvince,
-        country: address.country,
-        isDefault: address.isDefault,
+        recipientName: details.shippingAddress.recipientName,
+        addressLine1: details.shippingAddress.addressLine1,
+        addressLine2: details.shippingAddress.addressLine2,
+        city: details.shippingAddress.city,
+        region: details.shippingAddress.region,
+        postalCode: details.shippingAddress.postalCode,
       },
-    }))
+    })
   }, [])
 
-  const setPaymentMethod = useCallback((method: MockPaymentMethodSummary) => {
-    // Explicitly copy the allowlisted display fields, even if a caller has extras.
-    setDraft((current) => ({
-      ...current,
-      paymentMethod: {
-        id: method.id,
-        brand: method.brand,
-        last4: method.last4,
-        expiryMonth: method.expiryMonth,
-        expiryYear: method.expiryYear,
-        isDefault: method.isDefault,
-        isDemo: true,
-      },
-    }))
-  }, [])
+  const clear = useCallback(() => setDraft(EMPTY_DRAFT), [])
 
   const value = useMemo(
-    () => ({ draft, setShippingAddress, setPaymentMethod }),
-    [draft, setShippingAddress, setPaymentMethod]
+    () => ({ draft, setDetails, clear }),
+    [draft, setDetails, clear]
   )
 
-  return <CheckoutDraftContext.Provider value={value}>{children}</CheckoutDraftContext.Provider>
+  return (
+    <CheckoutDraftContext.Provider value={value}>
+      {children}
+    </CheckoutDraftContext.Provider>
+  )
 }
