@@ -38,10 +38,10 @@ src/
 │   ├── customers/customer.api.ts
 │   ├── orders/order.api.ts
 │   ├── imports/import.api.ts    # product CSV validation, confirmation, history, downloads
-│   └── storefront/              # catalog.api.ts (public catalog) and bag.api.ts (bag quote), no sign-in
+│   └── storefront/              # catalog.api.ts, bag.api.ts (bag quote), checkout.api.ts (checkout quote, place order); all public
 ├── hooks/                       # query keys, query hooks, mutation hooks, and tests
 │   ├── auth/                    # use-auth.ts and auth.mutations.ts
-│   ├── storefront/              # catalog.keys/queries.ts (public catalog); use-bag.ts: the bag in the BagProvider
+│   ├── storefront/              # catalog and checkout-quote keys/queries; use-bag, use-order-submission, use-order-confirmation, use-checkout-draft
 │   ├── users/                   # user.keys/queries/mutations.ts
 │   ├── products/                # product.keys/queries/mutations.ts
 │   ├── customers/               # customer.keys/queries.ts; read-only
@@ -58,7 +58,7 @@ src/
 │   ├── customers/customer.filters.ts
 │   ├── orders/order.filters.ts
 │   ├── imports/
-│   └── storefront/              # catalog and bag (built); product-details, checkout, shipping-address, payment-method (see their sections)
+│   └── storefront/              # catalog, product-details, bag, checkout, shipping-address (delivery details), payment-method, confirmation
 ├── components/                  # reusable presentation components
 │   ├── auth/                    # guards, auth shell/form, local form controller
 │   ├── dashboard/               # sidebar, navigation, profile dialog, header
@@ -69,10 +69,10 @@ src/
 ├── types/                       # shared domain, form, navigation, pagination, sort types
 │   └── storefront/              # product and bag types
 ├── utils/                       # cn.ts, formatters, pagination, sort, pure domain helpers
-│   └── storefront/              # bag draft storage, price format, and product label helpers
+│   └── storefront/              # bag draft and order-session storage, price format, request mapping, order refusals
 ├── constants/                   # domain labels/options, password policy, page sizes
 ├── validations/                 # auth validation, user/product Zod schemas, CSV validation
-│   └── storefront/              # reserved; empty
+│   └── storefront/              # checkout-details.schema.ts (delivery details form)
 ├── config/                      # app.constants.ts and routes.ts
 ├── lib/                         # shared infrastructure only
 │   ├── api/                     # Axios client, base URL resolution, normalized API errors
@@ -80,8 +80,7 @@ src/
 │   └── query/                   # QueryClient policy and account cache cleanup
 ├── providers/                   # query-provider.tsx, session-restorer.tsx, and bag-provider.tsx (storefront)
 ├── mocks/                       # demo data
-│   ├── overview/data.json
-│   └── storefront/              # demo data for the checkout placeholders (checkout-*-demo.ts)
+│   └── overview/data.json
 └── test-utils/                  # fixtures, fake Axios transport, query rendering helpers, a fake bag server
 ```
 
@@ -98,10 +97,11 @@ List defaults are screen-local `*.filters.ts` files. Existing exports such as `d
 | `/` | Redirects to `/shop` |
 | `/shop` | Storefront catalog: server search and paging, product tiles, add to bag, bag preview (public; API data) |
 | `/shop/[productId]` | Storefront product details: pictures, price, description, add to bag; a missing product shows "Product not found" (public; API data) |
-| `/bag` | Storefront bag: lines with quantity steppers, bag total, checkout link (public; mock data) |
-| `/checkout` | Checkout (public placeholder) |
-| `/checkout/address` | Checkout shipping address (public placeholder) |
-| `/checkout/payment` | Checkout payment method (public placeholder) |
+| `/bag` | Storefront bag: lines priced by the server, quantity steppers, total, checkout link (public; API data) |
+| `/checkout` | Checkout review: delivery details, cash on delivery, the bag, the server's quote and Place your order (public; API data) |
+| `/checkout/address` | Contact and Pakistan delivery address form (public) |
+| `/checkout/payment` | Payment method: cash on delivery, nothing to enter (public) |
+| `/checkout/confirmation` | The receipt of the order this tab placed (public; session-scoped) |
 | `/login` | Sign in |
 | `/forgot-password` | Request a password reset link |
 | `/reset-password` | Set a password from a reset/invitation token |
@@ -126,7 +126,7 @@ Route constants and ID-encoding helpers live in `src/config/routes.ts`. `typedRo
 
 The customer-facing storefront lives in the `(storefront)` route group, beside `(auth)` and `(dashboard)`. Route protection is per group: `RequireAuth` is mounted only by `(dashboard)/layout.tsx`, so the storefront has no sign-in requirement and renders neither the dashboard shell nor its sidebar providers. Signed-in staff who open a storefront URL stay on it; only `/login` sends them on to `/dashboard`.
 
-`/shop` is the first built screen. The other storefront pages are placeholders showing their screen name; each Figma screen replaces its placeholder in turn. Checkout is public during this UI phase. That does not settle whether customers will need an account later.
+Every storefront screen is built and reads the public API; checkout is a guest checkout (no sign-in), which does not settle whether customers will need an account later.
 
 ### Storefront catalog
 
@@ -147,6 +147,17 @@ The customer-facing storefront lives in the `(storefront)` route group, beside `
 - **Styling.** The storefront palette, typeface (Cabin, via `storefrontFont`), radii, and shadow are theme tokens named `store-*` in `globals.css`; only storefront components use them, and the dashboard and auth screens are unaffected.
 - **Sign-out.** The rail's red button is rendered unavailable (`aria-disabled`, with a description) and is not connected to staff logout.
 - **Price format.** Prices follow the design's shape (a symbol, a space, two decimals) via `formatStorefrontPrice(amount, currency)`, not `formatCurrency`: `Rs 1,500.00`, or `$ 3249.99` for dollars.
+
+### Storefront checkout
+
+A guest buys with cash on delivery, in Pakistan, in rupees. There is no card, no gift card, no default-address preference and no billing address (the delivery address is the billing address). The server prices everything; the screens render what it says.
+
+- **Delivery details** (`/checkout/address`): the buyer's name, email and phone (a Pakistani number), a shipping name (left blank, the order goes to the buyer), street, optional line 2, city, province, optional five-digit postal code, and the country, which is shown (Pakistan) and not chosen. `checkout-details.schema.ts` gives feedback while typing with the API's own limits (city and province are 100 characters, not 120); the API validates again and its answer is final. The draft (`CheckoutDraftProvider`) lives in memory for the checkout layout only and holds no price.
+- **Review** (`/checkout`): the bag is priced again on opening, then `POST /storefront/checkout/quote` prices it for the address (`useCheckoutQuoteQuery`). The key of that query is the lines and the address, and nothing is kept across a change of them, so Place your order is only ever enabled for the quote of the bag and address on screen: not while the quote loads or refetches, after `expiresAt` (the shopper is told and can refresh), or while an earlier attempt is unresolved. Items, shipping, tax, discount and the total are the quote's; without one they show "—" rather than a made-up zero. The quote's lines can still be lowered or removed with the bag's steppers, which prices a new quote.
+- **Placing** (`useOrderSubmission`): the attempt (the request, the quote token and a random `Idempotency-Key`) is frozen and written to `sessionStorage` *before* it is sent, with a 30 s timeout. A 201 stores the receipt for the confirmation, forgets the attempt, empties the bag with no request, clears the typed details and invalidates the orders, customers, products and catalog queries for any dashboard use in the same browser. A definitive refusal (a 4xx other than 408 and 429) proves no order exists, so the attempt is forgotten, the bag and quote are asked for again, and the panel says what to fix. Anything else (a lost connection, a timeout, a 5xx, a 429) leaves the order unknown: the attempt is kept, the shopper is told it may exist and that trying again is safe, no new order can start, and **Try again** sends exactly the same request and key, which the server answers with the original order if there is one. A reload brings the pending attempt back.
+- **Refusals** (`order-refusal.ts`): a stale quote (expired, price or total moved, items or province changed) is explained as something to review and the quote is renewed; a product that cannot be bought sends the shopper to the bag; a rejected contact or address lists the API's messages and links to the details.
+- **Confirmation** (`/checkout/confirmation`): the reference, cash to pay, where it is going and the lines and totals from the receipt, kept for the tab's session. The reference is for display only; there is no lookup by it.
+- **Payment method** (`/checkout/payment`): cash on delivery is the only option and is shown selected, with how paying works. The route stays so the review's Change link has somewhere to go.
 
 The root layout still mounts `SessionRestorer` for every route, so a storefront page load also attempts a session restore. Storefront rendering does not wait for it and does not read the session. An anonymous visitor's restore is rejected by the API; the client retries it once after 300 ms, so each such page load sends two `POST /auth/refresh` requests.
 
