@@ -13,7 +13,7 @@ import { demoCheckoutAddress } from "@/mocks/storefront/checkout-address-demo"
 import { demoCheckoutPaymentMethods } from "@/mocks/storefront/checkout-payment-demo"
 import { demoCheckoutReviewPricing } from "@/mocks/storefront/checkout-review-demo"
 import { DemoCardIcon } from "@/screens/storefront/payment-method/components/payment-icons"
-import type { BagItem } from "@/types/storefront/bag.types"
+import type { BagLine } from "@/types/storefront/bag.types"
 import { cn } from "@/utils/cn"
 import { formatStorefrontPrice } from "@/utils/storefront/format-price"
 
@@ -23,12 +23,12 @@ import { CheckoutReviewBag } from "./components/checkout-review-bag"
 import styles from "./checkout.module.css"
 
 export function CheckoutScreen() {
-  const { items, total, currency } = useBag()
+  const { items, subtotal, currency, hasIssues } = useBag()
   const { draft, setShippingAddress, setPaymentMethod } = useCheckoutDraft()
   const address = draft.shippingAddress ?? demoCheckoutAddress
   const payment = draft.paymentMethod ?? demoCheckoutPaymentMethods[0]
   const [billingSameAsShipping, setBillingSameAsShipping] = useState(true)
-  const [reviewedItems, setReviewedItems] = useState<BagItem[] | null>(null)
+  const [reviewedItems, setReviewedItems] = useState<BagLine[] | null>(null)
   const isReviewed = reviewedItems === items
   const changeLinkClass = cn(buttonVariants({ variant: "outline" }), styles.changeLink)
 
@@ -80,7 +80,7 @@ export function CheckoutScreen() {
           </section>
           <CheckoutReviewBag items={items} />
         </div>
-        <CheckoutOrderSummary itemsTotal={total} currency={currency} hasItems={items.length > 0} isReviewed={isReviewed} onPlaceOrder={placeDemoOrder} />
+        <CheckoutOrderSummary itemsTotal={subtotal} currency={currency} hasItems={items.length > 0 && !hasIssues} isReviewed={isReviewed} onPlaceOrder={placeDemoOrder} />
       </div>
     </section>
   )

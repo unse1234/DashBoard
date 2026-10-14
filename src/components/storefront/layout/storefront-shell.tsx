@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 
+import { BagNotice } from "@/components/storefront/layout/bag-notice"
 import {
   BagPreview,
   type BagPreviewAction,
@@ -27,7 +28,10 @@ export function StorefrontShell({
     <div className="flex w-full flex-1 flex-col gap-4 p-4 md:flex-row md:gap-0">
       <StorefrontNav />
       <main className="min-w-0 flex-1 pb-6 md:ml-6 md:pt-4 lg:pr-6 xl:ml-14 xl:pr-10.5">
-        <div className="mx-auto w-full max-w-284">{children}</div>
+        <div className="mx-auto w-full max-w-284">
+          <BagNotice />
+          {children}
+        </div>
       </main>
       <BagPreview action={bagPreviewAction} />
     </div>

@@ -7,6 +7,7 @@ import { ProductDetailsScreen } from "@/screens/storefront/product-details"
 import { ProductNotFound } from "@/screens/storefront/product-details/components/product-not-found"
 import { mockApi } from "@/test-utils/mock-api"
 import { renderWithQuery } from "@/test-utils/render"
+import { createBagServer } from "@/test-utils/storefront-bag-server"
 import { createStorefrontProduct } from "@/test-utils/storefront-fixtures"
 import type { StorefrontProduct } from "@/types/storefront/product.types"
 
@@ -47,7 +48,9 @@ beforeAll(() => {
 
 /** A catalog that has `products` and answers anything else with the API's 404. */
 function serve(...products: StorefrontProduct[]) {
+  const bag = createBagServer(products)
   api = mockApi((request) => {
+    if (request.url === "/storefront/bag/quote") return bag.handle(request)
     const match = /^\/storefront\/products\/(.+)$/.exec(request.url)
     const product = products.find(
       (item) => item.id === decodeURIComponent(match?.[1] ?? "")
@@ -61,7 +64,7 @@ function serve(...products: StorefrontProduct[]) {
 
 function renderScreen(productId: string) {
   return renderWithQuery(
-    <BagProvider initialItems={[]}>
+    <BagProvider persist={false}>
       <ProductDetailsScreen productId={productId} />
     </BagProvider>
   )
@@ -261,7 +264,7 @@ describe("ProductDetailsScreen", () => {
         content().getByRole("button", { name: "Add to Bag" })
       )
 
-      const entries = bagPreview().getAllByRole("listitem")
+      const entries = await bagPreview().findAllByRole("listitem")
       expect(entries).toHaveLength(1)
       expect(
         within(entries[0]).getByText("Apple Watch, Series 5 SE, quantity 1")
@@ -280,11 +283,12 @@ describe("ProductDetailsScreen", () => {
       await userEvent.click(add)
       await userEvent.click(add)
 
-      const entries = bagPreview().getAllByRole("listitem")
-      expect(entries).toHaveLength(1)
-      expect(
-        within(entries[0]).getByText("Apple Watch, Series 5 SE, quantity 2")
-      ).toBeInTheDocument()
+      await waitFor(() =>
+        expect(
+          bagPreview().getByText("Apple Watch, Series 5 SE, quantity 2")
+        ).toBeInTheDocument()
+      )
+      expect(bagPreview().getAllByRole("listitem")).toHaveLength(1)
     })
 
     it("does not move keyboard focus", async () => {
@@ -324,7 +328,7 @@ describe("ProductDetailsScreen", () => {
 describe("ProductNotFound", () => {
   it("explains the problem and links back to the shop", () => {
     renderWithQuery(
-      <BagProvider initialItems={[]}>
+      <BagProvider persist={false}>
         <ProductNotFound />
       </BagProvider>
     )

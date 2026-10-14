@@ -23,8 +23,10 @@ const actionLinkClassName =
 
 /** The bag beside the content from desktop width up; narrower screens use the navigation's bag link. */
 export function BagPreview({ action = "view-bag" }: BagPreviewProps) {
-  const { items, total, currency } = useBag()
+  const { items, subtotal, currency, hasIssues, isRestoring } = useBag()
   const isEmpty = items.length === 0
+  // Checkout waits for every line to be buyable, and for the bag to be known.
+  const checkoutBlocked = isEmpty || hasIssues
 
   return (
     <aside
@@ -38,39 +40,56 @@ export function BagPreview({ action = "view-bag" }: BagPreviewProps) {
       <div className="flex min-w-0 flex-1 flex-col items-center overflow-y-auto pt-15.75 pr-5 pl-6 xl:pl-8">
         <h2
           id="bag-preview-heading"
-          className="text-[40px] leading-[48px] font-normal"
+          className="text-[40px] leading-12 font-normal"
         >
           Bag
         </h2>
 
         {!isEmpty ? (
           <ul className="mt-6.5 grid w-full grid-cols-3 gap-4">
-            {items.map(({ product, quantity }) => (
+            {items.map(({ productId, product, quantity }) => (
               <li
-                key={product.id}
+                key={productId}
                 className="relative aspect-square overflow-hidden rounded-store-md bg-white"
               >
                 {/* The product is named for a screen reader whether or not it
                     has a picture; the picture itself is decoration. */}
-                <ProductImage image={product.image} sizes="96px" decorative />
+                <ProductImage
+                  image={product?.image ?? null}
+                  sizes="96px"
+                  decorative
+                />
                 <span className="sr-only">
-                  {getProductLabel(product)}, quantity {quantity}
+                  {product
+                    ? getProductLabel(product)
+                    : `Unavailable ${productId}`}
+                  , quantity {quantity}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="mt-6 text-base text-store-muted">Your bag is empty.</p>
+          <p className="mt-6 text-base text-store-muted">
+            {isRestoring ? "Loading your bag…" : "Your bag is empty."}
+          </p>
         )}
 
         {action === "checkout" && (
           <p className="mt-7.75 flex items-baseline gap-4 text-xl leading-7">
             <span>Bag Total:</span>
-            <span className="font-medium">{formatStorefrontTotal(total, currency)}</span>
+            <span className="font-medium">
+              {formatStorefrontTotal(subtotal, currency)}
+            </span>
           </p>
         )}
 
-        {action === "checkout" && isEmpty ? (
+        {hasIssues && (
+          <p className="mt-4 text-center text-base text-store-danger">
+            Some items need your attention before you can check out.
+          </p>
+        )}
+
+        {action === "checkout" && checkoutBlocked ? (
           <span
             aria-disabled="true"
             className={cn(

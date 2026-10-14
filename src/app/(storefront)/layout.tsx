@@ -16,8 +16,8 @@ type StorefrontLayoutProps = {
 }
 
 // The layout stays mounted while shoppers move between storefront routes, so
-// the bag held by the provider survives that navigation. It starts empty: what
-// is in it comes from the real catalog.
+// the bag held by the provider survives that navigation. It picks up the bag the
+// last visit left (see BagProvider), priced by the server again.
 export default function StorefrontLayout({ children }: StorefrontLayoutProps) {
   return (
     <div
@@ -26,7 +26,7 @@ export default function StorefrontLayout({ children }: StorefrontLayoutProps) {
         "flex flex-1 flex-col bg-store-canvas font-storefront text-store-ink"
       )}
     >
-      <BagProvider initialItems={[]}>{children}</BagProvider>
+      <BagProvider>{children}</BagProvider>
     </div>
   )
 }

@@ -1,16 +1,18 @@
 import type { ComponentProps } from "react"
-import { render, screen, within } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import { routes } from "@/config/routes"
 import { useCheckoutDraft } from "@/hooks/storefront/use-checkout-draft"
-import { demoBagReviewItems } from "@/mocks/storefront/bag"
 import { demoCheckoutAddress } from "@/mocks/storefront/checkout-address-demo"
 import { demoCheckoutPaymentMethods } from "@/mocks/storefront/checkout-payment-demo"
 import { BagProvider } from "@/providers/bag-provider"
 import { CheckoutDraftProvider } from "@/providers/checkout-draft-provider"
 import { CheckoutScreen } from "@/screens/storefront/checkout"
-import type { BagItem } from "@/types/storefront/bag.types"
+import { mockApi } from "@/test-utils/mock-api"
+import { createBagServer } from "@/test-utils/storefront-bag-server"
+import { createStorefrontProduct } from "@/test-utils/storefront-fixtures"
+import type { BagDraftLine } from "@/types/storefront/bag.types"
 
 vi.mock("next/link", () => ({
   default: ({ onClick, ...props }: ComponentProps<"a">) => (
@@ -34,22 +36,43 @@ function DraftControls() {
   )
 }
 
-function renderCheckout(items: BagItem[] = demoBagReviewItems) {
+const dell = createStorefrontProduct({ id: "PRD-5001", name: "Dell XPS 13", subtitle: "White", price: 1799.99 })
+const navy = createStorefrontProduct({ id: "PRD-5002", name: "iPhone 11", subtitle: "Navy Blue", price: 729.99 })
+const white = createStorefrontProduct({ id: "PRD-5003", name: "iPhone 11", subtitle: "Milky White", price: 619.99 })
+const black = createStorefrontProduct({ id: "PRD-5004", name: "iPhone 11", subtitle: "Serious Black", price: 619.99 })
+// Four lines, seven units: Rs 5,849.93.
+const reviewDraft: BagDraftLine[] = [
+  { productId: dell.id, quantity: 1 },
+  { productId: navy.id, quantity: 3 },
+  { productId: white.id, quantity: 1 },
+  { productId: black.id, quantity: 2 },
+]
+
+let api: ReturnType<typeof mockApi> | undefined
+afterEach(() => {
+  api?.restore()
+  api = undefined
+})
+
+async function renderCheckout(draft: BagDraftLine[] = reviewDraft) {
+  api = mockApi(createBagServer([dell, navy, white, black]).handle)
   render(
-    <BagProvider initialItems={items}>
+    <BagProvider persist={false} initialDraft={draft}>
       <CheckoutDraftProvider>
         <CheckoutScreen />
         <DraftControls />
       </CheckoutDraftProvider>
     </BagProvider>
   )
+  // The bag is the server's answer; wait for it before looking at the screen.
+  if (draft.length > 0) await screen.findByRole("heading", { name: "Dell XPS 13" })
   return userEvent.setup()
 }
 
 const orderSummary = () => within(screen.getByRole("complementary", { name: "Order Summary" }))
 
-it("shows the reference sections, demo defaults, current bag, and consistent charges", () => {
-  renderCheckout()
+it("shows the reference sections, demo defaults, current bag, and consistent charges", async () => {
+  await renderCheckout()
   for (const heading of ["Shipping address", "Payment method", "Review your bag", "Order Summary"]) {
     expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument()
   }
@@ -57,7 +80,7 @@ it("shows the reference sections, demo defaults, current bag, and consistent cha
   expect(screen.getByText("ending in 4242")).toBeInTheDocument()
   expect(screen.getByText(/gift card balance/)).toBeInTheDocument()
   expect(screen.getByRole("heading", { name: "Dell XPS 13" })).toBeInTheDocument()
-  for (const charge of ["$ 5849.93", "$ 6.99", "$ 760.49", "$ 0.00", "$ 6617.41"]) {
+  for (const charge of ["Rs 5,849.93", "Rs 6.99", "Rs 760.49", "Rs 0.00", "Rs 6,617.41"]) {
     expect(orderSummary().getByText(charge, { exact: true })).toBeInTheDocument()
   }
   expect(screen.getByRole("checkbox")).toBeChecked()
@@ -65,20 +88,20 @@ it("shows the reference sections, demo defaults, current bag, and consistent cha
 })
 
 it("updates the subtotal, estimated GST, and total with bag quantity changes", async () => {
-  const user = renderCheckout()
+  const user = await renderCheckout()
   await user.click(screen.getByRole("button", { name: "Increase quantity of Dell XPS 13, White" }))
-  expect(orderSummary().getByText("$ 7649.92")).toBeInTheDocument()
-  expect(orderSummary().getByText("$ 994.49")).toBeInTheDocument()
-  expect(orderSummary().getByText("$ 8651.40")).toBeInTheDocument()
+  await waitFor(() => expect(orderSummary().getByText("Rs 7,649.92")).toBeInTheDocument())
+  expect(orderSummary().getByText("Rs 994.49")).toBeInTheDocument()
+  expect(orderSummary().getByText("Rs 8,651.40")).toBeInTheDocument()
   await user.click(screen.getByRole("button", { name: "Decrease quantity of Dell XPS 13, White" }))
-  expect(orderSummary().getByText("$ 6617.41")).toBeInTheDocument()
+  await waitFor(() => expect(orderSummary().getByText("Rs 6,617.41")).toBeInTheDocument())
   await user.click(screen.getByRole("button", { name: "Remove Dell XPS 13, White from bag" }))
-  expect(screen.queryByRole("heading", { name: "Dell XPS 13" })).not.toBeInTheDocument()
-  expect(orderSummary().getByText("$ 4583.42")).toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByRole("heading", { name: "Dell XPS 13" })).not.toBeInTheDocument())
+  expect(orderSummary().getByText("Rs 4,583.42")).toBeInTheDocument()
 })
 
 it("uses updated draft values and routes changes to the existing forms", async () => {
-  const user = renderCheckout()
+  const user = await renderCheckout()
   await user.click(screen.getByRole("button", { name: "Use edited draft" }))
   expect(screen.getByText("Taylor Demo")).toBeInTheDocument()
   expect(screen.getByText("Demo City, California")).toBeInTheDocument()
@@ -89,7 +112,7 @@ it("uses updated draft values and routes changes to the existing forms", async (
 })
 
 it("seeds the displayed default card into the draft before opening its selector", async () => {
-  const user = renderCheckout()
+  const user = await renderCheckout()
   await user.click(screen.getByRole("link", { name: "Change payment method" }))
   const draft = JSON.parse(screen.getByTestId("checkout-draft").textContent ?? "{}")
   expect(draft.paymentMethod).toEqual(demoCheckoutPaymentMethods[0])
@@ -98,7 +121,7 @@ it("seeds the displayed default card into the draft before opening its selector"
 })
 
 it("offers a local demo completion, invalidates it when quantities or billing preference change", async () => {
-  const user = renderCheckout()
+  const user = await renderCheckout()
   await user.click(screen.getByRole("button", { name: "Place your order" }))
   expect(screen.getByText("No order was sent and no payment was taken.")).toBeInTheDocument()
   expect(screen.getByRole("button", { name: "Demo checkout complete" })).toBeDisabled()
@@ -106,7 +129,7 @@ it("offers a local demo completion, invalidates it when quantities or billing pr
   expect(draft.shippingAddress).toEqual(demoCheckoutAddress)
   expect(draft.paymentMethod).toEqual(demoCheckoutPaymentMethods[0])
   await user.click(screen.getByRole("button", { name: "Increase quantity of Dell XPS 13, White" }))
-  expect(screen.getByRole("button", { name: "Place your order" })).toBeEnabled()
+  await waitFor(() => expect(screen.getByRole("button", { name: "Place your order" })).toBeEnabled())
   expect(screen.queryByText("No order was sent and no payment was taken.")).not.toBeInTheDocument()
   await user.click(screen.getByRole("button", { name: "Place your order" }))
   await user.click(screen.getByRole("checkbox"))
@@ -114,8 +137,8 @@ it("offers a local demo completion, invalidates it when quantities or billing pr
   expect(screen.getByRole("button", { name: "Place your order" })).toBeEnabled()
 })
 
-it("handles an empty bag with zero charges and disables order placement", () => {
-  renderCheckout([])
+it("handles an empty bag with zero charges and disables order placement", async () => {
+  await renderCheckout([])
   expect(screen.getByText("Your bag is empty.")).toBeInTheDocument()
   expect(screen.getByRole("link", { name: "Continue shopping" })).toHaveAttribute("href", routes.shop)
   expect(screen.getByRole("button", { name: "Place your order" })).toBeDisabled()

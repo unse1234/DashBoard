@@ -3,8 +3,11 @@ import userEvent from "@testing-library/user-event"
 import { vi } from "vitest"
 
 import { StorefrontNav } from "@/components/storefront/layout/storefront-nav"
-import { demoBagItems } from "@/mocks/storefront/bag"
 import { BagProvider } from "@/providers/bag-provider"
+import { mockApi } from "@/test-utils/mock-api"
+import { createBagServer } from "@/test-utils/storefront-bag-server"
+import { createStorefrontProduct } from "@/test-utils/storefront-fixtures"
+import type { BagDraftLine } from "@/types/storefront/bag.types"
 
 const navigation = vi.hoisted(() => ({ pathname: "/shop" }))
 
@@ -26,27 +29,52 @@ beforeAll(() => {
   })) as unknown as typeof window.matchMedia
 })
 
-function renderNav(pathname = "/shop") {
+const kettle = createStorefrontProduct({ id: "PRD-4001", name: "Kettle" })
+const mug = createStorefrontProduct({ id: "PRD-4002", name: "Mug" })
+
+let api: ReturnType<typeof mockApi> | undefined
+
+afterEach(() => {
+  api?.restore()
+  api = undefined
+})
+
+function renderNav(pathname = "/shop", initialDraft?: BagDraftLine[]) {
   navigation.pathname = pathname
+  if (initialDraft) api = mockApi(createBagServer([kettle, mug]).handle)
   return render(
-    <BagProvider initialItems={demoBagItems}>
+    <BagProvider persist={false} initialDraft={initialDraft}>
       <StorefrontNav />
     </BagProvider>
   )
 }
 
 describe("StorefrontNav", () => {
-  it("links the shop and bag icons to their routes and names the bag count", () => {
-    renderNav()
+  it("links the shop and bag icons to their routes and names the bag count", async () => {
+    renderNav("/shop", [
+      { productId: kettle.id, quantity: 3 },
+      { productId: mug.id, quantity: 1 },
+    ])
 
     expect(screen.getByRole("link", { name: "Shop" })).toHaveAttribute(
       "href",
       "/shop"
     )
-    expect(screen.getByRole("link", { name: "Bag, 4 items" })).toHaveAttribute(
-      "href",
-      "/bag"
-    )
+    // The count is the server's: units across the lines, once it has answered.
+    expect(
+      await screen.findByRole("link", { name: "Bag, 4 items" })
+    ).toHaveAttribute("href", "/bag")
+  })
+
+  it("says a bag of one is one item, and an empty bag is none", async () => {
+    const { unmount } = renderNav("/shop")
+    expect(screen.getByRole("link", { name: "Bag, 0 items" })).toBeVisible()
+    unmount()
+
+    renderNav("/shop", [{ productId: kettle.id, quantity: 1 }])
+    expect(
+      await screen.findByRole("link", { name: "Bag, 1 item" })
+    ).toBeVisible()
   })
 
   it("marks the current section, on the shop and below it", () => {

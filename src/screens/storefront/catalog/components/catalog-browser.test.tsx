@@ -1,11 +1,13 @@
 import { act, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
+import { BagNotice } from "@/components/storefront/layout/bag-notice"
 import { BagPreview } from "@/components/storefront/layout/bag-preview"
 import { BagProvider } from "@/providers/bag-provider"
 import { CatalogBrowser } from "@/screens/storefront/catalog/components/catalog-browser"
 import { mockApi, type RecordedRequest } from "@/test-utils/mock-api"
 import { renderWithQuery } from "@/test-utils/render"
+import { createBagServer } from "@/test-utils/storefront-bag-server"
 import {
   createStorefrontPage,
   createStorefrontProduct,
@@ -48,7 +50,9 @@ const searchOf = (request: RecordedRequest) =>
  * Matching name or subtitle, ignoring case, like the API.
  */
 function serve(products: StorefrontProduct[] = catalog) {
+  const bag = createBagServer(products)
   api = mockApi((request) => {
+    if (request.url === "/storefront/bag/quote") return bag.handle(request)
     const params = new URLSearchParams(String(request.params))
     const needle = (params.get("search") ?? "").toLowerCase()
     const matches = products.filter(
@@ -64,7 +68,8 @@ function serve(products: StorefrontProduct[] = catalog) {
 
 function renderCatalog() {
   return renderWithQuery(
-    <BagProvider initialItems={[]}>
+    <BagProvider persist={false}>
+      <BagNotice />
       <CatalogBrowser />
       <BagPreview />
     </BagProvider>
@@ -366,8 +371,8 @@ describe("CatalogBrowser", () => {
       expect(bagPreview().getByText("Your bag is empty.")).toBeInTheDocument()
     })
 
-    it("adds a product as one entry and announces it", async () => {
-      serve()
+    it("asks the server to add the product, and shows the bag it answers with", async () => {
+      const { requests } = serve()
       renderCatalog()
       await loaded()
 
@@ -377,7 +382,7 @@ describe("CatalogBrowser", () => {
         })
       )
 
-      const entries = bagPreview().getAllByRole("listitem")
+      const entries = await bagPreview().findAllByRole("listitem")
       expect(entries).toHaveLength(1)
       expect(
         within(entries[0]).getByText("Apple Watch, Series 5 SE, quantity 1")
@@ -385,6 +390,11 @@ describe("CatalogBrowser", () => {
       expect(
         screen.getByText("Apple Watch, Series 5 SE, added to bag. Quantity 1.")
       ).toBeInTheDocument()
+      const [quote] = requests.filter((r) => r.url === "/storefront/bag/quote")
+      expect(quote.body).toEqual({
+        items: [],
+        action: { type: "add", productId: "PRD-1001" },
+      })
     })
 
     it("raises the quantity instead of duplicating a product", async () => {
@@ -398,11 +408,33 @@ describe("CatalogBrowser", () => {
       await userEvent.click(add)
       await userEvent.click(add)
 
-      const entries = bagPreview().getAllByRole("listitem")
-      expect(entries).toHaveLength(1)
-      expect(
-        within(entries[0]).getByText("Apple Watch, Series 5 SE, quantity 2")
-      ).toBeInTheDocument()
+      await waitFor(() =>
+        expect(
+          bagPreview().getByText("Apple Watch, Series 5 SE, quantity 2")
+        ).toBeInTheDocument()
+      )
+      expect(bagPreview().getAllByRole("listitem")).toHaveLength(1)
+    })
+
+    it("tells the shopper when a product cannot be added, and leaves the bag alone", async () => {
+      api = mockApi((request) =>
+        request.url === "/storefront/bag/quote"
+          ? createBagServer(catalog, { "PRD-1001": 0 }).handle(request)
+          : { data: toPageResponse(createStorefrontPage(catalog)) }
+      )
+      renderCatalog()
+      await loaded()
+
+      await userEvent.click(
+        screen.getByRole("button", {
+          name: "Add Apple Watch, Series 5 SE, to bag",
+        })
+      )
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "Apple Watch, Series 5 SE: There is not enough stock for this quantity"
+      )
+      expect(bagPreview().queryAllByRole("listitem")).toHaveLength(0)
     })
 
     it("does not move keyboard focus when something is added", async () => {
@@ -417,6 +449,7 @@ describe("CatalogBrowser", () => {
       await userEvent.keyboard("{Enter}")
 
       expect(add).toHaveFocus()
+      await bagPreview().findAllByRole("listitem")
     })
 
     it("links View Bag to the bag route", async () => {
