@@ -71,10 +71,36 @@ export type CustomerOrderSummary = {
   createdAt: string
 }
 
+/**
+ * An address the customer's orders were delivered to, as the order recorded it.
+ * A guest checkout saves no address on the customer, so for those customers
+ * this is the only place an address shows.
+ */
+export type CustomerOrderAddress = {
+  address: Pick<
+    CustomerAddress,
+    | "recipientName"
+    | "phone"
+    | "addressLine1"
+    | "addressLine2"
+    | "city"
+    | "region"
+    | "postalCode"
+    | "country"
+  >
+  /** ISO 8601: when the newest order delivered there was placed. */
+  lastUsedAt: string
+  /** How many of the customer's orders were delivered there. */
+  orderCount: number
+}
+
 /** Everything the customer details page shows, from one API request. */
 export type CustomerDetails = {
   customer: Customer
+  /** What the customer saved. */
   addresses: CustomerAddress[]
+  /** Where their orders were delivered, newest first. */
+  orderAddresses: CustomerOrderAddress[]
   /** The latest orders, newest first; at most `RECENT_ORDERS_LIMIT`. */
   recentOrders: CustomerOrderSummary[]
 }

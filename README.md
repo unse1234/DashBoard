@@ -180,7 +180,7 @@ TanStack Query owns server data. Its existing query-key values, stale times, ret
 | Authentication | Backend login, refresh/logout, recovery, verification, and resend |
 | Users | Backend list/details, invitations, edits, enable/disable/delete, and profile name |
 | Products | Backend list/details/categories/history, create/edit (currency and online-shop listing fields included), and bulk archive |
-| Customers | Read-only backend list/details with addresses, recent orders and spend per currency |
+| Customers | Read-only backend list/details with saved addresses, the delivery addresses recorded on their orders (all a guest checkout leaves), recent orders and spend per currency |
 | Orders | Existing backend list/details, status updates, and payment recording; amounts in the order's own currency, with its payment method |
 | Imports | Backend product CSV import: validate, review every row, confirm, history, error report, template |
 | Overview | Existing demo cards/chart and table rows from `mocks/overview/data.json` |

@@ -18,6 +18,7 @@ import {
   createCustomerAddress,
   createCustomerDetails,
   createCustomerOrder,
+  createCustomerOrderAddress,
 } from "@/test-utils/customer-fixtures"
 import { renderWithQuery } from "@/test-utils/render"
 
@@ -83,6 +84,28 @@ describe("CustomerDetails", () => {
     ).toBeInTheDocument()
     expect(screen.getByRole("region", { name: "Recent orders" })).toBeVisible()
     expect(document.querySelectorAll("address")).toHaveLength(1)
+  })
+
+  it("shows a guest customer's delivery addresses on the page", async () => {
+    vi.mocked(getCustomerDetails).mockResolvedValue(
+      createCustomerDetails({
+        customer: daniel,
+        addresses: [],
+        orderAddresses: [
+          createCustomerOrderAddress({
+            address: { addressLine1: "House 4, Street 9" },
+            orderCount: 3,
+          }),
+        ],
+      })
+    )
+    renderWithQuery(<CustomerDetails customerId="CUS-1002" />)
+
+    await screen.findByRole("heading", { level: 2, name: "Daniel Reyes" })
+    const address = document.querySelector("address")!
+    expect(address).toHaveTextContent("House 4, Street 9")
+    expect(address).toHaveTextContent("3 orders")
+    expect(screen.queryByText("None saved")).not.toBeInTheDocument()
   })
 
   it.each([404, 400])("treats a %i as an unknown customer", async (status) => {
@@ -267,6 +290,7 @@ describe("CustomerAddresses", () => {
             country: "Italy",
           }),
         ]}
+        orderAddresses={[]}
       />
     )
 
@@ -290,7 +314,7 @@ describe("CustomerAddresses", () => {
   })
 
   it("leaves out the details an address does not have", () => {
-    render(<CustomerAddresses addresses={[dubai]} />)
+    render(<CustomerAddresses addresses={[dubai]} orderAddresses={[]} />)
 
     const address = document.querySelector("address")!
     expect(address).toHaveTextContent("Dubai")
@@ -299,7 +323,7 @@ describe("CustomerAddresses", () => {
   })
 
   it("says which type has nothing saved", () => {
-    render(<CustomerAddresses addresses={[dubai]} />)
+    render(<CustomerAddresses addresses={[dubai]} orderAddresses={[]} />)
 
     expect(screen.getByText("None saved")).toBeInTheDocument()
     expect(document.querySelectorAll("address")).toHaveLength(1)
@@ -313,6 +337,7 @@ describe("CustomerAddresses", () => {
           createCustomerAddress({ id: "a2", isDefault: false }),
           createCustomerAddress({ id: "a3", type: "billing", isDefault: true }),
         ]}
+        orderAddresses={[]}
       />
     )
 
@@ -327,18 +352,108 @@ describe("CustomerAddresses", () => {
           createCustomerAddress({ id: "b1", isDefault: true }),
           createCustomerAddress({ id: "b2", type: "billing", isDefault: true }),
         ]}
+        orderAddresses={[]}
       />
     )
     expect(screen.queryByText("Default")).toBeNull()
   })
 
-  it("shows the empty state when no address is saved", () => {
-    render(<CustomerAddresses addresses={[]} />)
+  it("shows the empty state when no address is saved and none was delivered to", () => {
+    render(<CustomerAddresses addresses={[]} orderAddresses={[]} />)
 
     expect(
       screen.getByText("No addresses are saved for this customer.")
     ).toBeInTheDocument()
     expect(screen.queryByRole("heading", { level: 4 })).toBeNull()
+  })
+
+  describe("addresses their orders were delivered to", () => {
+    const home = createCustomerOrderAddress({
+      address: {
+        recipientName: "Hira Khan",
+        addressLine1: "House 4, Street 9",
+      },
+      lastUsedAt: "2026-10-14T07:44:00Z",
+      orderCount: 3,
+    })
+    const office = createCustomerOrderAddress({
+      address: {
+        recipientName: "Hira Khan",
+        phone: null,
+        addressLine1: "Office 2, Main Road",
+        addressLine2: "Second floor",
+        postalCode: null,
+      },
+      lastUsedAt: "2026-09-02T09:00:00Z",
+      orderCount: 1,
+    })
+
+    it("shows a guest's delivery addresses although none is saved", () => {
+      render(
+        <CustomerAddresses addresses={[]} orderAddresses={[home, office]} />
+      )
+
+      expect(
+        screen.getByText(/No addresses are saved for this customer\./)
+      ).toHaveTextContent(
+        "These are the addresses their orders were delivered to."
+      )
+      expect(
+        screen.getByRole("heading", {
+          level: 4,
+          name: "Delivered to on orders",
+        })
+      ).toBeInTheDocument()
+
+      const blocks = document.querySelectorAll("address")
+      expect(blocks).toHaveLength(2)
+      expect(blocks[0]).toHaveTextContent("Hira Khan")
+      expect(blocks[0]).toHaveTextContent("+923001234567")
+      expect(blocks[0]).toHaveTextContent("House 4, Street 9")
+      expect(blocks[0]).toHaveTextContent("Dera Ismail Khan, KPK 29111")
+      expect(blocks[0]).toHaveTextContent("3 orders, last on Oct 14, 2026")
+      expect(blocks[1]).toHaveTextContent("Office 2, Main Road")
+      expect(blocks[1]).toHaveTextContent("Second floor")
+      expect(blocks[1]).toHaveTextContent("1 order, last on Sep 2, 2026")
+      expect(blocks[1].textContent).not.toMatch(/null|undefined/)
+    })
+
+    it("sits under the saved addresses, set apart, when there are some", () => {
+      render(
+        <CustomerAddresses
+          addresses={[createCustomerAddress({ id: "saved-1" })]}
+          orderAddresses={[home]}
+        />
+      )
+
+      expect(
+        screen.queryByText(/No addresses are saved for this customer\./)
+      ).toBeNull()
+      expect(
+        screen.getByRole("heading", { level: 4, name: "Shipping address" })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole("heading", {
+          level: 4,
+          name: "Delivered to on orders",
+        })
+      ).toBeInTheDocument()
+      // One saved address and one delivered-to address.
+      expect(document.querySelectorAll("address")).toHaveLength(2)
+    })
+
+    it("is omitted when no order has an address to show", () => {
+      render(
+        <CustomerAddresses
+          addresses={[createCustomerAddress({ id: "saved-1" })]}
+          orderAddresses={[]}
+        />
+      )
+
+      expect(
+        screen.queryByRole("heading", { name: "Delivered to on orders" })
+      ).toBeNull()
+    })
   })
 })
 

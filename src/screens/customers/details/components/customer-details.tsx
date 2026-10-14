@@ -38,7 +38,7 @@ export function CustomerDetails({ customerId }: CustomerDetailsProps) {
 
   if (!data) return <CustomerDetailsSkeleton />
 
-  const { customer, addresses, recentOrders } = data
+  const { customer, addresses, orderAddresses, recentOrders } = data
   return (
     <>
       <CustomerDetailsHeader customer={customer} />
@@ -50,7 +50,10 @@ export function CustomerDetails({ customerId }: CustomerDetailsProps) {
             orders={recentOrders}
             totalOrders={customer.totalOrders}
           />
-          <CustomerAddresses addresses={addresses} />
+          <CustomerAddresses
+            addresses={addresses}
+            orderAddresses={orderAddresses}
+          />
         </div>
       </div>
     </>

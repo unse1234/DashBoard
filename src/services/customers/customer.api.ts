@@ -1,4 +1,4 @@
-import type { CustomerPage, Customer, CustomerAddress, CustomerDetails, CustomerOrderStatus, CustomerOrderSummary, CustomersQuery } from "@/types/customer.types"
+import type { CustomerPage, Customer, CustomerAddress, CustomerDetails, CustomerOrderAddress, CustomerOrderStatus, CustomerOrderSummary, CustomersQuery } from "@/types/customer.types"
 import { apiClient } from "@/lib/api/axios"
 
 // The API sends enums as stored, in upper case; the UI uses lower case.
@@ -26,6 +26,7 @@ type CustomerPageResponse = {
 type CustomerDetailsResponse = {
   customer: Customer
   addresses: ApiCustomerAddress[]
+  orderAddresses: CustomerOrderAddress[]
   recentOrders: ApiCustomerOrderSummary[]
 }
 
@@ -97,6 +98,7 @@ export async function getCustomerDetails(
   return {
     customer: data.customer,
     addresses: data.addresses.map(toCustomerAddress),
+    orderAddresses: data.orderAddresses,
     recentOrders: data.recentOrders.map(toCustomerOrderSummary),
   }
 }

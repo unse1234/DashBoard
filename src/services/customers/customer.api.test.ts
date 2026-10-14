@@ -14,6 +14,7 @@ import {
   createCustomer,
   createCustomerAddress,
   createCustomerOrder,
+  createCustomerOrderAddress,
 } from "@/test-utils/customer-fixtures"
 import { mockApi } from "@/test-utils/mock-api"
 
@@ -134,6 +135,7 @@ describe("customers API calls", () => {
       data: {
         customer,
         addresses: [{ ...createCustomerAddress(), type: "BILLING" }],
+        orderAddresses: [createCustomerOrderAddress({ orderCount: 2 })],
         recentOrders: [{ ...createCustomerOrder(), status: "CANCELLED" }],
       },
     }))
@@ -148,6 +150,9 @@ describe("customers API calls", () => {
     })
     expect(details.customer).toEqual(customer)
     expect(details.addresses[0].type).toBe("billing")
+    expect(details.orderAddresses).toEqual([
+      createCustomerOrderAddress({ orderCount: 2 }),
+    ])
     expect(details.recentOrders[0].status).toBe("cancelled")
   })
 
