@@ -38,7 +38,7 @@ src/
 │   ├── customers/customer.api.ts
 │   ├── orders/order.api.ts
 │   ├── imports/import.api.ts    # product CSV validation, confirmation, history, downloads
-│   └── storefront/catalog.api.ts # the public catalog: product pages and one product (no sign-in)
+│   └── storefront/              # catalog.api.ts (public catalog) and bag.api.ts (bag quote), no sign-in
 ├── hooks/                       # query keys, query hooks, mutation hooks, and tests
 │   ├── auth/                    # use-auth.ts and auth.mutations.ts
 │   ├── storefront/              # catalog.keys/queries.ts (public catalog); use-bag.ts: the bag in the BagProvider
@@ -69,7 +69,7 @@ src/
 ├── types/                       # shared domain, form, navigation, pagination, sort types
 │   └── storefront/              # product and bag types
 ├── utils/                       # cn.ts, formatters, pagination, sort, pure domain helpers
-│   └── storefront/              # bag, price format, and product label helpers
+│   └── storefront/              # bag draft storage, price format, and product label helpers
 ├── constants/                   # domain labels/options, password policy, page sizes
 ├── validations/                 # auth validation, user/product Zod schemas, CSV validation
 │   └── storefront/              # reserved; empty
@@ -81,8 +81,8 @@ src/
 ├── providers/                   # query-provider.tsx, session-restorer.tsx, and bag-provider.tsx (storefront)
 ├── mocks/                       # demo data
 │   ├── overview/data.json
-│   └── storefront/              # test fixtures for the bag and checkout (not shown to shoppers)
-└── test-utils/                  # fixtures, fake Axios transport, query rendering helpers
+│   └── storefront/              # demo data for the checkout placeholders (checkout-*-demo.ts)
+└── test-utils/                  # fixtures, fake Axios transport, query rendering helpers, a fake bag server
 ```
 
 The `@/*` alias resolves to `src/*`. shadcn's utility alias resolves to `@/utils/cn`; other shadcn aliases and Base UI styling remain unchanged. Import concrete modules directly rather than adding compatibility barrels at obsolete paths.
@@ -136,13 +136,14 @@ The customer-facing storefront lives in the `(storefront)` route group, beside `
 - **Wide tile.** The design's two-column MacBook tile is gone: the API has no tile shape, and with server sorting and paging a fixed wide position means nothing. Every card is the design's 191 × 232 tile.
 - **Currency.** Rupees are written `Rs 1,500.00` (grouped; the design's dollar prices, `$ 3249.99`, are not), chosen by the product's `currency` through `formatStorefrontPrice(amount, currency)`.
 - **Shell.** `StorefrontShell` (rail, content, bag preview) is rendered only by the screens that opt in (catalog, bag, product details), so checkout does not inherit it. `bagPreviewAction="checkout"` turns the preview's button into the bag total and a Checkout link, as the bag screen does. From `xl` it is the three-area desktop layout with four columns; the bag preview appears from `lg`; below `md` the rail becomes a bar across the top and the bag shows as a count on its icon. The rail and the bag stay at the window's edges at any width; only the catalog between them stops growing (at 1136 px) and is centered.
-- **Bag.** `BagProvider` (mounted in the storefront layout, so it survives navigation between storefront routes) holds the bag in memory. It starts empty; the demo bags in `mocks/storefront/bag.ts` are test fixtures only. There is no persistence: a reload empties it. The bag still does its own quantity and total arithmetic (`bag.utils.ts`) until it moves onto the server's bag quote; that is the next piece of the storefront integration, as are checkout and order placement. Adding a product already in the bag raises its quantity; `changeQuantity(productId, delta)` moves a line and removes it at zero. A polite live region announces each change without moving focus.
+- **Bag.** `BagProvider` (mounted in the storefront layout, so it survives navigation between storefront routes) keeps only the *draft*: product ids and quantities, exactly as the server last returned them. Every price, line total, subtotal and count is the answer to `POST /storefront/bag/quote` (`services/storefront/bag.api.ts`, public). The shopper's clicks are sent as actions (`add`, `increment`, `decrement`, `remove`) that the server applies, so the client does no quantity or money arithmetic. Intents run one request at a time, in the order they were made, each from the draft the previous answer produced, so a slow answer cannot land after a newer one; a refused action (`409 INSUFFICIENT_STOCK` / `PRODUCT_UNAVAILABLE`) changes nothing and shows a sticky notice (`BagNotice`, in `StorefrontShell`) naming the product. A polite live region announces each change without moving focus. The draft (ids and quantities only) is kept in `localStorage` under `ecom-dash.storefront.bag.v1` and priced again by the server on the next visit; unavailable storage is tolerated, and a stored bag that is not well formed is dropped. `useBag()` exposes `items`, `itemCount`, `subtotal`, `currency`, `hasIssues`, `isRestoring`, `isUpdating`, `loadError`, `notice`, and the intents `addProduct`, `increase`, `decrease`, `remove`, `refresh` and `clear` (empties the bag without a request, for after an order is placed). Not synchronised between tabs.
 
 ### Storefront bag screen
 
-- **Lines.** One card per bag line: picture, name, subtitle, the product's description (three lines at most), `unit x quantity`, and a minus / quantity / plus stepper. At one unit the minus is labelled "Remove … from bag" and removes the line.
-- **Total.** The bag preview on this screen shows the total (`getBagTotal`, summed in cents; grouped as `$ 5,849.93` by `formatStorefrontTotal`) and a Checkout link. An empty bag shows an empty state, a zero total, and an unavailable Checkout.
-- **Data.** The design's Dell XPS 13 and iPhone 11 Navy Blue are not catalog products, so they live only in `mocks/storefront/bag.ts` (pictures `dell-xps-13-white.png`, `iphone-11-navy-blue.png`, 236 × 272 canvases cropped from the design) and have no item view; the line does not link to one.
+- **Lines.** One card per bag line, as the server priced it: picture, name, subtitle, the product's description (three lines at most), `unit x quantity`, and a minus / quantity / plus stepper whose buttons are intents. At one unit the minus is labelled "Remove … from bag" and the server removes the line. The bag is priced again each time the screen opens.
+- **Lines that went bad.** A product that stopped being buyable is not an error: its line says why (`This product is no longer available.` with only its id, since nothing else is revealed, or `There is not enough stock for this quantity.`), can still be lowered or removed, and the bag shows a banner while `hasIssues`. Checkout stays unavailable until every line can be bought. The API never says how many are left.
+- **Loading and failure.** "Loading your bag…" while a bag from the last visit awaits its first answer; "Couldn’t load your bag" with Try again when it cannot be reached (the draft is kept).
+- **Total.** The bag preview on this screen shows the server's subtotal (`formatStorefrontTotal`, e.g. `Rs 5,849.93`) and a Checkout link. An empty bag shows an empty state, a zero total, and an unavailable Checkout.
 - **Styling.** The storefront palette, typeface (Cabin, via `storefrontFont`), radii, and shadow are theme tokens named `store-*` in `globals.css`; only storefront components use them, and the dashboard and auth screens are unaffected.
 - **Sign-out.** The rail's red button is rendered unavailable (`aria-disabled`, with a description) and is not connected to staff logout.
 - **Price format.** Prices follow the design's shape (a symbol, a space, two decimals) via `formatStorefrontPrice(amount, currency)`, not `formatCurrency`: `Rs 1,500.00`, or `$ 3249.99` for dollars.
