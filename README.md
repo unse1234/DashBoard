@@ -179,13 +179,24 @@ TanStack Query owns server data. Its existing query-key values, stale times, ret
 | --- | --- |
 | Authentication | Backend login, refresh/logout, recovery, verification, and resend |
 | Users | Backend list/details, invitations, edits, enable/disable/delete, and profile name |
-| Products | Backend list/details/categories/history, create/edit, and bulk archive |
-| Customers | Read-only backend list/details with addresses and recent orders |
-| Orders | Existing backend list/details, status updates, and payment recording |
+| Products | Backend list/details/categories/history, create/edit (currency and online-shop listing fields included), and bulk archive |
+| Customers | Read-only backend list/details with addresses, recent orders and spend per currency |
+| Orders | Existing backend list/details, status updates, and payment recording; amounts in the order's own currency, with its payment method |
 | Imports | Backend product CSV import: validate, review every row, confirm, history, error report, template |
 | Overview | Existing demo cards/chart and table rows from `mocks/overview/data.json` |
 
 The Orders API integration already present before this structural refactor is preserved. Product analytics and product export remain unconnected.
+
+### Money and payment method in the dashboard
+
+The shop sells in rupees while earlier orders and products are in dollars, so no amount is assumed to be in either.
+
+- **An amount is shown in the currency it was recorded in.** `formatCurrency(amount, currency)` requires the currency (there is no default), so a call site that forgets it fails to compile instead of printing a rupee price as `$`. Orders and their lines use the order's `currency`, a customer's recent orders use each order's, and a product's price and cost use the product's. Rupees read `PKR 1,500.00`; the storefront's own `Rs 1,500.00` formatter is separate.
+- **Customer spend is per currency.** `Customer.spentByCurrency` lists one amount per currency and is what the list and details show; `totalSpent` is a bare sum across currencies that the API keeps only so the column can sort.
+- **Margin comes from the API.** `Product.margin` is worked out by the API in exact decimals, so no screen does the arithmetic.
+- **Payment method.** An order's `paymentMethod` is `cod` or `null` (orders that predate payment methods, shown as "Not recorded"). For a cash-on-delivery order the payment control reads "Record cash payment" and names the amount in its currency. Which status changes are allowed stays with the API: a cash-on-delivery order may ship while unpaid, and marking it delivered before the cash is recorded is refused with the API's own message.
+- **Product form.** Currency must be chosen when a product is created (a product in another currency than the shop's is not shown there), and the amount labels follow it. The "Online shop listing" section edits the subtitle, the main image and further images; pictures are addresses, not uploads, and the form repeats the API's address rule only as typing feedback.
+- **Overview is still demo data.** Its cards, chart and table come from fixed sample values and `mocks/overview/data.json`; nothing on it is calculated from orders, customers or products, and its "Total Revenue" is a placeholder. Showing real figures needs an API endpoint that does the aggregation, which does not exist yet.
 
 ### Imports
 
