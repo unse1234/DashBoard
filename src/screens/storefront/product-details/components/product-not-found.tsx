@@ -1,7 +1,7 @@
 import { StorefrontShell } from "@/components/storefront/layout/storefront-shell"
 import { ShopBackLink } from "@/screens/storefront/product-details/components/shop-back-link"
 
-/** Shown for a product id the catalog does not have; the route's not-found.tsx renders it. */
+/** Shown for a product id the catalog does not have: the details screen renders it when the API answers 404. */
 export function ProductNotFound() {
   return (
     <StorefrontShell>

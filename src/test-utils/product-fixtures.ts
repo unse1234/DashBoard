@@ -32,10 +32,6 @@ export function createProduct(overrides: Partial<Product> = {}): Product {
   }
 }
 
-export function createCategory(overrides: Partial<Category> = {}): Category {
-  return { id: "cat-electronics", name: "Electronics", ...overrides }
-}
-
 /** The categories the API seeds, in the order it returns them. */
 export const categoryFixtures: Category[] = [
   { id: "cat-accessories", name: "Accessories" },

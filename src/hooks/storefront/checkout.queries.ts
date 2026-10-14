@@ -9,7 +9,7 @@ import type { CheckoutQuoteRequest } from "@/types/storefront/checkout.types"
  * yet a request to price. A quote is a read (it creates and reserves nothing),
  * so it is a query.
  *
- * Two properties matter more than speed. The key holds the l ines andthe
+ * Two properties matter more than speed. The key holds the lines and the
  * address, and nothing is kept across a change of them (no placeholder data),
  * so an order can never be placed from the quote of another bag or address.
  * And a cached quote is always revalidated when the screen opens (`staleTime`
