@@ -80,6 +80,7 @@ describe("enum mapping", () => {
         ...createOrderListItem(),
         status: apiStatus,
         paymentStatus: "PAID",
+        paymentMethod: null,
       }).status
     ).toBe(status)
   })
@@ -94,9 +95,48 @@ describe("enum mapping", () => {
         ...createOrderListItem(),
         status: "PENDING",
         paymentStatus: apiStatus,
+        paymentMethod: null,
       }).paymentStatus
     ).toBe(status)
   })
+
+  it("maps the payment method COD to cod", () => {
+    expect(
+      toOrderListItem({
+        ...createOrderListItem(),
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        paymentMethod: "COD",
+      }).paymentMethod
+    ).toBe("cod")
+  })
+
+  it("keeps a missing payment method missing, for orders that predate them", () => {
+    expect(
+      toOrderListItem({
+        ...createOrderListItem(),
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        paymentMethod: null,
+      }).paymentMethod
+    ).toBeNull()
+  })
+
+  it.each(["USD", "PKR"] as const)(
+    "keeps the order's currency, %s, on the list item and the order",
+    (currency) => {
+      expect(
+        toOrderListItem({
+          ...createOrderListItem(),
+          status: "PENDING",
+          paymentStatus: "PENDING",
+          paymentMethod: null,
+          currency,
+        }).currency
+      ).toBe(currency)
+      expect(toOrder(apiOrder({ currency }) as never).currency).toBe(currency)
+    }
+  )
 
   it("keeps the rest of the order and drops what the UI does not use", () => {
     const order = toOrder(apiOrder() as never)

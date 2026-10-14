@@ -22,6 +22,11 @@ export function ProductInformation({ product }: ProductInformationProps) {
           <DetailItem label="Product Name" className="@lg:col-span-2">
             {product.name}
           </DetailItem>
+          <DetailItem label="Subtitle" className="@lg:col-span-2">
+            {product.subtitle ?? (
+              <span className="text-muted-foreground">Not set</span>
+            )}
+          </DetailItem>
           <DetailItem label="SKU">
             <span className="font-mono text-xs">{product.sku}</span>
           </DetailItem>
@@ -37,6 +42,21 @@ export function ProductInformation({ product }: ProductInformationProps) {
           <DetailItem label="Description" className="@lg:col-span-2">
             {product.description ?? (
               <span className="text-muted-foreground">Not set</span>
+            )}
+          </DetailItem>
+          <DetailItem label="Shop Images" className="@lg:col-span-2">
+            {product.imageUrl === null && product.galleryUrls.length === 0 ? (
+              <span className="text-muted-foreground">None</span>
+            ) : (
+              <ol className="flex flex-col gap-1">
+                {[product.imageUrl, ...product.galleryUrls]
+                  .filter((url): url is string => url !== null)
+                  .map((url, index) => (
+                    <li key={`${index}-${url}`} className="break-all">
+                      {url}
+                    </li>
+                  ))}
+              </ol>
             )}
           </DetailItem>
           <DetailItem label="Created At">

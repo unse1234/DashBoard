@@ -1,8 +1,12 @@
-// Fixed locale and currency so the server and the browser render identical text.
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-})
+import type { Currency } from "@/types/currency.types"
+
+// Fixed locale so the server and the browser render identical text. The
+// currency is never assumed: an amount is shown in the currency it was
+// recorded in, so a rupee price can't be mistaken for a dollar one.
+const currencyFormatters: Record<Currency, Intl.NumberFormat> = {
+  USD: new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }),
+  PKR: new Intl.NumberFormat("en-US", { style: "currency", currency: "PKR" }),
+}
 
 const integerFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
@@ -13,8 +17,9 @@ const percentFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,
 })
 
-export function formatCurrency(amount: number) {
-  return currencyFormatter.format(amount)
+/** `amount` in `currency`, e.g. "$1,500.00" or "PKR 1,500.00". */
+export function formatCurrency(amount: number, currency: Currency) {
+  return currencyFormatters[currency].format(amount)
 }
 
 export function formatInteger(value: number) {

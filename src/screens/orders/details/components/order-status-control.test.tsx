@@ -386,5 +386,70 @@ describe("OrderDetailsHeader", () => {
         "A cancelled order can't be marked as paid."
       )
     })
+
+    describe("for a cash-on-delivery order", () => {
+      const cod = {
+        status: "shipped",
+        paymentStatus: "pending",
+        paymentMethod: "cod",
+        currency: "PKR",
+        total: 4500,
+      } as const
+
+      it("is offered once it has shipped, worded as the cash that was collected", () => {
+        renderHeader(createOrder(cod))
+
+        expect(
+          screen.getByRole("button", { name: "Record cash payment" })
+        ).toBeInTheDocument()
+        expect(
+          screen.queryByRole("button", { name: "Mark as paid" })
+        ).toBeNull()
+      })
+
+      it("asks first, names the amount in rupees, then records the payment", async () => {
+        const order = createOrder(cod)
+        vi.mocked(markOrderPaid).mockResolvedValue({
+          ...order,
+          paymentStatus: "paid",
+        })
+        const user = renderHeader(order)
+
+        await user.click(
+          screen.getByRole("button", { name: "Record cash payment" })
+        )
+        const dialog = await screen.findByRole("dialog")
+        expect(dialog).toHaveTextContent(
+          "Record the cash payment for order ORD-10001?"
+        )
+        expect(dialog).toHaveTextContent("PKR 4,500.00")
+        expect(dialog).toHaveTextContent("collected in cash on delivery")
+        expect(dialog).not.toHaveTextContent("$")
+        expect(markOrderPaid).not.toHaveBeenCalled()
+
+        await user.click(
+          within(dialog).getByRole("button", { name: "Record payment" })
+        )
+
+        await waitFor(() =>
+          expect(markOrderPaid).toHaveBeenCalledWith("ORD-10001")
+        )
+      })
+
+      it("shows the API's reason when delivery is attempted before the cash is recorded", async () => {
+        const message =
+          "Record the cash payment before marking a cash-on-delivery order as delivered."
+        vi.mocked(updateOrderStatus).mockRejectedValue(
+          new ApiError(409, [message])
+        )
+        const user = renderHeader(createOrder(cod))
+
+        await choose(user, "Delivered")
+        await user.click(screen.getByRole("button", { name: "Update" }))
+
+        await waitFor(() => expect(toast.error).toHaveBeenCalledWith(message))
+        expect(toast.success).not.toHaveBeenCalled()
+      })
+    })
   })
 })

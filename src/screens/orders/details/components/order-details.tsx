@@ -42,7 +42,7 @@ export function OrderDetails({ orderId }: OrderDetailsProps) {
     <>
       <OrderDetailsHeader order={order} />
       <div className="grid items-start gap-4 @3xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <OrderItemsTable items={order.items} />
+        <OrderItemsTable items={order.items} currency={order.currency} />
         <div className="flex min-w-0 flex-col gap-4">
           <OrderPriceBreakdown order={order} />
           <OrderCustomerInformation customer={order.customer} />

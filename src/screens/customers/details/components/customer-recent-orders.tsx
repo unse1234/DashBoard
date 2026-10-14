@@ -82,7 +82,7 @@ export function CustomerRecentOrders({
                         </time>
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {formatCurrency(order.total)}
+                        {formatCurrency(order.total, order.currency)}
                       </TableCell>
                       <TableCell>
                         <CustomerOrderStatusBadge status={order.status} />

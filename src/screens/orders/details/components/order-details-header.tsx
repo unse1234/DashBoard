@@ -54,6 +54,8 @@ export function OrderDetailsHeader({ order }: OrderDetailsHeaderProps) {
             <OrderPaymentControl
               orderId={order.id}
               total={order.total}
+              currency={order.currency}
+              method={order.paymentMethod}
               onMarkPaid={handleMarkPaid}
             />
           )}

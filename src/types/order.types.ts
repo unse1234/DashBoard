@@ -1,3 +1,4 @@
+import type { Currency } from "@/types/currency.types"
 import type { PageSize } from "@/types/pagination.types";
 import type { Sort } from "@/types/sort.types";
 
@@ -10,6 +11,12 @@ export type OrderStatus =
 
 /** Informational only: the dashboard does not take, capture or refund payments. */
 export type PaymentStatus = "pending" | "paid" | "refunded"
+
+/**
+ * How an order is paid for. Cash on delivery is collected when the parcel
+ * arrives, so such an order may ship before it is paid (see `paymentStatus`).
+ */
+export type PaymentMethod = "cod"
 
 /**
  * The customer as the order recorded them, so an order keeps reading the same
@@ -45,9 +52,9 @@ export type OrderItem = {
   productName: string
   sku: string
   quantity: number
-  /** In USD. */
+  /** In the order's `currency`. */
   unitPrice: number
-  /** `quantity` × `unitPrice`, in USD. */
+  /** `quantity` × `unitPrice`, in the order's `currency`. */
   total: number
 }
 
@@ -58,9 +65,13 @@ export type OrderListItem = {
   customer: OrderCustomer
   status: OrderStatus
   paymentStatus: PaymentStatus
+  /** How it is paid for; null on orders that predate payment methods. */
+  paymentMethod: PaymentMethod | null
+  /** What every amount of the order is denominated in, fixed when it was placed. */
+  currency: Currency
   /** Units across all lines, so two bottles and a notebook count as three. */
   itemCount: number
-  /** `subtotal` + `shipping` - `discount` + `tax`, in USD. */
+  /** `subtotal` + `shipping` - `discount` + `tax`, in `currency`. */
   total: number
   /** ISO 8601 timestamp. */
   createdAt: string
@@ -68,7 +79,7 @@ export type OrderListItem = {
 
 export type Order = OrderListItem & {
   items: OrderItem[]
-  /** All amounts are in USD. */
+  /** All amounts are in `currency`. */
   subtotal: number
   shipping: number
   /** The amount taken off, as a positive number. */

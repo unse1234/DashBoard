@@ -3,7 +3,7 @@
 import type { ReactNode } from "react"
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Controller, useForm } from "react-hook-form"
+import { Controller, useForm, useWatch } from "react-hook-form"
 
 import { AuthFormMessage } from "@/components/auth/auth-form"
 import { FormField } from "@/components/shared/form-field"
@@ -20,6 +20,7 @@ import {
 import { FieldGroup } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
 import { describeApiError, isApiError } from "@/lib/api/api-error"
+import { CURRENCY_OPTIONS } from "@/constants/currency.constants"
 import {
   PRODUCT_STATUS_OPTIONS,
   SKU_TAKEN_MESSAGE,
@@ -32,10 +33,15 @@ import { cn } from "@/utils/cn"
 const emptyValues: ProductFormInput = {
   name: "",
   sku: "",
+  subtitle: "",
   brand: "",
   description: "",
+  imageUrl: "",
+  galleryUrls: "",
   categoryId: "",
   status: "active",
+  // Chosen on purpose: a product in the wrong currency is not shown in the shop.
+  currency: "",
   price: "",
   costPrice: "",
   stock: "",
@@ -45,10 +51,14 @@ function getDefaultValues(product: Product): ProductFormInput {
   return {
     name: product.name,
     sku: product.sku,
+    subtitle: product.subtitle ?? "",
     brand: product.brand ?? "",
     description: product.description ?? "",
+    imageUrl: product.imageUrl ?? "",
+    galleryUrls: product.galleryUrls.join("\n"),
     categoryId: product.categoryId,
     status: product.status,
+    currency: product.currency,
     price: product.price.toFixed(2),
     costPrice: product.costPrice === null ? "" : product.costPrice.toFixed(2),
     stock: String(product.stock),
@@ -94,6 +104,14 @@ export function ProductForm({
     defaultValues: product ? getDefaultValues(product) : emptyValues,
   })
   const { errors, isSubmitting } = form.formState
+  // The amounts are in whichever currency is chosen, so the labels say which.
+  const currency = useWatch({ control: form.control, name: "currency" })
+  const sellingPriceLabel = currency
+    ? `Selling Price (${currency})`
+    : "Selling Price"
+  const costPriceLabel = currency
+    ? `Cost Price (${currency}, optional)`
+    : "Cost Price (optional)"
 
   async function submit(values: ProductFormValues) {
     try {
@@ -224,9 +242,29 @@ export function ProductForm({
           title="Pricing and inventory"
           description="What the product sells for and how many are in stock."
         >
+          <Controller
+            control={form.control}
+            name="currency"
+            render={({ field }) => (
+              <FormSelectField
+                name={field.name}
+                ref={field.ref}
+                value={field.value}
+                onValueChange={field.onChange}
+                onBlur={field.onBlur}
+                label="Currency"
+                options={CURRENCY_OPTIONS}
+                placeholder="Select a currency"
+                description="What the selling and cost price below are in. The online shop sells in PKR only, so a product priced in another currency is not shown there."
+                required
+                disabled={isSubmitting}
+                error={errors.currency?.message}
+              />
+            )}
+          />
           <div className="grid gap-5 @2xl:grid-cols-3">
             <FormField
-              label="Selling Price (USD)"
+              label={sellingPriceLabel}
               inputMode="decimal"
               placeholder="0.00"
               autoComplete="off"
@@ -235,7 +273,7 @@ export function ProductForm({
               {...form.register("price")}
             />
             <FormField
-              label="Cost Price (USD, optional)"
+              label={costPriceLabel}
               inputMode="decimal"
               placeholder="0.00"
               autoComplete="off"
@@ -252,6 +290,35 @@ export function ProductForm({
               {...form.register("stock")}
             />
           </div>
+        </ProductFormSection>
+
+        <ProductFormSection
+          title="Online shop listing"
+          description="How the product looks in the shop. Pictures are web addresses, not uploads."
+        >
+          <FormField
+            label="Subtitle (optional)"
+            autoComplete="off"
+            description="A short line shown under the name."
+            error={errors.subtitle?.message}
+            {...form.register("subtitle")}
+          />
+          <FormField
+            label="Main Image (optional)"
+            inputMode="url"
+            autoComplete="off"
+            placeholder="https://example.com/image.jpg"
+            description="An http(s) address, or a path on the shop such as /images/mug.png."
+            error={errors.imageUrl?.message}
+            {...form.register("imageUrl")}
+          />
+          <FormTextareaField
+            label="More Images (optional)"
+            rows={3}
+            description="One address per line, in the order they are shown. Up to 10."
+            error={errors.galleryUrls?.message}
+            {...form.register("galleryUrls")}
+          />
         </ProductFormSection>
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

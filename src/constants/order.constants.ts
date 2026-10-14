@@ -1,6 +1,7 @@
 import type {
   OrderStatus,
   OrderStatusFilter,
+  PaymentMethod,
   PaymentStatus,
   PaymentStatusFilter,
 } from "@/types/order.types"
@@ -31,6 +32,13 @@ export const PAYMENT_STATUS_LABELS = {
   paid: "Paid",
   refunded: "Refunded",
 } as const satisfies Record<PaymentStatus, string>
+
+export const PAYMENT_METHOD_LABELS = {
+  cod: "Cash on delivery",
+} as const satisfies Record<PaymentMethod, string>
+
+/** Shown for an order that predates payment methods. */
+export const NO_PAYMENT_METHOD_LABEL = "Not recorded"
 
 export const PAYMENT_STATUS_FILTER_OPTIONS = [
   { value: "all", label: "All" },

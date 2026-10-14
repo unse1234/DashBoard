@@ -22,6 +22,7 @@ const daniel = createCustomer({
   email: "daniel.reyes@example.com",
   totalOrders: 23,
   totalSpent: 6212.4,
+  spentByCurrency: [{ currency: "USD", amount: 6212.4 }],
   joinedAt: "2022-05-19T14:02:00Z",
 })
 const lucas = createCustomer({

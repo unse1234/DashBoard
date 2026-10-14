@@ -29,6 +29,7 @@ const daniel = createCustomer({
   name: "Daniel Reyes",
   totalOrders: 23,
   totalSpent: 6212.4,
+  spentByCurrency: [{ currency: "USD", amount: 6212.4 }],
   lastOrderAt: "2026-09-29T09:30:00Z",
 })
 
@@ -160,14 +161,35 @@ describe("CustomerSummary", () => {
         customer={createCustomer({
           totalOrders: 0,
           totalSpent: 0,
+          spentByCurrency: [],
           lastOrderAt: null,
         })}
       />
     )
 
     expect(getValue("Total Orders")).toHaveTextContent("0")
-    expect(getValue("Total Spent")).toHaveTextContent("$0.00")
+    expect(getValue("Total Spent")).toHaveTextContent("Nothing yet")
     expect(getValue("Last Order")).toHaveTextContent("No orders yet")
+  })
+
+  it("shows what was spent in each currency, never one added-up figure", () => {
+    render(
+      <CustomerSummary
+        customer={createCustomer({
+          totalOrders: 3,
+          // A bare sum of rupees and dollars, which means nothing.
+          totalSpent: 6619.5,
+          spentByCurrency: [
+            { currency: "PKR", amount: 6499.5 },
+            { currency: "USD", amount: 120 },
+          ],
+        })}
+      />
+    )
+
+    expect(getValue("Total Spent")).toHaveTextContent("PKR 6,499.50")
+    expect(getValue("Total Spent")).toHaveTextContent("$120.00")
+    expect(getValue("Total Spent")).not.toHaveTextContent("6,619.50")
   })
 })
 
@@ -366,6 +388,20 @@ describe("CustomerRecentOrders", () => {
     expect(total).toHaveTextContent("$329.00")
     expect(status).toHaveTextContent("Processing")
     expect(rows[1]).toHaveTextContent("Delivered")
+  })
+
+  it("shows each order's total in the currency it was placed in", () => {
+    renderOrders(
+      [
+        createCustomerOrder({ id: "ORD-1", total: 4500, currency: "PKR" }),
+        createCustomerOrder({ id: "ORD-2", total: 82.5, currency: "USD" }),
+      ],
+      2
+    )
+
+    const rows = screen.getAllByRole("row").slice(1)
+    expect(rows[0]).toHaveTextContent("PKR 4,500.00")
+    expect(rows[1]).toHaveTextContent("$82.50")
   })
 
   it("shows the order's date under its ID too, for narrow cards", () => {

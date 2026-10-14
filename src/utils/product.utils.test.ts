@@ -1,7 +1,4 @@
-import {
-  getProductDisplayStatus,
-  getProductMargin,
-} from "@/utils/product.utils"
+import { getProductDisplayStatus } from "@/utils/product.utils"
 
 describe("getProductDisplayStatus", () => {
   it("keeps the status of a product that is in stock", () => {
@@ -21,23 +18,5 @@ describe("getProductDisplayStatus", () => {
     expect(getProductDisplayStatus({ status: "inactive", stock: 0 })).toBe(
       "inactive"
     )
-  })
-})
-
-describe("getProductMargin", () => {
-  it("is the profit as a share of the selling price", () => {
-    expect(getProductMargin({ price: 200, costPrice: 150 })).toBe(0.25)
-  })
-
-  it("can be negative when the cost exceeds the price", () => {
-    expect(getProductMargin({ price: 100, costPrice: 120 })).toBe(-0.2)
-  })
-
-  it("is unavailable without a cost price", () => {
-    expect(getProductMargin({ price: 100, costPrice: null })).toBeNull()
-  })
-
-  it("is unavailable for a free product", () => {
-    expect(getProductMargin({ price: 0, costPrice: 5 })).toBeNull()
   })
 })

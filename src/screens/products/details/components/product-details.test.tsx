@@ -167,10 +167,42 @@ describe("ProductDetailsTabs overview", () => {
   })
 
   it("does not invent a margin when the cost price is unknown", () => {
-    renderTabs(createProduct({ costPrice: null }))
+    // The API answers with no margin when there is no cost price.
+    renderTabs(createProduct({ costPrice: null, margin: null }))
 
     expect(getValue("Cost Price")).toHaveTextContent("Not set")
     expect(getValue("Margin")).toHaveTextContent("Not available")
+  })
+
+  it("shows the margin the API worked out, and amounts in the product's currency", () => {
+    renderTabs(
+      createProduct({
+        currency: "PKR",
+        price: 1500,
+        costPrice: 1000,
+        margin: 0.3333,
+      })
+    )
+
+    expect(getValue("Selling Price")).toHaveTextContent("PKR 1,500.00")
+    expect(getValue("Cost Price")).toHaveTextContent("PKR 1,000.00")
+    expect(getValue("Margin")).toHaveTextContent("33.3%")
+  })
+
+  it("shows the shop's subtitle and pictures", () => {
+    renderTabs(
+      createProduct({
+        subtitle: "Wireless, noise cancelling",
+        imageUrl: "/images/aurora.png",
+        galleryUrls: ["https://cdn.example.com/aurora-2.jpg"],
+      })
+    )
+
+    expect(getValue("Subtitle")).toHaveTextContent("Wireless, noise cancelling")
+    expect(getValue("Shop Images")).toHaveTextContent("/images/aurora.png")
+    expect(getValue("Shop Images")).toHaveTextContent(
+      "https://cdn.example.com/aurora-2.jpg"
+    )
   })
 
   it("marks missing optional details", () => {

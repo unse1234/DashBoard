@@ -5,10 +5,15 @@ import { formatCurrency } from "@/utils/format-number"
 import type { Order } from "@/types/order.types"
 
 type OrderPriceBreakdownProps = {
-  order: Pick<Order, "subtotal" | "shipping" | "discount" | "tax" | "total">
+  order: Pick<
+    Order,
+    "subtotal" | "shipping" | "discount" | "tax" | "total" | "currency"
+  >
 }
 
 export function OrderPriceBreakdown({ order }: OrderPriceBreakdownProps) {
+  const money = (amount: number) => formatCurrency(amount, order.currency)
+
   return (
     <Card>
       <CardHeader>
@@ -18,17 +23,17 @@ export function OrderPriceBreakdown({ order }: OrderPriceBreakdownProps) {
       </CardHeader>
       <CardContent>
         <dl className="flex flex-col gap-2">
-          <PriceRow label="Subtotal">{formatCurrency(order.subtotal)}</PriceRow>
-          <PriceRow label="Shipping">{formatCurrency(order.shipping)}</PriceRow>
+          <PriceRow label="Subtotal">{money(order.subtotal)}</PriceRow>
+          <PriceRow label="Shipping">{money(order.shipping)}</PriceRow>
           <PriceRow label="Discount">
             {/* A real minus sign, which screen readers announce as "minus". */}
             {order.discount > 0
-              ? `−${formatCurrency(order.discount)}`
-              : formatCurrency(order.discount)}
+              ? `−${money(order.discount)}`
+              : money(order.discount)}
           </PriceRow>
-          <PriceRow label="Tax">{formatCurrency(order.tax)}</PriceRow>
+          <PriceRow label="Tax">{money(order.tax)}</PriceRow>
           <PriceRow label="Total" emphasized>
-            {formatCurrency(order.total)}
+            {money(order.total)}
           </PriceRow>
         </dl>
       </CardContent>

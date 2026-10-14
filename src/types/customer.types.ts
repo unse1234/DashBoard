@@ -1,3 +1,4 @@
+import type { Currency } from "@/types/currency.types"
 import type { PageSize } from "@/types/pagination.types";
 import type { Sort } from "@/types/sort.types";
 
@@ -12,8 +13,17 @@ export type Customer = {
   joinedAt: string
   /** Orders placed, cancelled ones included. The API reports it; it is not counted from `CustomerOrderSummary`. */
   totalOrders: number
-  /** Spent on orders that were not cancelled, in USD. */
+  /**
+   * Spent on orders that were not cancelled, with every currency added together
+   * as a bare number. It only means something while a customer has orders in a
+   * single currency, so the API keeps it for sorting: show `spentByCurrency`.
+   */
   totalSpent: number
+  /**
+   * The same, per currency, so rupees and dollars are never added together.
+   * Only the currencies the customer has orders in; empty before the first one.
+   */
+  spentByCurrency: { currency: Currency; amount: number }[]
   /** ISO 8601 timestamp; null until the first order. */
   lastOrderAt: string | null
 }
@@ -52,8 +62,10 @@ export type CustomerOrderSummary = {
   /** Public identifier, which will also be the order's details route. */
   id: string
   customerId: string
-  /** In USD. */
+  /** In `currency`. */
   total: number
+  /** What `total` is denominated in: the order's currency. */
+  currency: Currency
   status: CustomerOrderStatus
   /** ISO 8601 timestamp. */
   createdAt: string

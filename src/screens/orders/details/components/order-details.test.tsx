@@ -85,6 +85,37 @@ describe("OrderDetails", () => {
     expect(screen.getAllByRole("row")).toHaveLength(3)
   })
 
+  it("shows a storefront order's payment method and its total in rupees", async () => {
+    vi.mocked(getOrder).mockResolvedValue(
+      createOrder({
+        paymentMethod: "cod",
+        currency: "PKR",
+        paymentStatus: "pending",
+        status: "shipped",
+        total: 4500,
+        items: [createOrderItem({ unitPrice: 1500, quantity: 3, total: 4500 })],
+        subtotal: 4500,
+        shipping: 0,
+        tax: 0,
+      })
+    )
+    renderWithQuery(<OrderDetails orderId="ORD-10001" />)
+
+    await screen.findByRole("heading", { level: 2, name: "Order ORD-10001" })
+    expect(getValue("Payment Method")).toHaveTextContent("Cash on delivery")
+    // In the summary card and again as the price breakdown's total.
+    expect(screen.getAllByText("PKR 4,500.00").length).toBeGreaterThanOrEqual(2)
+    expect(screen.queryByText(/\$/)).toBeNull()
+  })
+
+  it("says so when an order predates payment methods", async () => {
+    vi.mocked(getOrder).mockResolvedValue(createOrder({ paymentMethod: null }))
+    renderWithQuery(<OrderDetails orderId="ORD-10001" />)
+
+    await screen.findByRole("heading", { level: 2, name: "Order ORD-10001" })
+    expect(getValue("Payment Method")).toHaveTextContent("Not recorded")
+  })
+
   it.each([404, 400])(
     "says the order was not found for a %s",
     async (status) => {
@@ -117,7 +148,7 @@ describe("OrderDetails", () => {
 
 describe("OrderItemsTable", () => {
   it("shows the columns and one row per item", () => {
-    render(<OrderItemsTable items={[bottle, dripper]} />)
+    render(<OrderItemsTable items={[bottle, dripper]} currency="USD" />)
 
     expect(
       screen
@@ -128,7 +159,7 @@ describe("OrderItemsTable", () => {
   })
 
   it("shows each item's SKU, quantity, unit price and line total", () => {
-    render(<OrderItemsTable items={[bottle, dripper]} />)
+    render(<OrderItemsTable items={[bottle, dripper]} currency="USD" />)
     const row = within(
       screen.getByRole("row", { name: /Trail Insulated Water Bottle/ })
     )
@@ -140,7 +171,7 @@ describe("OrderItemsTable", () => {
   })
 
   it("links each product to its details page", () => {
-    render(<OrderItemsTable items={[bottle, dripper]} />)
+    render(<OrderItemsTable items={[bottle, dripper]} currency="USD" />)
 
     expect(
       screen.getByRole("link", { name: "Trail Insulated Water Bottle, 750 ml" })
@@ -153,12 +184,28 @@ describe("OrderItemsTable", () => {
   })
 
   it("is a named, focusable region so a narrow table can be scrolled by keyboard", () => {
-    render(<OrderItemsTable items={[bottle]} />)
+    render(<OrderItemsTable items={[bottle]} currency="USD" />)
 
     expect(screen.getByRole("region", { name: "Order items" })).toHaveAttribute(
       "tabindex",
       "0"
     )
+  })
+
+  it("shows the unit price and line total in the order's currency", () => {
+    render(
+      <OrderItemsTable
+        items={[createOrderItem({ unitPrice: 1500, quantity: 2, total: 3000 })]}
+        currency="PKR"
+      />
+    )
+
+    const row = within(
+      screen.getByRole("row", { name: /Trail Insulated Water Bottle/ })
+    )
+    expect(row.getByText("PKR 1,500.00")).toBeInTheDocument()
+    expect(row.getByText("PKR 3,000.00")).toBeInTheDocument()
+    expect(screen.queryByText(/\$/)).toBeNull()
   })
 })
 
@@ -167,6 +214,7 @@ describe("OrderPriceBreakdown", () => {
     render(
       <OrderPriceBreakdown
         order={{
+          currency: "USD",
           subtotal: 103,
           shipping: 6.5,
           discount: 15,
@@ -181,6 +229,26 @@ describe("OrderPriceBreakdown", () => {
     expect(getValue("Discount")).toHaveTextContent("−$15.00")
     expect(getValue("Tax")).toHaveTextContent("$0.00")
     expect(getValue("Total")).toHaveTextContent("$94.50")
+  })
+
+  it("shows every amount in the order's currency, never as dollars", () => {
+    render(
+      <OrderPriceBreakdown
+        order={{
+          currency: "PKR",
+          subtotal: 159999,
+          shipping: 0,
+          discount: 0,
+          tax: 0,
+          total: 159999,
+        }}
+      />
+    )
+
+    expect(getValue("Subtotal")).toHaveTextContent("PKR 159,999.00")
+    expect(getValue("Shipping")).toHaveTextContent("PKR 0.00")
+    expect(getValue("Total")).toHaveTextContent("PKR 159,999.00")
+    expect(screen.queryByText(/\$/)).toBeNull()
   })
 
   it("shows tax when the order has some", () => {

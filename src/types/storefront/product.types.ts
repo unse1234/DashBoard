@@ -1,5 +1,7 @@
+import type { Currency } from "@/types/currency.types"
+
 /** The currencies the API can price a product in. The public catalog serves PKR. */
-export type StorefrontCurrency = "PKR" | "USD"
+export type StorefrontCurrency = Currency
 
 export type StorefrontProductImage = {
   url: string

@@ -27,6 +27,7 @@ async function fillRequiredFields() {
   await user.type(screen.getByLabelText("Product Name"), "  Studio Monitor  ")
   await user.type(screen.getByLabelText("SKU"), "ELC-MON-27")
   await chooseOption("Category", "Electronics")
+  await chooseOption("Currency", "US dollar (USD)")
   await user.type(screen.getByLabelText("Selling Price (USD)"), "349.99")
   await user.type(screen.getByLabelText("Stock Quantity"), "12")
 }
@@ -43,6 +44,7 @@ describe("ProductForm (create)", () => {
       "Basic information",
       "Categorization",
       "Pricing and inventory",
+      "Online shop listing",
     ]) {
       expect(
         screen.getByRole("heading", { level: 2, name: heading })
@@ -53,15 +55,21 @@ describe("ProductForm (create)", () => {
       "SKU",
       "Brand (optional)",
       "Description (optional)",
-      "Selling Price (USD)",
-      "Cost Price (USD, optional)",
+      "Selling Price",
+      "Cost Price (optional)",
       "Stock Quantity",
+      "Subtitle (optional)",
+      "Main Image (optional)",
+      "More Images (optional)",
     ]) {
       expect(screen.getByLabelText(label)).toBeInTheDocument()
     }
     expect(
       screen.getByRole("combobox", { name: "Category" })
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole("combobox", { name: "Currency" })
+    ).toHaveTextContent("Select a currency")
     expect(screen.getByRole("combobox", { name: "Status" })).toHaveTextContent(
       "Active"
     )
@@ -103,6 +111,7 @@ describe("ProductForm (create)", () => {
     expect(await screen.findByText("Enter a product name.")).toBeInTheDocument()
     expect(screen.getByText("Enter a SKU.")).toBeInTheDocument()
     expect(screen.getByText("Select a category.")).toBeInTheDocument()
+    expect(screen.getByText("Select a currency.")).toBeInTheDocument()
     expect(screen.getByText("Enter a selling price.")).toBeInTheDocument()
     expect(screen.getByText("Enter the stock quantity.")).toBeInTheDocument()
     expect(onSubmit).not.toHaveBeenCalled()
@@ -150,14 +159,73 @@ describe("ProductForm (create)", () => {
     expect(onSubmit).toHaveBeenCalledWith({
       name: "Studio Monitor",
       sku: "ELC-MON-27",
+      subtitle: null,
       brand: null,
       description: null,
+      imageUrl: null,
+      galleryUrls: [],
       categoryId: "cat-electronics",
       status: "active",
+      currency: "USD",
       price: 349.99,
       costPrice: null,
       stock: 12,
     })
+  })
+
+  it("names the chosen currency on the amounts, and sends the shop's fields", async () => {
+    const { onSubmit } = renderForm()
+
+    await user.type(screen.getByLabelText("Product Name"), "Studio Monitor")
+    await user.type(screen.getByLabelText("SKU"), "ELC-MON-27")
+    await chooseOption("Category", "Electronics")
+    await chooseOption("Currency", "Pakistani rupee (PKR)")
+    expect(screen.getByLabelText("Selling Price (PKR)")).toBeInTheDocument()
+    expect(
+      screen.getByLabelText("Cost Price (PKR, optional)")
+    ).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText("Selling Price (PKR)"), "159999")
+    await user.type(screen.getByLabelText("Stock Quantity"), "5")
+    await user.type(screen.getByLabelText("Subtitle (optional)"), "4K, 27 inch")
+    await user.type(
+      screen.getByLabelText("Main Image (optional)"),
+      "/images/monitor.png"
+    )
+    await user.type(
+      screen.getByLabelText("More Images (optional)"),
+      "/images/a.png{Enter}https://cdn.example.com/b.jpg"
+    )
+    await user.click(screen.getByRole("button", { name: "Create Product" }))
+
+    await vi.waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        currency: "PKR",
+        price: 159999,
+        subtitle: "4K, 27 inch",
+        imageUrl: "/images/monitor.png",
+        galleryUrls: ["/images/a.png", "https://cdn.example.com/b.jpg"],
+      })
+    )
+  })
+
+  it("points out a picture address that is not usable, without submitting", async () => {
+    const { onSubmit } = renderForm()
+
+    await fillRequiredFields()
+    await user.type(
+      screen.getByLabelText("Main Image (optional)"),
+      "javascript:alert(1)"
+    )
+    await user.click(screen.getByRole("button", { name: "Create Product" }))
+
+    expect(
+      await screen.findByText(
+        "Use an http(s) address or a path on the shop that starts with “/”."
+      )
+    ).toBeInTheDocument()
+    expect(onSubmit).not.toHaveBeenCalled()
   })
 
   it("disables the form and shows progress while saving, so it cannot be sent twice", async () => {
@@ -283,6 +351,46 @@ describe("ProductForm (edit)", () => {
 
     expect(screen.getByLabelText("Brand (optional)")).toHaveValue("")
     expect(screen.getByLabelText("Description (optional)")).toHaveValue("")
+  })
+
+  it("prefills the currency and the shop's fields, and labels the amounts in that currency", () => {
+    renderForm({
+      product: createProduct({
+        currency: "PKR",
+        price: 159999,
+        costPrice: 120000,
+        subtitle: "4K, 27 inch",
+        imageUrl: "/images/monitor.png",
+        galleryUrls: ["/images/a.png", "https://cdn.example.com/b.jpg"],
+      }),
+    })
+
+    expect(
+      screen.getByRole("combobox", { name: "Currency" })
+    ).toHaveTextContent("Pakistani rupee (PKR)")
+    expect(screen.getByLabelText("Selling Price (PKR)")).toHaveValue(
+      "159999.00"
+    )
+    expect(screen.getByLabelText("Cost Price (PKR, optional)")).toHaveValue(
+      "120000.00"
+    )
+    expect(screen.getByLabelText("Subtitle (optional)")).toHaveValue(
+      "4K, 27 inch"
+    )
+    expect(screen.getByLabelText("Main Image (optional)")).toHaveValue(
+      "/images/monitor.png"
+    )
+    expect(screen.getByLabelText("More Images (optional)")).toHaveValue(
+      "/images/a.png\nhttps://cdn.example.com/b.jpg"
+    )
+  })
+
+  it("leaves the shop's fields empty for a product that has none", () => {
+    renderForm({ product })
+
+    expect(screen.getByLabelText("Subtitle (optional)")).toHaveValue("")
+    expect(screen.getByLabelText("Main Image (optional)")).toHaveValue("")
+    expect(screen.getByLabelText("More Images (optional)")).toHaveValue("")
   })
 
   it("offers Update Product and cancels back to the product", () => {

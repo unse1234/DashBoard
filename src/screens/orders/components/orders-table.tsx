@@ -141,7 +141,7 @@ function OrderRow({ order }: { order: OrderListItem }) {
         {formatInteger(order.itemCount)}
       </TableCell>
       <TableCell className="text-right tabular-nums">
-        {formatCurrency(order.total)}
+        {formatCurrency(order.total, order.currency)}
       </TableCell>
       <TableCell>
         <PaymentStatusBadge status={order.paymentStatus} />

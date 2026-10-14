@@ -150,7 +150,7 @@ function ProductRow({ product, selected, onSelectChange }: ProductRowProps) {
         )}
       </TableCell>
       <TableCell className="text-right tabular-nums">
-        {formatCurrency(product.price)}
+        {formatCurrency(product.price, product.currency)}
       </TableCell>
       <TableCell
         className={cn(

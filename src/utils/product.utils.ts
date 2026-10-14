@@ -10,12 +10,3 @@ export function getProductDisplayStatus(
   if (product.status === "inactive") return "inactive"
   return product.stock === 0 ? "out-of-stock" : "active"
 }
-
-/** Profit as a share of the selling price; null when it can't be worked out. */
-export function getProductMargin(
-  product: Pick<Product, "price" | "costPrice">
-) {
-  if (product.costPrice === null || product.price === 0) return null
-
-  return (product.price - product.costPrice) / product.price
-}

@@ -1,4 +1,5 @@
 import type { z } from "zod"
+import type { Currency } from "@/types/currency.types"
 import type { productFormSchema } from "@/validations/product.schemas"
 
 import type { PageSize } from "@/types/pagination.types";
@@ -17,17 +18,30 @@ export type Product = {
   id: string
   name: string
   sku: string
+  /** Shown under the name in the online shop; null when there is none. */
+  subtitle: string | null
   description: string | null
   /** The category's identifier, as the form and the category filter use it. */
   categoryId: string
   /** The category's name, for display. */
   category: string
   brand: string | null
+  /** The shop's primary picture: an http(s) address or a path on the shop. */
+  imageUrl: string | null
+  /** Further pictures, in display order. */
+  galleryUrls: string[]
   status: ProductStatus
-  /** Selling price in USD. */
+  /** What `price` and `costPrice` are denominated in. */
+  currency: Currency
+  /** Selling price, in `currency`. */
   price: number
-  /** What the product costs the business in USD; null when unknown. */
+  /** What the product costs the business, in `currency`; null when unknown. */
   costPrice: number | null
+  /**
+   * Profit as a share of the selling price (0.255 is 25.5%), worked out by the
+   * API in exact decimals. Null without a cost price, or at a price of zero.
+   */
+  margin: number | null
   stock: number
   /**
    * Changes with every write, orders included. An edit sends the version it was

@@ -1,11 +1,16 @@
 import { z } from "zod"
 
+import { CURRENCIES } from "@/constants/currency.constants"
 import { formatInteger } from "@/utils/format-number"
 
 const NAME_MIN_LENGTH = 2
 const NAME_MAX_LENGTH = 120
 const SKU_MAX_LENGTH = 64
+const SUBTITLE_MAX_LENGTH = 160
 const BRAND_MAX_LENGTH = 80
+// The API's own bounds for the shop's pictures.
+const IMAGE_REFERENCE_MAX_LENGTH = 500
+const GALLERY_MAX_SIZE = 10
 const DESCRIPTION_MAX_LENGTH = 2000
 const PRICE_MAX = 1_000_000
 const STOCK_MAX = 1_000_000
@@ -39,6 +44,77 @@ function optionalTextSchema(label: string, maxLength: number) {
     .transform((value) => (value === "" ? null : value))
 }
 
+const IMAGE_REFERENCE_MESSAGE =
+  "Use an http(s) address or a path on the shop that starts with “/”."
+
+/**
+ * Where a picture can be loaded from: an http(s) address, or a path on the
+ * shop's own site. This repeats the API's rule so a mistake shows while typing;
+ * the API's answer is the one that counts.
+ */
+function isImageReference(value: string) {
+  if (value.length === 0 || value.length > IMAGE_REFERENCE_MAX_LENGTH) {
+    return false
+  }
+  const hasUnsafeCharacter = [...value].some((character) => {
+    const code = character.charCodeAt(0)
+    return (
+      /\s/.test(character) || code < 0x20 || code === 0x7f || character === "\\"
+    )
+  })
+  if (hasUnsafeCharacter) return false
+
+  if (value.startsWith("/")) {
+    return !value.startsWith("//") && !value.split("/").includes("..")
+  }
+  try {
+    const url = new URL(value)
+    return (
+      (url.protocol === "https:" || url.protocol === "http:") &&
+      url.hostname !== "" &&
+      url.username === "" &&
+      url.password === ""
+    )
+  } catch {
+    return false
+  }
+}
+
+const imageUrlSchema = z
+  .string()
+  .trim()
+  .refine(
+    (value) => value === "" || isImageReference(value),
+    IMAGE_REFERENCE_MESSAGE
+  )
+  .transform((value) => (value === "" ? null : value))
+
+/** One address per line; blank lines are ignored. */
+function toGalleryLines(value: string) {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line !== "")
+}
+
+const galleryUrlsSchema = z
+  .string()
+  .refine(
+    (value) => toGalleryLines(value).length <= GALLERY_MAX_SIZE,
+    `Add at most ${GALLERY_MAX_SIZE} more pictures.`
+  )
+  .refine(
+    (value) => toGalleryLines(value).every(isImageReference),
+    `Each line must be one address. ${IMAGE_REFERENCE_MESSAGE}`
+  )
+  .transform(toGalleryLines)
+
+/** A currency has to be chosen on purpose: a product in the wrong one is not shown in the shop. */
+const currencySchema = z
+  .string()
+  .min(1, "Select a currency.")
+  .pipe(z.enum(CURRENCIES, "Select a currency."))
+
 // The form works with what was typed, so the amounts arrive as text and leave
 // as numbers once they are valid.
 function priceAmountSchema(label: string) {
@@ -67,10 +143,14 @@ const stockSchema = z
 export const productFormSchema = z.object({
   name: nameSchema,
   sku: skuSchema,
+  subtitle: optionalTextSchema("Subtitle", SUBTITLE_MAX_LENGTH),
   brand: optionalTextSchema("Brand", BRAND_MAX_LENGTH),
   description: optionalTextSchema("Description", DESCRIPTION_MAX_LENGTH),
+  imageUrl: imageUrlSchema,
+  galleryUrls: galleryUrlsSchema,
   categoryId: z.string().min(1, "Select a category."),
   status: z.enum(["active", "inactive"], "Select a status."),
+  currency: currencySchema,
   price: z
     .string()
     .trim()

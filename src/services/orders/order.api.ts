@@ -1,4 +1,4 @@
-import type { OrderPage, Order, OrderListItem, OrderStatus, OrdersQuery, PaymentStatus } from "@/types/order.types"
+import type { OrderPage, Order, OrderListItem, OrderStatus, OrdersQuery, PaymentMethod, PaymentStatus } from "@/types/order.types"
 import { apiClient } from "@/lib/api/axios"
 
 // The API sends enums as stored, in upper case; the UI uses lower case.
@@ -9,15 +9,22 @@ type ApiOrderStatus =
   | "DELIVERED"
   | "CANCELLED"
 type ApiPaymentStatus = "PENDING" | "PAID" | "REFUNDED"
+type ApiPaymentMethod = "COD"
 
-type ApiOrderListItem = Omit<OrderListItem, "status" | "paymentStatus"> & {
+type ApiOrderListItem = Omit<
+  OrderListItem,
+  "status" | "paymentStatus" | "paymentMethod"
+> & {
   status: ApiOrderStatus
   paymentStatus: ApiPaymentStatus
+  /** Null on orders that predate payment methods. */
+  paymentMethod: ApiPaymentMethod | null
 }
 
-type ApiOrder = Omit<Order, "status" | "paymentStatus"> & {
+type ApiOrder = Omit<Order, "status" | "paymentStatus" | "paymentMethod"> & {
   status: ApiOrderStatus
   paymentStatus: ApiPaymentStatus
+  paymentMethod: ApiPaymentMethod | null
 }
 
 type OrderPageResponse = {
@@ -53,12 +60,21 @@ const API_PAYMENT_STATUSES = {
   refunded: "REFUNDED",
 } as const satisfies Record<PaymentStatus, ApiPaymentStatus>
 
+const PAYMENT_METHODS = {
+  COD: "cod",
+} as const satisfies Record<ApiPaymentMethod, PaymentMethod>
+
 export function toOrderListItem(order: ApiOrderListItem): OrderListItem {
   return {
     id: order.id,
     customer: order.customer,
     status: ORDER_STATUSES[order.status],
     paymentStatus: PAYMENT_STATUSES[order.paymentStatus],
+    paymentMethod:
+      order.paymentMethod === null
+        ? null
+        : PAYMENT_METHODS[order.paymentMethod],
+    currency: order.currency,
     itemCount: order.itemCount,
     total: order.total,
     createdAt: order.createdAt,

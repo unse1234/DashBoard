@@ -16,9 +16,10 @@ import type {
   CustomerSortColumn,
 } from "@/types/customer.types"
 import { formatDate } from "@/utils/format-date"
-import { formatCurrency, formatInteger } from "@/utils/format-number"
+import { formatInteger } from "@/utils/format-number"
 import { getCustomerRoute } from "@/config/routes"
 import { CustomerActions } from "@/screens/customers/components/customer-actions"
+import { CustomerSpent } from "@/screens/customers/components/customer-spent"
 
 const COLUMN_COUNT = 8
 const SKELETON_ROW_COUNT = 5
@@ -144,7 +145,7 @@ function CustomerRow({ customer }: { customer: Customer }) {
         {formatInteger(customer.totalOrders)}
       </TableCell>
       <TableCell className="text-right tabular-nums">
-        {formatCurrency(customer.totalSpent)}
+        <CustomerSpent spentByCurrency={customer.spentByCurrency} />
       </TableCell>
       <TableCell>
         <time dateTime={customer.joinedAt}>{formatDate(customer.joinedAt)}</time>

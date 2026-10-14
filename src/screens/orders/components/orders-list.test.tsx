@@ -194,6 +194,30 @@ describe("OrdersList table", () => {
     expect(row.getByText("$189.90")).toBeInTheDocument()
   })
 
+  it("shows a storefront order's total in rupees, and a legacy order's in dollars", async () => {
+    vi.mocked(listOrders).mockResolvedValue(
+      page(
+        [
+          // Kept in the list because `renderList` waits for it.
+          daniel,
+          createOrderListItem({
+            id: "ORD-40001",
+            currency: "PKR",
+            paymentMethod: "cod",
+            total: 159999,
+          }),
+        ],
+        2
+      )
+    )
+    await renderList()
+
+    expect(
+      within(getRow("ORD-40001")).getByText("PKR 159,999.00")
+    ).toBeInTheDocument()
+    expect(within(getRow("ORD-31620")).getByText("$189.90")).toBeInTheDocument()
+  })
+
   it("shows the units the API counted in the Items column", async () => {
     await renderList()
 

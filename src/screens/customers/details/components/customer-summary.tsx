@@ -2,8 +2,9 @@ import type { ReactNode } from "react"
 
 import { Card } from "@/components/ui/card"
 import type { Customer } from "@/types/customer.types"
+import { CustomerSpent } from "@/screens/customers/components/customer-spent"
 import { formatDate } from "@/utils/format-date"
-import { formatCurrency, formatInteger } from "@/utils/format-number"
+import { formatInteger } from "@/utils/format-number"
 
 type CustomerSummaryProps = {
   customer: Customer
@@ -16,7 +17,7 @@ export function CustomerSummary({ customer }: CustomerSummaryProps) {
         {formatInteger(customer.totalOrders)}
       </SummaryStat>
       <SummaryStat label="Total Spent">
-        {formatCurrency(customer.totalSpent)}
+        <CustomerSpent spentByCurrency={customer.spentByCurrency} />
       </SummaryStat>
       <SummaryStat label="Last Order">
         {customer.lastOrderAt ? (
