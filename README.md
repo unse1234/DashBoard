@@ -37,10 +37,11 @@ src/
 │   ├── products/product.api.ts  # products, categories, and product history
 │   ├── customers/customer.api.ts
 │   ├── orders/order.api.ts
-│   └── imports/import.api.ts    # product CSV validation, confirmation, history, downloads
+│   ├── imports/import.api.ts    # product CSV validation, confirmation, history, downloads
+│   └── storefront/catalog.api.ts # the public catalog: product pages and one product (no sign-in)
 ├── hooks/                       # query keys, query hooks, mutation hooks, and tests
 │   ├── auth/                    # use-auth.ts and auth.mutations.ts
-│   ├── storefront/              # use-bag.ts: the bag in the BagProvider
+│   ├── storefront/              # catalog.keys/queries.ts (public catalog); use-bag.ts: the bag in the BagProvider
 │   ├── users/                   # user.keys/queries/mutations.ts
 │   ├── products/                # product.keys/queries/mutations.ts
 │   ├── customers/               # customer.keys/queries.ts; read-only
@@ -62,13 +63,13 @@ src/
 │   ├── auth/                    # guards, auth shell/form, local form controller
 │   ├── dashboard/               # sidebar, navigation, profile dialog, header
 │   ├── shared/                  # form controls, confirmation, pagination, load errors
-│   ├── storefront/              # product card, add-to-bag button, icons
+│   ├── storefront/              # product card, product image, add-to-bag button, load error, icons
 │   │   └── layout/              # shell, navigation rail, menu, bag preview, font
 │   └── ui/                      # shadcn/Base UI primitives
 ├── types/                       # shared domain, form, navigation, pagination, sort types
 │   └── storefront/              # product and bag types
 ├── utils/                       # cn.ts, formatters, pagination, sort, pure domain helpers
-│   └── storefront/              # bag, catalog search, and price helpers
+│   └── storefront/              # bag, price format, and product label helpers
 ├── constants/                   # domain labels/options, password policy, page sizes
 ├── validations/                 # auth validation, user/product Zod schemas, CSV validation
 │   └── storefront/              # reserved; empty
@@ -80,7 +81,7 @@ src/
 ├── providers/                   # query-provider.tsx, session-restorer.tsx, and bag-provider.tsx (storefront)
 ├── mocks/                       # demo data
 │   ├── overview/data.json
-│   └── storefront/              # products.ts and the seeded demo bag
+│   └── storefront/              # test fixtures for the bag and checkout (not shown to shoppers)
 └── test-utils/                  # fixtures, fake Axios transport, query rendering helpers
 ```
 
@@ -95,8 +96,8 @@ List defaults are screen-local `*.filters.ts` files. Existing exports such as `d
 | Path | Screen |
 | --- | --- |
 | `/` | Redirects to `/shop` |
-| `/shop` | Storefront catalog: search, product tiles, add to bag, bag preview (public; mock data) |
-| `/shop/[productId]` | Storefront product details (public placeholder) |
+| `/shop` | Storefront catalog: server search and paging, product tiles, add to bag, bag preview (public; API data) |
+| `/shop/[productId]` | Storefront product details: pictures, price, description, add to bag; a missing product shows "Product not found" (public; API data) |
 | `/bag` | Storefront bag: lines with quantity steppers, bag total, checkout link (public; mock data) |
 | `/checkout` | Checkout (public placeholder) |
 | `/checkout/address` | Checkout shipping address (public placeholder) |
@@ -129,19 +130,22 @@ The customer-facing storefront lives in the `(storefront)` route group, beside `
 
 ### Storefront catalog
 
-- **Data.** Products come from `mocks/storefront/products.ts`; there is no API, service, or query for them yet. Images are in `public/images/storefront/products/` and are tile-sized canvases (175 × 216, and 412 × 216 for the laptop that spans two columns), so `object-contain` reproduces the design's padding.
+- **Data.** Products come from the public catalog API (`GET /storefront/products`, no sign-in): `services/storefront/catalog.api.ts` → `hooks/storefront/catalog.queries.ts` (`useStorefrontProductsQuery`, `useStorefrontProductQuery`; keys in `catalog.keys.ts` hold every input the answer depends on). Requests are `skipAuth`, so a staff token sharing the browser is never sent. The server searches (name, subtitle, brand), sorts and pages; the screen keeps the typed text (debounced 300 ms) and the chosen page, shows the previous results dimmed while the next load, and renders the server's `meta`. Twenty-four per page (`catalog.filters.ts`), with a Previous / Next pager that appears only when `totalPages > 1`; a new search returns to page 1.
+- **Product states.** Loading (skeleton and a live "Loading products"), failure (`StorefrontLoadError`, with Try again), an empty catalog, a search with no match, a page past the end, a sold-out product (listed with "Sold out" and a disabled add button) and a product without an image (a placeholder; the API stores URLs only, no dimensions, so the tile's box sets the proportions and the picture is contained). A subtitle, description and gallery are optional. There is no rating: the API has none.
+- **Images.** `ProductImage` renders a path of this site (`/images/...`, optimized) or an absolute `http(s)` URL as it is (`unoptimized`, because the host is not known ahead of time for `images.remotePatterns`). The files in `public/images/storefront/products/` are the 1x design crops; a product's `imageUrl` may point at them.
+- **Wide tile.** The design's two-column MacBook tile is gone: the API has no tile shape, and with server sorting and paging a fixed wide position means nothing. Every card is the design's 191 × 232 tile.
+- **Currency.** Rupees are written `Rs 1,500.00` (grouped; the design's dollar prices, `$ 3249.99`, are not), chosen by the product's `currency` through `formatStorefrontPrice(amount, currency)`.
 - **Shell.** `StorefrontShell` (rail, content, bag preview) is rendered only by the screens that opt in (catalog, bag, product details), so checkout does not inherit it. `bagPreviewAction="checkout"` turns the preview's button into the bag total and a Checkout link, as the bag screen does. From `xl` it is the three-area desktop layout with four columns; the bag preview appears from `lg`; below `md` the rail becomes a bar across the top and the bag shows as a count on its icon. The rail and the bag stay at the window's edges at any width; only the catalog between them stops growing (at 1136 px) and is centered.
-- **Bag.** `BagProvider` (mounted in the storefront layout, so it survives navigation between storefront routes) holds the bag in memory. The storefront layout seeds it with `demoBagReviewItems` from `mocks/storefront/bag.ts`: the bag design's four lines, seven units, "$ 5,849.93". `demoBagItems` (four single catalog items) is kept for tests. There is no persistence: a reload restores the seed. Adding a product already in the bag raises its quantity; `changeQuantity(productId, delta)` moves a line and removes it at zero. A polite live region announces each change without moving focus.
+- **Bag.** `BagProvider` (mounted in the storefront layout, so it survives navigation between storefront routes) holds the bag in memory. It starts empty; the demo bags in `mocks/storefront/bag.ts` are test fixtures only. There is no persistence: a reload empties it. The bag still does its own quantity and total arithmetic (`bag.utils.ts`) until it moves onto the server's bag quote; that is the next piece of the storefront integration, as are checkout and order placement. Adding a product already in the bag raises its quantity; `changeQuantity(productId, delta)` moves a line and removes it at zero. A polite live region announces each change without moving focus.
 
 ### Storefront bag screen
 
-- **Lines.** One card per bag line: picture, name, subtitle, placeholder blurb (`demoBagLineBlurb`), rating, `$ unit x quantity`, and a minus / quantity / plus stepper. At one unit the minus is labelled "Remove … from bag" and removes the line.
+- **Lines.** One card per bag line: picture, name, subtitle, the product's description (three lines at most), `unit x quantity`, and a minus / quantity / plus stepper. At one unit the minus is labelled "Remove … from bag" and removes the line.
 - **Total.** The bag preview on this screen shows the total (`getBagTotal`, summed in cents; grouped as `$ 5,849.93` by `formatStorefrontTotal`) and a Checkout link. An empty bag shows an empty state, a zero total, and an unavailable Checkout.
 - **Data.** The design's Dell XPS 13 and iPhone 11 Navy Blue are not catalog products, so they live only in `mocks/storefront/bag.ts` (pictures `dell-xps-13-white.png`, `iphone-11-navy-blue.png`, 236 × 272 canvases cropped from the design) and have no item view; the line does not link to one.
-- **Reuse.** Ratings come from the product-details screen's `ProductRating` and `getProductDetails`; a product it does not know shows the design's 4.5.
 - **Styling.** The storefront palette, typeface (Cabin, via `storefrontFont`), radii, and shadow are theme tokens named `store-*` in `globals.css`; only storefront components use them, and the dashboard and auth screens are unaffected.
 - **Sign-out.** The rail's red button is rendered unavailable (`aria-disabled`, with a description) and is not connected to staff logout.
-- **Price format.** Prices follow the design (`$ 3249.99`, no thousands separator) via `formatStorefrontPrice`, not `formatCurrency`.
+- **Price format.** Prices follow the design's shape (a symbol, a space, two decimals) via `formatStorefrontPrice(amount, currency)`, not `formatCurrency`: `Rs 1,500.00`, or `$ 3249.99` for dollars.
 
 The root layout still mounts `SessionRestorer` for every route, so a storefront page load also attempts a session restore. Storefront rendering does not wait for it and does not read the session. An anonymous visitor's restore is rejected by the API; the client retries it once after 300 ms, so each such page load sends two `POST /auth/refresh` requests.
 
