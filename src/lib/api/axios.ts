@@ -10,6 +10,7 @@ import {
   ApiError,
   isApiError,
   NETWORK_ERROR_STATUS,
+  parseErrorDetails,
   parseErrorMessages,
 } from "@/lib/api/api-error"
 
@@ -68,7 +69,8 @@ export function toApiError(error: unknown): unknown {
   }
   return new ApiError(
     error.response.status,
-    parseErrorMessages(error.response.data)
+    parseErrorMessages(error.response.data),
+    parseErrorDetails(error.response.data)
   )
 }
 

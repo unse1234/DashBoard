@@ -166,6 +166,44 @@ describe("apiClient errors", () => {
     expect(error.message).toBe("email must be an email")
   })
 
+  it("keeps a business refusal's code and its extra fields as details", async () => {
+    respondWith(() => ({
+      status: 409,
+      data: {
+        statusCode: 409,
+        error: "Conflict",
+        message: "There is not enough stock for this quantity",
+        code: "INSUFFICIENT_STOCK",
+        productId: "PRD-1004",
+      },
+    }))
+
+    const error = (await apiClient
+      .post("/storefront/bag/quote", {})
+      .catch((e: unknown) => e)) as ApiError
+
+    expect(error.code).toBe("INSUFFICIENT_STOCK")
+    expect(error.details).toEqual({
+      code: "INSUFFICIENT_STOCK",
+      productId: "PRD-1004",
+    })
+    expect(error.message).toBe("There is not enough stock for this quantity")
+  })
+
+  it("has no code and no details for an error that carries only a message", async () => {
+    respondWith(() => ({
+      status: 404,
+      data: { statusCode: 404, error: "Not Found", message: "Order not found" },
+    }))
+
+    const error = (await apiClient
+      .get("/orders/ORD-1")
+      .catch((e: unknown) => e)) as ApiError
+
+    expect(error.code).toBeNull()
+    expect(error.details).toEqual({})
+  })
+
   it("falls back to a generic message when the error body is not JSON", async () => {
     respondWith(() => ({ status: 502, data: "<html>Bad gateway</html>" }))
 

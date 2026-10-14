@@ -9,12 +9,28 @@ export const NETWORK_ERROR_STATUS = 0
 export class ApiError extends Error {
   readonly status: number
   readonly messages: string[]
+  /**
+   * The rest of the error body: the machine-readable `code` of a business
+   * refusal and whatever fields it carries (`productId`, `issues`, `reason`).
+   * Empty for errors that carry only a message.
+   */
+  readonly details: Record<string, unknown>
 
-  constructor(status: number, messages: string[]) {
+  constructor(
+    status: number,
+    messages: string[],
+    details: Record<string, unknown> = {}
+  ) {
     super(messages[0] ?? "Something went wrong. Please try again.")
     this.name = "ApiError"
     this.status = status
     this.messages = messages
+    this.details = details
+  }
+
+  /** The API's business error code (`QUOTE_CHANGED`, `INSUFFICIENT_STOCK`, ...), if it sent one. */
+  get code(): string | null {
+    return typeof this.details.code === "string" ? this.details.code : null
   }
 
   get isNetworkError() {
@@ -60,6 +76,23 @@ export function parseErrorMessages(rawBody: unknown): string[] {
     return message.filter((item): item is string => typeof item === "string")
   }
   return []
+}
+
+/**
+ * Everything in a NestJS error body except the three fields every error has
+ * (`statusCode`, `error`, `message`): a business `code` and its extra fields.
+ */
+export function parseErrorDetails(rawBody: unknown): Record<string, unknown> {
+  const body = typeof rawBody === "string" ? parseJsonText(rawBody) : rawBody
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return {}
+  }
+
+  const details = { ...(body as Record<string, unknown>) }
+  delete details.statusCode
+  delete details.error
+  delete details.message
+  return details
 }
 
 const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again."
