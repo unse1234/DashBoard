@@ -159,13 +159,13 @@ A guest buys with cash on delivery, in Pakistan, in rupees. There is no card, no
 - **Confirmation** (`/checkout/confirmation`): the reference, cash to pay, where it is going and the lines and totals from the receipt, kept for the tab's session. The reference is for display only; there is no lookup by it.
 - **Payment method** (`/checkout/payment`): cash on delivery is the only option and is shown selected, with how paying works. The route stays so the review's Change link has somewhere to go.
 
-The root layout still mounts `SessionRestorer` for every route, so a storefront page load also attempts a session restore. Storefront rendering does not wait for it and does not read the session. An anonymous visitor's restore is rejected by the API; the client retries it once after 300 ms, so each such page load sends two `POST /auth/refresh` requests.
+The storefront does not restore the staff session: only the `(auth)` and `(dashboard)` layouts mount `SessionRestorer`, so a shopper's page load sends no `POST /auth/refresh`. Storefront requests use `skipAuth` and never read the session, so a signed-in staff member browsing the shop is unaffected; their session is restored when they open the dashboard.
 
 `AppLogo` takes a required `href`: the dashboard sidebar and the auth screens pass `routes.dashboard`; the storefront chrome should pass `routes.shop`. Dynamic `params` reach a page still percent-encoded, as they do on the dashboard pages.
 
 ## Session and cache infrastructure
 
-`app/layout.tsx` mounts `QueryProvider`, then `SessionRestorer` followed by page content inside that provider. The toast container remains outside the provider at the root so feedback survives navigation away from the dashboard.
+`app/layout.tsx` mounts `QueryProvider` around page content. The toast container remains outside the provider at the root so feedback survives navigation away from the dashboard. `SessionRestorer` is mounted by the `(auth)` and `(dashboard)` layouts, the route groups that read the session, and never by the root layout or the storefront. In the dashboard layout it sits beside `RequireAuth`, not inside it: the guard renders none of its children until the restore settles.
 
 The access token lives in the auth store's memory. Page loads restore it using the HttpOnly refresh cookie. Concurrent refresh callers share one refresh operation; the existing refresh-race retry and expiry policy remain in the store. Axios attaches bearer tokens and replays an authenticated request once after a successful refresh. Public auth endpoints skip bearer authentication; cookie endpoints keep their credential and CSRF-header settings.
 

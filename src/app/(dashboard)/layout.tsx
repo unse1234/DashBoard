@@ -4,6 +4,7 @@ import { RequireAuth } from "@/components/auth/require-auth"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { SessionRestorer } from "@/providers/session-restorer"
 
 const shellStyle = {
   "--sidebar-width": "calc(var(--spacing) * 72)",
@@ -16,13 +17,18 @@ type DashboardLayoutProps = {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <RequireAuth>
-      <TooltipProvider>
-        <SidebarProvider style={shellStyle}>
-          <AppSidebar variant="inset" />
-          <SidebarInset className="min-w-0">{children}</SidebarInset>
-        </SidebarProvider>
-      </TooltipProvider>
-    </RequireAuth>
+    <>
+      {/* Beside the guard, not inside it: the guard renders nothing of its
+          children until the restore has settled. */}
+      <SessionRestorer />
+      <RequireAuth>
+        <TooltipProvider>
+          <SidebarProvider style={shellStyle}>
+            <AppSidebar variant="inset" />
+            <SidebarInset className="min-w-0">{children}</SidebarInset>
+          </SidebarProvider>
+        </TooltipProvider>
+      </RequireAuth>
+    </>
   )
 }
