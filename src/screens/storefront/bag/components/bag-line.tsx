@@ -18,6 +18,8 @@ const ISSUE_MESSAGES = {
   PRODUCT_UNAVAILABLE: "This product is no longer available.",
   INSUFFICIENT_STOCK:
     "There is not enough stock for this quantity. Lower it, or remove the item.",
+  CURRENCY_MISMATCH:
+    "This item is priced in a different currency from the rest of your bag. Remove it, then order it separately.",
 } as const
 
 /**

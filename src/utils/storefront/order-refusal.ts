@@ -47,6 +47,7 @@ export function describeOrderRefusal(error: ApiError): OrderRefusal {
     }
     case "PRODUCT_UNAVAILABLE":
     case "INSUFFICIENT_STOCK":
+    case "CURRENCY_MISMATCH":
     case "INVALID_BAG":
     case "ORDER_TOO_LARGE":
       return { message: error.message, remedy: "bag" }

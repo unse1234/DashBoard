@@ -13,8 +13,14 @@ export type BagDraftLine = {
   quantity: number
 }
 
-/** Why a line cannot be bought as it stands. */
-export type BagLineIssue = "PRODUCT_UNAVAILABLE" | "INSUFFICIENT_STOCK"
+/**
+ * Why a line cannot be bought as it stands. `CURRENCY_MISMATCH`: it is priced
+ * in another currency than the bag's first product, and an order has one.
+ */
+export type BagLineIssue =
+  | "PRODUCT_UNAVAILABLE"
+  | "INSUFFICIENT_STOCK"
+  | "CURRENCY_MISMATCH"
 
 /** A bag line priced by the server. */
 export type BagLine = {
