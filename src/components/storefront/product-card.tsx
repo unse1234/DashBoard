@@ -27,14 +27,13 @@ export function ProductCard({ product, eager = false }: ProductCardProps) {
             the cards beside it carry; the text area takes up the difference,
             so the price rows still line up along the bottom of a grid row. */}
         <div className="relative aspect-191/232 overflow-hidden rounded-store-lg bg-white">
-          {/* The picture keeps the tile's 8px padding and is contained, never cropped. */}
-          <div className="absolute inset-2">
-            <ProductImage
-              image={product.image}
-              sizes="(min-width: 1280px) 191px, (min-width: 640px) 33vw, 50vw"
-              eager={eager}
-            />
-          </div>
+          {/* The picture covers the whole tile, edge to edge; the tile's
+              rounded corners clip it. */}
+          <ProductImage
+            image={product.image}
+            sizes="(min-width: 1280px) 191px, (min-width: 640px) 33vw, 50vw"
+            eager={eager}
+          />
         </div>
         <h2 className="mt-3 px-2 text-base leading-6 font-medium md:mt-3.5 md:text-xl md:leading-7">
           {product.name}

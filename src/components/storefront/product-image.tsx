@@ -26,8 +26,9 @@ const isAbsoluteUrl = (url: string) => /^https?:\/\//i.test(url)
 
 /**
  * A product picture that fills its (relatively positioned) parent. The API
- * stores no dimensions, so the parent's box decides the proportions and the
- * picture is contained in it, never cropped.
+ * stores no dimensions, so the parent's box decides the proportions: the
+ * picture covers the whole box, centred, and whatever does not fit that shape
+ * is cropped, so no frame is ever left with empty bands.
  */
 export function ProductImage({
   image,
@@ -58,7 +59,7 @@ export function ProductImage({
       sizes={sizes}
       loading={eager ? "eager" : "lazy"}
       unoptimized={isAbsoluteUrl(image.url)}
-      className={cn("object-contain", className)}
+      className={cn("object-cover", className)}
     />
   )
 }

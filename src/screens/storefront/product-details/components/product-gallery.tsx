@@ -52,9 +52,7 @@ export function ProductGallery({ images }: ProductGalleryProps) {
                 )}
               >
                 {/* The button's label names the picture, so the image is decorative. */}
-                <span className="absolute inset-1">
-                  <ProductImage image={image} sizes="50px" eager decorative />
-                </span>
+                <ProductImage image={image} sizes="50px" eager decorative />
               </button>
             </li>
           ))}

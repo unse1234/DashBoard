@@ -34,7 +34,7 @@ export function BagLine({ item, eager = false }: BagLineProps) {
 
   return (
     <article className="flex flex-col gap-4 rounded-store-lg bg-white p-2 sm:min-h-72 sm:flex-row">
-      <div className="relative h-52 w-full sm:h-auto sm:w-59 sm:shrink-0">
+      <div className="relative h-52 w-full overflow-hidden rounded-store-md sm:h-auto sm:w-59 sm:shrink-0">
         <ProductImage
           image={product?.image ?? null}
           sizes="(min-width: 640px) 236px, 100vw"

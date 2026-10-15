@@ -31,6 +31,14 @@ describe("ProductImage", () => {
     expect(screen.getByRole("presentation")).toBeInTheDocument()
   })
 
+  it("covers its whole frame, cropping rather than leaving empty bands", () => {
+    renderImage()
+
+    const picture = screen.getByRole("img", { name: "Steel kettle" })
+    expect(picture).toHaveClass("object-cover")
+    expect(picture).not.toHaveClass("object-contain")
+  })
+
   it("loads lazily unless it is above the fold", () => {
     const { unmount } = renderImage()
     expect(screen.getByRole("img")).toHaveAttribute("loading", "lazy")
