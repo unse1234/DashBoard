@@ -169,9 +169,11 @@ The storefront does not restore the staff session: only the `(auth)` and `(dashb
 
 The access token lives in the auth store's memory. Page loads restore it using the HttpOnly refresh cookie. Concurrent refresh callers share one refresh operation; the existing refresh-race retry and expiry policy remain in the store. Axios attaches bearer tokens and replays an authenticated request once after a successful refresh. Public auth endpoints skip bearer authentication; cookie endpoints keep their credential and CSRF-header settings.
 
+API requests have a 20-second default timeout (individual endpoints can override it). Timeouts surface an error with **Try again** instead of spending additional deadlines on automatic query retries. A temporary session-restore failure keeps a retryable auth error rather than treating the cookie as invalid; the dashboard and verification screen let the user restore it again. Cancelling a request waiting for refresh does not cancel the shared refresh. A sleeping Render Free backend can still take about a minute to wake; an always-on instance is needed to remove that hosting delay.
+
 Auth mutations call the session infrastructure for sign-in/sign-out and the auth service for recovery/verification. Form-action adapters in `screens/auth/actions/` turn submitted data and mutation results into form state. They are client callbacks, not Next.js Server Actions; moving them does not add a `"use server"` directive.
 
-TanStack Query owns server data. Its existing query-key values, stale times, retry policy, mutation behavior, and invalidations are preserved. Account changes cancel outstanding requests and clear cached data. Role and email-verification guards remain in `components/auth/`.
+TanStack Query owns server data. Its existing query-key values, stale times, retry policy, mutation behavior, and invalidations are preserved. Account changes cancel and remove private queries and clear mutation state. Public storefront queries use the `["storefront"]` namespace and survive staff session changes: clearing them could cancel a successful product response and leave its mounted observer loading. Role and email-verification guards remain in `components/auth/`.
 
 ## Feature integration
 

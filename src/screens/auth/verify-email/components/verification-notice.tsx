@@ -7,8 +7,10 @@ import { AuthFormMessage } from "@/components/auth/auth-form"
 import { AuthShell } from "@/components/auth/auth-shell"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
+import { LoadError } from "@/components/shared/load-error"
 import { useAuth } from "@/hooks/auth/use-auth"
 import { describeApiError } from "@/lib/api/api-error"
+import { restoreSession } from "@/lib/auth/auth-store"
 import {
   useLogoutMutation,
   useResendVerificationMutation,
@@ -18,7 +20,7 @@ import { routes } from "@/config/routes"
 
 /** Shown when someone lands here without a token: they need to check their inbox. */
 export function VerificationNotice() {
-  const { status, user } = useAuth()
+  const { status, user, error } = useAuth()
   const [feedback, setFeedback] = useState<AuthFormState<string>>({
     status: "idle",
   })
@@ -30,6 +32,21 @@ export function VerificationNotice() {
     return (
       <AuthShell title="Verify your email" description="Loading your account…">
         <Spinner className="size-6" aria-label="Loading your account" />
+      </AuthShell>
+    )
+  }
+
+  if (status === "error") {
+    return (
+      <AuthShell
+        title="Verify your email"
+        description="Please try loading your account again."
+      >
+        <LoadError
+          resourceName="your account"
+          error={error}
+          onRetry={() => void restoreSession()}
+        />
       </AuthShell>
     )
   }

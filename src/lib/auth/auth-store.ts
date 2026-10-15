@@ -82,16 +82,27 @@ export async function signOut() {
  */
 export { refreshSession }
 
-/** Runs once per page load to restore a session from the refresh cookie. */
+/** Restores once per page load; temporary failures can be retried without signing out. */
 export function restoreSession() {
-  restoreInFlight ??= refreshSession()
+  if (restoreInFlight) return restoreInFlight
+  if (state.status !== "loading" && state.status !== "error") {
+    return Promise.resolve()
+  }
+
+  setState(SERVER_STATE)
+  restoreInFlight = refreshSession()
     .then((restored) => {
       if (!restored) clearSession()
     })
-    .catch(() => {
-      // The server is unreachable, so there is nothing to restore; the login
-      // screen reports the connection problem if the user tries to sign in.
-      clearSession()
+    .catch((error: unknown) => {
+      // A timeout or outage says nothing about whether the cookie is valid.
+      // Keep a retryable state instead of redirecting the user to sign in again.
+      if (state.status === "loading") {
+        setState({ status: "error", user: null, error })
+      }
+    })
+    .finally(() => {
+      restoreInFlight = null
     })
   return restoreInFlight
 }

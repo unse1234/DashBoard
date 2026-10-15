@@ -1,6 +1,6 @@
 import { isServer, QueryClient } from "@tanstack/react-query"
 
-import { isApiError } from "@/lib/api/api-error"
+import { isApiError, REQUEST_TIMEOUT_CODE } from "@/lib/api/api-error"
 
 /** Data older than this is refetched when something needs it again. */
 export const QUERY_STALE_TIME_MS = 30_000
@@ -14,6 +14,8 @@ const MAX_QUERY_RETRIES = 2
  * help and would only delay the error or add to a rate limit.
  */
 export function shouldRetryQuery(failureCount: number, error: unknown) {
+  // The user has already waited for a full deadline. Offer Retry immediately.
+  if (isApiError(error) && error.code === REQUEST_TIMEOUT_CODE) return false
   if (isApiError(error) && error.status >= 400 && error.status < 500) {
     return false
   }

@@ -6,6 +6,9 @@ import { resetAuthStore, signIn, signOut } from "@/lib/auth/auth-store"
 import { getQueryClient } from "@/lib/query/query-client"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { mockApi } from "@/test-utils/mock-api"
+import type { MockReply } from "@/test-utils/mock-api"
+import { useStorefrontProductQuery } from "@/hooks/storefront/catalog.queries"
+import { createStorefrontProduct } from "@/test-utils/storefront-fixtures"
 
 function CachedValue() {
   const { data } = useQuery({
@@ -19,6 +22,11 @@ function CachedValue() {
 function CacheSize() {
   const queryClient = useQueryClient()
   return <p>cache entries: {queryClient.getQueryCache().getAll().length}</p>
+}
+
+function PublicProduct() {
+  const { data } = useStorefrontProductQuery("PRD-1001")
+  return <p>{data?.name ?? "Loading public product"}</p>
 }
 
 let api: ReturnType<typeof mockApi>
@@ -90,5 +98,44 @@ describe("QueryProvider", () => {
     await act(() => signOut())
 
     expect(getQueryClient().getQueryData(["private"])).toBe("kept")
+  })
+
+  it("renders a product response that finishes after an account is restored", async () => {
+    let finish!: (reply: MockReply) => void
+    const publicResponse = new Promise<MockReply>((resolve) => {
+      finish = resolve
+    })
+    api.restore()
+    api = mockApi((request) =>
+      request.url.startsWith("/storefront/")
+        ? publicResponse
+        : {
+            data: {
+              accessToken: "t",
+              tokenType: "Bearer",
+              expiresIn: 900,
+              user: createAuthUser(),
+            },
+          }
+    )
+
+    render(
+      <QueryProvider>
+        <PublicProduct />
+      </QueryProvider>
+    )
+    await waitFor(() => expect(api.requests).toHaveLength(1))
+    await act(() => signIn("ada@example.com", "pw"))
+    await act(async () => {
+      finish({
+        data: createStorefrontProduct({
+          id: "PRD-1001",
+          name: "Public kettle",
+        }),
+      })
+    })
+
+    expect(await screen.findByText("Public kettle")).toBeVisible()
+    expect(api.requests[0].signal?.aborted).toBe(false)
   })
 })

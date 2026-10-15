@@ -102,6 +102,47 @@ describe("clearCacheOnAccountChange", () => {
     expect(cached()).toEqual({ users: ["private to ada"] })
   })
 
+  it("preserves public storefront data while clearing the previous account's data", async () => {
+    const publicKey = ["storefront", "catalog", "list"]
+    queryClient.setQueryData(publicKey, { products: ["Public product"] })
+    await signIn("ada@example.com", "pw")
+    cacheAdasData()
+
+    await signOut()
+
+    expect(cached()).toBeUndefined()
+    expect(queryClient.getQueryData(publicKey)).toEqual({
+      products: ["Public product"],
+    })
+  })
+
+  it.each(["list", "detail"])(
+    "does not cancel a public catalog %s while restoring an account",
+    async (view) => {
+      const publicKey = ["storefront", "catalog", view]
+      let finish!: (value: string) => void
+      let requestSignal: AbortSignal | undefined
+      const pending = queryClient
+        .fetchQuery({
+          queryKey: publicKey,
+          queryFn: ({ signal }) => {
+            requestSignal = signal
+            return new Promise<string>((resolve) => {
+              finish = resolve
+            })
+          },
+        })
+        .catch((error: unknown) => error)
+
+      await signIn("ada@example.com", "pw")
+      finish("Public product")
+
+      expect(await pending).toBe("Public product")
+      expect(requestSignal?.aborted).toBe(false)
+      expect(queryClient.getQueryData(publicKey)).toBe("Public product")
+    }
+  )
+
   it("keeps the cache when the user edits their own profile", async () => {
     await signIn("ada@example.com", "pw")
     cacheAdasData()

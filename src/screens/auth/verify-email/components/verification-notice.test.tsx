@@ -5,7 +5,7 @@ import { vi } from "vitest"
 import { useAuth } from "@/hooks/auth/use-auth"
 import { ApiError } from "@/lib/api/api-error"
 import { resendVerification } from "@/services/auth/auth.api"
-import { signOut } from "@/lib/auth/auth-store"
+import { restoreSession, signOut } from "@/lib/auth/auth-store"
 import { VerificationNotice } from "@/screens/auth/verify-email/components/verification-notice"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import { renderWithQuery } from "@/test-utils/render"
@@ -43,6 +43,20 @@ describe("VerificationNotice", () => {
       "href",
       "/login"
     )
+  })
+
+  it("offers to retry a failed restore before asking the user to log in", async () => {
+    vi.mocked(useAuth).mockReturnValue({
+      status: "error",
+      user: null,
+      error: new ApiError(0, ["Server unavailable"]),
+    })
+    renderWithQuery(<VerificationNotice />)
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Server unavailable")
+    expect(screen.queryByRole("link", { name: "Log in" })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }))
+    expect(restoreSession).toHaveBeenCalledTimes(1)
   })
 
   it("lets an already verified user continue", () => {

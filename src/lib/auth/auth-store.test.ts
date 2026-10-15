@@ -128,13 +128,32 @@ describe("auth store", () => {
       })
     })
 
-    it("ends unauthenticated when the server is unreachable", async () => {
+    it("keeps a retryable error when the server is unreachable", async () => {
       const { store, api, unreachable } = await loadModules()
       api.refresh.mockRejectedValue(unreachable())
 
       await store.restoreSession()
 
-      expect(store.getAuthState().status).toBe("unauthenticated")
+      expect(store.getAuthState()).toMatchObject({
+        status: "error",
+        user: null,
+        error: { status: 0 },
+      })
+    })
+
+    it("can restore the existing cookie after a temporary failure", async () => {
+      const { store, api, unreachable } = await loadModules()
+      api.refresh.mockRejectedValueOnce(unreachable())
+      await store.restoreSession()
+
+      api.refresh.mockResolvedValue(authResponse("recovered"))
+      const retry = store.restoreSession()
+      expect(store.getAuthState().status).toBe("loading")
+      await retry
+
+      expect(store.getAuthState()).toEqual({ status: "authenticated", user })
+      expect(store.getAccessToken()).toBe("recovered")
+      expect(api.refresh).toHaveBeenCalledTimes(2)
     })
 
     it("runs only once, however often it is called", async () => {

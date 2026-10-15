@@ -1,6 +1,9 @@
 /** Status used when no HTTP response was received at all. */
 export const NETWORK_ERROR_STATUS = 0
 
+/** A request exhausted its deadline; retrying automatically would prolong loading. */
+export const REQUEST_TIMEOUT_CODE = "REQUEST_TIMEOUT"
+
 /**
  * A failed API call. `status` is the HTTP status (`NETWORK_ERROR_STATUS` when
  * the server could not be reached) and `messages` holds every message the API

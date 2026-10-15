@@ -30,11 +30,13 @@ export type MessageResponse = {
 /**
  * Session status while the in-memory auth store restores or ends a session.
  */
-export type AuthStatus = "loading" | "authenticated" | "unauthenticated"
+export type AuthStatus = "loading" | "authenticated" | "unauthenticated" | "error"
 
 export type AuthState = {
   status: AuthStatus
   user: AuthUser | null
+  /** A temporary restore failure; it does not mean the refresh cookie is invalid. */
+  error?: unknown
 }
 
 export type LoginCredentials = {

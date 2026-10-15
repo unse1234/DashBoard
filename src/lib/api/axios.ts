@@ -1,5 +1,6 @@
 import type { SessionHandlers } from "@/types/auth.types"
 import axios, {
+  CanceledError,
   isAxiosError,
   isCancel,
   type InternalAxiosRequestConfig,
@@ -10,6 +11,7 @@ import {
   ApiError,
   isApiError,
   NETWORK_ERROR_STATUS,
+  REQUEST_TIMEOUT_CODE,
   parseErrorDetails,
   parseErrorMessages,
 } from "@/lib/api/api-error"
@@ -31,6 +33,11 @@ declare module "axios" {
 
 const NETWORK_ERROR_MESSAGE =
   "Unable to reach the server. Check your connection and try again."
+
+export const API_REQUEST_TIMEOUT_MS = 20_000
+
+const TIMEOUT_ERROR_MESSAGE =
+  "The server is taking too long to respond. Please try again shortly."
 
 /**
  * The API answers 401 (without ending the session) when a second tab refreshes
@@ -65,6 +72,11 @@ export function toApiError(error: unknown): unknown {
     return error
   }
   if (!error.response) {
+    if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+      return new ApiError(NETWORK_ERROR_STATUS, [TIMEOUT_ERROR_MESSAGE], {
+        code: REQUEST_TIMEOUT_CODE,
+      })
+    }
     return new ApiError(NETWORK_ERROR_STATUS, [NETWORK_ERROR_MESSAGE])
   }
   return new ApiError(
@@ -111,6 +123,36 @@ function bearerOf(config: InternalAxiosRequestConfig) {
   return typeof value === "string" ? value.replace(/^Bearer /, "") : null
 }
 
+/** Cancel one waiting request without cancelling the shared session refresh. */
+function waitForRefresh(
+  refresh: Promise<boolean>,
+  config: InternalAxiosRequestConfig
+) {
+  const { signal } = config
+  if (!signal) return refresh
+
+  return new Promise<boolean>((resolve, reject) => {
+    const cleanup = () => signal.removeEventListener?.("abort", onAbort)
+    const onAbort = () => {
+      cleanup()
+      reject(new CanceledError("canceled", config))
+    }
+    signal.addEventListener?.("abort", onAbort, { once: true })
+    if (signal.aborted) onAbort()
+
+    refresh.then(
+      (restored) => {
+        cleanup()
+        resolve(restored)
+      },
+      (error: unknown) => {
+        cleanup()
+        reject(error)
+      }
+    )
+  })
+}
+
 /**
  * The one HTTP client for the backend API.
  *
@@ -128,6 +170,7 @@ function bearerOf(config: InternalAxiosRequestConfig) {
  */
 export const apiClient = axios.create({
   baseURL: API_URL,
+  timeout: API_REQUEST_TIMEOUT_MS,
   headers: { Accept: "application/json" },
 })
 
@@ -138,7 +181,7 @@ apiClient.interceptors.request.use(async (config) => {
   // Before the page's session is restored there is no token yet. Wait for the
   // restore instead of sending a request that can only be rejected.
   if (!session.getAccessToken() && refreshInFlight) {
-    await refreshInFlight.catch(() => false)
+    await waitForRefresh(refreshInFlight, config)
   }
 
   const accessToken = session.getAccessToken()
@@ -161,7 +204,10 @@ apiClient.interceptors.response.use(undefined, async (error: unknown) => {
       session.getAccessToken() !== null &&
       session.getAccessToken() !== bearerOf(error.config)
 
-    if (renewedMeanwhile || (await refreshSession())) {
+    if (
+      renewedMeanwhile ||
+      (await waitForRefresh(refreshSession(), error.config))
+    ) {
       // The request interceptor attaches the renewed token on the way out.
       return apiClient.request({ ...error.config, retriedAfterRefresh: true })
     }
