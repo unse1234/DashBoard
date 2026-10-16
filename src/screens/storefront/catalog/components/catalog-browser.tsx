@@ -85,7 +85,7 @@ export function CatalogBrowser() {
           type="search"
           value={typed}
           onChange={(event) => setTyped(event.target.value)}
-          placeholder="Apple Watch, Samsung S21, Macbook Pro, ..."
+          placeholder="Search products…"
           autoComplete="off"
           maxLength={100}
           className="h-14 w-full rounded-store-md bg-white px-4 text-base font-medium text-store-ink shadow-store-field outline-none placeholder:text-store-placeholder focus-visible:ring-3 focus-visible:ring-store-ink/40 md:px-6 md:text-xl [&::-webkit-search-cancel-button]:appearance-none"
