@@ -500,7 +500,7 @@ describe("CustomerRecentOrders", () => {
     const [id, date, total, status] = within(rows[0]).getAllByRole("cell")
     expect(id).toHaveTextContent("ORD-31656")
     expect(date).toHaveTextContent("Oct 4, 2026")
-    expect(total).toHaveTextContent("$329.00")
+    expect(total).toHaveTextContent("PKR 329.00")
     expect(status).toHaveTextContent("Processing")
     expect(rows[1]).toHaveTextContent("Delivered")
   })

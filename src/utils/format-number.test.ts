@@ -6,6 +6,11 @@ describe("formatCurrency", () => {
     expect(formatCurrency(1500, "PKR")).toBe("PKR\u00a01,500.00")
   })
 
+  it("retains paisa instead of rounding PKR to whole rupees", () => {
+    expect(formatCurrency(1799.9, "PKR")).toBe("PKR\u00a01,799.90")
+    expect(formatCurrency(900.01, "PKR")).toBe("PKR\u00a0900.01")
+  })
+
   it("formats USD returned by legacy product and order responses", () => {
     expect(formatCurrency(249, "USD")).toBe("$249.00")
     expect(formatCurrency(94.5, "USD")).toBe("$94.50")

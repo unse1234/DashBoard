@@ -30,6 +30,9 @@ export function formatCurrency(
     formatter = new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: code,
+      // Currency fraction defaults differ across browser/Node locale data.
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     })
     currencyFormatters.set(code, formatter)
   }

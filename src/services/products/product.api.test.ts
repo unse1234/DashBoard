@@ -14,7 +14,7 @@ import {
   updateProduct,
 } from "@/services/products/product.api"
 import { defaultProductsQuery } from "@/screens/products/product.filters"
-import type { ProductFormValues } from "@/types/product.types";
+import type { ProductFormValues } from "@/types/product.types"
 import { mockApi } from "@/test-utils/mock-api"
 import {
   categoryFixtures,
@@ -202,7 +202,7 @@ describe("products API calls", () => {
     expect(api.requests[0]).toMatchObject({
       method: "POST",
       url: "/products",
-      body: { ...values, status: "ACTIVE" },
+      body: { ...values, status: "ACTIVE", currency: "PKR" },
     })
     expect(product).toMatchObject({ id: "PRD-1500", status: "active" })
   })
@@ -224,9 +224,31 @@ describe("products API calls", () => {
         ...values,
         status: "INACTIVE",
         brand: "Soundcraft",
+        currency: "PKR",
       },
     })
     expect(product.version).toBe(4)
+  })
+
+  it("sends an explicit PKR repricing with the entered amounts and current version", async () => {
+    api = mockApi(() => ({
+      data: apiProduct({
+        currency: "PKR",
+        price: 70000,
+        costPrice: null,
+        version: 4,
+      }),
+    }))
+    await updateProduct("PRD-1001", 3, {
+      ...values,
+      price: 70000,
+      costPrice: null,
+    })
+    expect(api.requests[0]).toMatchObject({
+      method: "PATCH",
+      url: "/products/PRD-1001",
+      body: { version: 3, currency: "PKR", price: 70000, costPrice: null },
+    })
   })
 
   it("archives products and resolves to how many it archived", async () => {

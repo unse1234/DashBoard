@@ -272,7 +272,7 @@ describe("OrderDetailsHeader", () => {
     expect(getBadgeValue("Created At")).toHaveTextContent(
       "Sep 29, 2026, 8:40 AM UTC"
     )
-    expect(getBadgeValue("Total")).toHaveTextContent("$189.90")
+    expect(getBadgeValue("Total")).toHaveTextContent("PKR 189.90")
   })
 
   it("asks the API to change the status, and announces what the order now is", async () => {
@@ -351,7 +351,7 @@ describe("OrderDetailsHeader", () => {
       await user.click(screen.getByRole("button", { name: "Mark as paid" }))
       const dialog = await screen.findByRole("dialog")
       expect(dialog).toHaveTextContent("Mark order ORD-10001 as paid?")
-      expect(dialog).toHaveTextContent("$61.75")
+      expect(dialog).toHaveTextContent("PKR 61.75")
       expect(markOrderPaid).not.toHaveBeenCalled()
 
       await user.click(

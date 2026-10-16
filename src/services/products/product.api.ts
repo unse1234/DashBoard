@@ -1,4 +1,14 @@
-import type { ProductPage, ProductWriteValues, ApiProduct, Category, Product, ProductHistoryEntry, ProductStatus, ProductStatusFilter, ProductsQuery } from "@/types/product.types"
+import type {
+  ProductPage,
+  ProductWriteValues,
+  ApiProduct,
+  Category,
+  Product,
+  ProductHistoryEntry,
+  ProductStatus,
+  ProductStatusFilter,
+  ProductsQuery,
+} from "@/types/product.types"
 import { apiClient } from "@/lib/api/axios"
 import { ALL_CATEGORIES } from "@/constants/product.constants"
 
@@ -53,7 +63,7 @@ export function buildProductsSearchParams({
 
 /** What the form validated, in the API's spelling. */
 function toProductPayload(values: ProductWriteValues) {
-  return { ...values, status: API_STATUSES[values.status] }
+  return { ...values, status: API_STATUSES[values.status], currency: "PKR" }
 }
 
 function productPath(productId: string) {
