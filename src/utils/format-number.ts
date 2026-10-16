@@ -1,12 +1,11 @@
-import type { Currency } from "@/types/currency.types"
+// Fixed locale so the server and the browser render identical text. An amount
+// is shown in the currency it was recorded in, as the API reports it.
+const currencyFormatters = new Map<string, Intl.NumberFormat>()
 
-// Fixed locale so the server and the browser render identical text. The
-// currency is never assumed: an amount is shown in the currency it was
-// recorded in, so a rupee price can't be mistaken for a dollar one.
-const currencyFormatters: Record<Currency, Intl.NumberFormat> = {
-  USD: new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }),
-  PKR: new Intl.NumberFormat("en-US", { style: "currency", currency: "PKR" }),
-}
+const amountFormatter = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
 
 const integerFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
@@ -17,9 +16,24 @@ const percentFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,
 })
 
-/** `amount` in `currency`, e.g. "$1,500.00" or "PKR 1,500.00". */
-export function formatCurrency(amount: number, currency: Currency) {
-  return currencyFormatters[currency].format(amount)
+/** Format the API's recorded currency, including legacy records outside the form's choices. */
+export function formatCurrency(
+  amount: number,
+  currency: string | null | undefined
+) {
+  const code = typeof currency === "string" ? currency.trim().toUpperCase() : ""
+  // An incomplete API response must not crash a page or guess a currency.
+  if (!/^[A-Z]{3}$/.test(code)) return amountFormatter.format(amount)
+
+  let formatter = currencyFormatters.get(code)
+  if (!formatter) {
+    formatter = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: code,
+    })
+    currencyFormatters.set(code, formatter)
+  }
+  return formatter.format(amount)
 }
 
 export function formatInteger(value: number) {
