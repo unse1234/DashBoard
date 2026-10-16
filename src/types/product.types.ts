@@ -1,5 +1,5 @@
 import type { z } from "zod"
-import type { Currency } from "@/types/currency.types"
+import type { RecordedCurrency } from "@/types/currency.types"
 import type { productFormSchema } from "@/validations/product.schemas"
 
 import type { PageSize } from "@/types/pagination.types";
@@ -32,7 +32,7 @@ export type Product = {
   galleryUrls: string[]
   status: ProductStatus
   /** What `price` and `costPrice` are denominated in. */
-  currency: Currency
+  currency: RecordedCurrency
   /** Selling price, in `currency`. */
   price: number
   /** What the product costs the business, in `currency`; null when unknown. */

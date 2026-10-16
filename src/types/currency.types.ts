@@ -1,6 +1,8 @@
 /**
- * The currencies an amount can be recorded in. Every amount the API returns
- * comes with the currency it is denominated in; amounts of different currencies
- * are never added together and no exchange rate is applied.
+ * The shop's current trading currency. API records retain the currency they
+ * were saved in, described separately by RecordedCurrency below.
  */
-export type Currency = "USD" | "PKR"
+export type Currency = "PKR"
+
+/** Existing API records can still be denominated in USD. Never relabel their amounts. */
+export type RecordedCurrency = Currency | "USD"

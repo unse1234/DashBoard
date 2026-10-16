@@ -191,7 +191,7 @@ describe("OrdersList table", () => {
     expect(row.getByText("daniel.reyes@gmail.com")).toBeInTheDocument()
     expect(row.getByText("Sep 29, 2026")).toBeInTheDocument()
     expect(row.getByText("2")).toBeInTheDocument()
-    expect(row.getByText("$189.90")).toBeInTheDocument()
+    expect(row.getByText("PKR 189.90")).toBeInTheDocument()
   })
 
   it("shows a storefront order's total in rupees, and a legacy order's in dollars", async () => {
@@ -199,7 +199,7 @@ describe("OrdersList table", () => {
       page(
         [
           // Kept in the list because `renderList` waits for it.
-          daniel,
+          { ...daniel, currency: "USD" },
           createOrderListItem({
             id: "ORD-40001",
             currency: "PKR",

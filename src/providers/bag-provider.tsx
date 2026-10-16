@@ -125,8 +125,7 @@ function describeFailure(error: unknown, label: string | null) {
     isApiError(error) &&
     error.status === 409 &&
     (error.code === "INSUFFICIENT_STOCK" ||
-      error.code === "PRODUCT_UNAVAILABLE" ||
-      error.code === "CURRENCY_MISMATCH")
+      error.code === "PRODUCT_UNAVAILABLE")
   if (refused && label) return `${label}: ${error.message}`
   return describeApiError(error)
 }

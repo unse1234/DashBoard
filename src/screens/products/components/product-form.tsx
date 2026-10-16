@@ -3,7 +3,7 @@
 import type { ReactNode } from "react"
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Controller, useForm, useWatch } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 
 import { AuthFormMessage } from "@/components/auth/auth-form"
 import { FormField } from "@/components/shared/form-field"
@@ -20,7 +20,6 @@ import {
 import { FieldGroup } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
 import { describeApiError, isApiError } from "@/lib/api/api-error"
-import { CURRENCY_OPTIONS } from "@/constants/currency.constants"
 import {
   PRODUCT_STATUS_OPTIONS,
   SKU_TAKEN_MESSAGE,
@@ -40,8 +39,6 @@ const emptyValues: ProductFormInput = {
   galleryUrls: "",
   categoryId: "",
   status: "active",
-  // Chosen on purpose: a product in the wrong currency is not shown in the shop.
-  currency: "",
   price: "",
   costPrice: "",
   stock: "",
@@ -58,7 +55,6 @@ function getDefaultValues(product: Product): ProductFormInput {
     galleryUrls: product.galleryUrls.join("\n"),
     categoryId: product.categoryId,
     status: product.status,
-    currency: product.currency,
     price: product.price.toFixed(2),
     costPrice: product.costPrice === null ? "" : product.costPrice.toFixed(2),
     stock: String(product.stock),
@@ -104,14 +100,6 @@ export function ProductForm({
     defaultValues: product ? getDefaultValues(product) : emptyValues,
   })
   const { errors, isSubmitting } = form.formState
-  // The amounts are in whichever currency is chosen, so the labels say which.
-  const currency = useWatch({ control: form.control, name: "currency" })
-  const sellingPriceLabel = currency
-    ? `Selling Price (${currency})`
-    : "Selling Price"
-  const costPriceLabel = currency
-    ? `Cost Price (${currency}, optional)`
-    : "Cost Price (optional)"
 
   async function submit(values: ProductFormValues) {
     try {
@@ -242,29 +230,9 @@ export function ProductForm({
           title="Pricing and inventory"
           description="What the product sells for and how many are in stock."
         >
-          <Controller
-            control={form.control}
-            name="currency"
-            render={({ field }) => (
-              <FormSelectField
-                name={field.name}
-                ref={field.ref}
-                value={field.value}
-                onValueChange={field.onChange}
-                onBlur={field.onBlur}
-                label="Currency"
-                options={CURRENCY_OPTIONS}
-                placeholder="Select a currency"
-                description="What the selling and cost price below are in. The online shop sells in PKR only, so a product priced in another currency is not shown there."
-                required
-                disabled={isSubmitting}
-                error={errors.currency?.message}
-              />
-            )}
-          />
           <div className="grid gap-5 @2xl:grid-cols-3">
             <FormField
-              label={sellingPriceLabel}
+              label="Selling Price (PKR)"
               inputMode="decimal"
               placeholder="0.00"
               autoComplete="off"
@@ -273,7 +241,7 @@ export function ProductForm({
               {...form.register("price")}
             />
             <FormField
-              label={costPriceLabel}
+              label="Cost Price (PKR, optional)"
               inputMode="decimal"
               placeholder="0.00"
               autoComplete="off"

@@ -12,14 +12,13 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { formatCurrency, formatInteger } from "@/utils/format-number"
-import type { Currency } from "@/types/currency.types"
-import type { OrderItem } from "@/types/order.types"
+import type { Order, OrderItem } from "@/types/order.types"
 import { getProductRoute } from "@/config/routes"
 
 type OrderItemsTableProps = {
   items: OrderItem[]
   /** What the line amounts are denominated in: the order's currency. */
-  currency: Currency
+  currency: Order["currency"]
 }
 
 export function OrderItemsTable({ items, currency }: OrderItemsTableProps) {

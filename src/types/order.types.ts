@@ -1,4 +1,4 @@
-import type { Currency } from "@/types/currency.types"
+import type { RecordedCurrency } from "@/types/currency.types"
 import type { PageSize } from "@/types/pagination.types";
 import type { Sort } from "@/types/sort.types";
 
@@ -68,7 +68,7 @@ export type OrderListItem = {
   /** How it is paid for; null on orders that predate payment methods. */
   paymentMethod: PaymentMethod | null
   /** What every amount of the order is denominated in, fixed when it was placed. */
-  currency: Currency
+  currency: RecordedCurrency
   /** Units across all lines, so two bottles and a notebook count as three. */
   itemCount: number
   /** `subtotal` + `shipping` - `discount` + `tax`, in `currency`. */

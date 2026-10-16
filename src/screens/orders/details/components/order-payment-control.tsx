@@ -4,15 +4,14 @@ import { useState } from "react"
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { Button } from "@/components/ui/button"
-import type { Currency } from "@/types/currency.types"
-import type { PaymentMethod } from "@/types/order.types"
+import type { Order, PaymentMethod } from "@/types/order.types"
 import { formatCurrency } from "@/utils/format-number"
 
 type OrderPaymentControlProps = {
   orderId: string
   /** The amount the payment should be, in `currency`. */
   total: number
-  currency: Currency
+  currency: Order["currency"]
   /** How the order is paid for; null on orders that predate payment methods. */
   method: PaymentMethod | null
   /** Records the payment. The confirmation shows the reason if it rejects. */

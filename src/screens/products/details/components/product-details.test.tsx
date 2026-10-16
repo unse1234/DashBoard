@@ -161,8 +161,8 @@ describe("ProductDetailsTabs overview", () => {
   it("shows pricing with the calculated margin", () => {
     renderTabs()
 
-    expect(getValue("Selling Price")).toHaveTextContent("$249.00")
-    expect(getValue("Cost Price")).toHaveTextContent("$138.50")
+    expect(getValue("Selling Price")).toHaveTextContent("PKR 249.00")
+    expect(getValue("Cost Price")).toHaveTextContent("PKR 138.50")
     expect(getValue("Margin")).toHaveTextContent("44.4%")
   })
 
@@ -254,7 +254,7 @@ describe("ProductDetailsTabs history and analytics", () => {
     const entries = await screen.findAllByRole("listitem")
     expect(entries).toHaveLength(3)
     expect(entries[0]).toHaveTextContent(
-      "Price changed from $269.00 to $249.00"
+      "Price changed from PKR 269.00 to PKR 249.00"
     )
     expect(entries[0]).toHaveTextContent("Priya Raman")
     expect(entries[0]).toHaveTextContent("Sep 18, 2026, 2:05 PM UTC")

@@ -1,4 +1,4 @@
-import type { Currency } from "@/types/currency.types"
+import type { RecordedCurrency } from "@/types/currency.types"
 import type { PageSize } from "@/types/pagination.types";
 import type { Sort } from "@/types/sort.types";
 
@@ -20,10 +20,10 @@ export type Customer = {
    */
   totalSpent: number
   /**
-   * The same, per currency, so rupees and dollars are never added together.
-   * Only the currencies the customer has orders in; empty before the first one.
+   * The same, per recorded currency. Only the currencies the
+   * customer has orders in; empty before the first one.
    */
-  spentByCurrency: { currency: Currency; amount: number }[]
+  spentByCurrency: { currency: RecordedCurrency; amount: number }[]
   /** ISO 8601 timestamp; null until the first order. */
   lastOrderAt: string | null
 }
@@ -65,7 +65,7 @@ export type CustomerOrderSummary = {
   /** In `currency`. */
   total: number
   /** What `total` is denominated in: the order's currency. */
-  currency: Currency
+  currency: RecordedCurrency
   status: CustomerOrderStatus
   /** ISO 8601 timestamp. */
   createdAt: string

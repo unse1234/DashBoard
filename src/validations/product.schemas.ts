@@ -1,6 +1,5 @@
 import { z } from "zod"
 
-import { CURRENCIES } from "@/constants/currency.constants"
 import { formatInteger } from "@/utils/format-number"
 
 const NAME_MIN_LENGTH = 2
@@ -109,12 +108,6 @@ const galleryUrlsSchema = z
   )
   .transform(toGalleryLines)
 
-/** A currency has to be chosen on purpose: a product in the wrong one is not shown in the shop. */
-const currencySchema = z
-  .string()
-  .min(1, "Select a currency.")
-  .pipe(z.enum(CURRENCIES, "Select a currency."))
-
 // The form works with what was typed, so the amounts arrive as text and leave
 // as numbers once they are valid.
 function priceAmountSchema(label: string) {
@@ -150,7 +143,6 @@ export const productFormSchema = z.object({
   galleryUrls: galleryUrlsSchema,
   categoryId: z.string().min(1, "Select a category."),
   status: z.enum(["active", "inactive"], "Select a status."),
-  currency: currencySchema,
   price: z
     .string()
     .trim()

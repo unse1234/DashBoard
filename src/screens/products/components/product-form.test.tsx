@@ -27,8 +27,7 @@ async function fillRequiredFields() {
   await user.type(screen.getByLabelText("Product Name"), "  Studio Monitor  ")
   await user.type(screen.getByLabelText("SKU"), "ELC-MON-27")
   await chooseOption("Category", "Electronics")
-  await chooseOption("Currency", "US dollar (USD)")
-  await user.type(screen.getByLabelText("Selling Price (USD)"), "349.99")
+  await user.type(screen.getByLabelText("Selling Price (PKR)"), "349.99")
   await user.type(screen.getByLabelText("Stock Quantity"), "12")
 }
 
@@ -55,8 +54,8 @@ describe("ProductForm (create)", () => {
       "SKU",
       "Brand (optional)",
       "Description (optional)",
-      "Selling Price",
-      "Cost Price (optional)",
+      "Selling Price (PKR)",
+      "Cost Price (PKR, optional)",
       "Stock Quantity",
       "Subtitle (optional)",
       "Main Image (optional)",
@@ -67,9 +66,6 @@ describe("ProductForm (create)", () => {
     expect(
       screen.getByRole("combobox", { name: "Category" })
     ).toBeInTheDocument()
-    expect(
-      screen.getByRole("combobox", { name: "Currency" })
-    ).toHaveTextContent("Select a currency")
     expect(screen.getByRole("combobox", { name: "Status" })).toHaveTextContent(
       "Active"
     )
@@ -111,7 +107,6 @@ describe("ProductForm (create)", () => {
     expect(await screen.findByText("Enter a product name.")).toBeInTheDocument()
     expect(screen.getByText("Enter a SKU.")).toBeInTheDocument()
     expect(screen.getByText("Select a category.")).toBeInTheDocument()
-    expect(screen.getByText("Select a currency.")).toBeInTheDocument()
     expect(screen.getByText("Enter a selling price.")).toBeInTheDocument()
     expect(screen.getByText("Enter the stock quantity.")).toBeInTheDocument()
     expect(onSubmit).not.toHaveBeenCalled()
@@ -131,9 +126,9 @@ describe("ProductForm (create)", () => {
     renderForm()
 
     await fillRequiredFields()
-    await user.clear(screen.getByLabelText("Selling Price (USD)"))
-    await user.type(screen.getByLabelText("Selling Price (USD)"), "-5")
-    await user.type(screen.getByLabelText("Cost Price (USD, optional)"), "-1")
+    await user.clear(screen.getByLabelText("Selling Price (PKR)"))
+    await user.type(screen.getByLabelText("Selling Price (PKR)"), "-5")
+    await user.type(screen.getByLabelText("Cost Price (PKR, optional)"), "-1")
     await user.clear(screen.getByLabelText("Stock Quantity"))
     await user.type(screen.getByLabelText("Stock Quantity"), "2.5")
     await user.click(screen.getByRole("button", { name: "Create Product" }))
@@ -166,7 +161,6 @@ describe("ProductForm (create)", () => {
       galleryUrls: [],
       categoryId: "cat-electronics",
       status: "active",
-      currency: "USD",
       price: 349.99,
       costPrice: null,
       stock: 12,
@@ -179,7 +173,6 @@ describe("ProductForm (create)", () => {
     await user.type(screen.getByLabelText("Product Name"), "Studio Monitor")
     await user.type(screen.getByLabelText("SKU"), "ELC-MON-27")
     await chooseOption("Category", "Electronics")
-    await chooseOption("Currency", "Pakistani rupee (PKR)")
     expect(screen.getByLabelText("Selling Price (PKR)")).toBeInTheDocument()
     expect(
       screen.getByLabelText("Cost Price (PKR, optional)")
@@ -201,7 +194,6 @@ describe("ProductForm (create)", () => {
     await vi.waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
-        currency: "PKR",
         price: 159999,
         subtitle: "4K, 27 inch",
         imageUrl: "/images/monitor.png",
@@ -328,8 +320,8 @@ describe("ProductForm (edit)", () => {
     expect(screen.getByRole("combobox", { name: "Status" })).toHaveTextContent(
       "Active"
     )
-    expect(screen.getByLabelText("Selling Price (USD)")).toHaveValue("249.00")
-    expect(screen.getByLabelText("Cost Price (USD, optional)")).toHaveValue(
+    expect(screen.getByLabelText("Selling Price (PKR)")).toHaveValue("249.00")
+    expect(screen.getByLabelText("Cost Price (PKR, optional)")).toHaveValue(
       "138.50"
     )
     expect(screen.getByLabelText("Stock Quantity")).toHaveValue("184")
@@ -340,7 +332,7 @@ describe("ProductForm (edit)", () => {
       product: createProduct({ status: "inactive", costPrice: null }),
     })
 
-    expect(screen.getByLabelText("Cost Price (USD, optional)")).toHaveValue("")
+    expect(screen.getByLabelText("Cost Price (PKR, optional)")).toHaveValue("")
     expect(screen.getByRole("combobox", { name: "Status" })).toHaveTextContent(
       "Inactive"
     )
@@ -356,7 +348,6 @@ describe("ProductForm (edit)", () => {
   it("prefills the currency and the shop's fields, and labels the amounts in that currency", () => {
     renderForm({
       product: createProduct({
-        currency: "PKR",
         price: 159999,
         costPrice: 120000,
         subtitle: "4K, 27 inch",
@@ -365,9 +356,6 @@ describe("ProductForm (edit)", () => {
       }),
     })
 
-    expect(
-      screen.getByRole("combobox", { name: "Currency" })
-    ).toHaveTextContent("Pakistani rupee (PKR)")
     expect(screen.getByLabelText("Selling Price (PKR)")).toHaveValue(
       "159999.00"
     )

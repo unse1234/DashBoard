@@ -16,7 +16,7 @@ export function createCustomer(overrides: Partial<Customer> = {}): Customer {
     joinedAt: "2025-02-14T10:24:00Z",
     totalOrders: 3,
     totalSpent: 248.5,
-    spentByCurrency: [{ currency: "USD", amount: 248.5 }],
+    spentByCurrency: [{ currency: "PKR", amount: 248.5 }],
     lastOrderAt: "2026-09-02T08:12:00Z",
     ...overrides,
   }
@@ -74,7 +74,7 @@ export function createCustomerOrder(
     id: "ORD-10001",
     customerId: "CUS-1001",
     total: 82.5,
-    currency: "USD",
+    currency: "PKR",
     status: "delivered",
     createdAt: "2026-09-02T08:12:00Z",
     ...overrides,

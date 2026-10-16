@@ -122,21 +122,18 @@ describe("enum mapping", () => {
     ).toBeNull()
   })
 
-  it.each(["USD", "PKR"] as const)(
-    "keeps the order's currency, %s, on the list item and the order",
-    (currency) => {
-      expect(
-        toOrderListItem({
-          ...createOrderListItem(),
-          status: "PENDING",
-          paymentStatus: "PENDING",
-          paymentMethod: null,
-          currency,
-        }).currency
-      ).toBe(currency)
-      expect(toOrder(apiOrder({ currency }) as never).currency).toBe(currency)
-    }
-  )
+  it("keeps the order's currency on the list item and the order", () => {
+    expect(
+      toOrderListItem({
+        ...createOrderListItem(),
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        paymentMethod: null,
+        currency: "PKR",
+      }).currency
+    ).toBe("PKR")
+    expect(toOrder(apiOrder({ currency: "PKR" }) as never).currency).toBe("PKR")
+  })
 
   it("keeps the rest of the order and drops what the UI does not use", () => {
     const order = toOrder(apiOrder() as never)

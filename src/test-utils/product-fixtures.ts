@@ -19,7 +19,7 @@ export function createProduct(overrides: Partial<Product> = {}): Product {
     imageUrl: null,
     galleryUrls: [],
     status: "active",
-    currency: "USD",
+    currency: "PKR",
     price: 249,
     costPrice: 138.5,
     // (249 - 138.5) / 249, as the API works it out.
@@ -47,7 +47,7 @@ export function createHistoryEntry(
 ): ProductHistoryEntry {
   return {
     id: "evt-1",
-    change: "Price changed from $269.00 to $249.00",
+    change: "Price changed from PKR 269.00 to PKR 249.00",
     occurredAt: "2026-09-18T14:05:00Z",
     actor: "Priya Raman",
     ...overrides,

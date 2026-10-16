@@ -11,7 +11,6 @@ const validInput: ProductFormInput = {
   galleryUrls: "/images/aurora-2.png\n/images/aurora-3.png",
   categoryId: "cat-electronics",
   status: "active",
-  currency: "PKR",
   price: "249.00",
   costPrice: "138.50",
   stock: "184",
@@ -45,7 +44,6 @@ describe("productFormSchema", () => {
       galleryUrls: ["/images/aurora-2.png", "/images/aurora-3.png"],
       categoryId: "cat-electronics",
       status: "active",
-      currency: "PKR",
       price: 249,
       costPrice: 138.5,
       stock: 184,
@@ -75,20 +73,6 @@ describe("productFormSchema", () => {
       imageUrl: null,
       galleryUrls: [],
       costPrice: null,
-    })
-  })
-
-  describe("currency", () => {
-    it.each(["USD", "PKR"])("accepts %s", (currency) => {
-      expect(parse({ currency }).data).toMatchObject({ currency })
-    })
-
-    it("has to be chosen", () => {
-      expect(getErrors({ currency: "" }).currency).toBe("Select a currency.")
-    })
-
-    it("refuses a currency the shop does not know", () => {
-      expect(getErrors({ currency: "EUR" }).currency).toBe("Select a currency.")
     })
   })
 

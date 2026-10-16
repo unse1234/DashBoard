@@ -256,14 +256,14 @@ describe("OrderPriceBreakdown", () => {
       <OrderPriceBreakdown order={createOrder({ tax: 11, total: 189.9 })} />
     )
 
-    expect(getValue("Tax")).toHaveTextContent("$11.00")
-    expect(getValue("Total")).toHaveTextContent("$189.90")
+    expect(getValue("Tax")).toHaveTextContent("PKR 11.00")
+    expect(getValue("Total")).toHaveTextContent("PKR 189.90")
   })
 
   it("shows no minus sign without a discount", () => {
     render(<OrderPriceBreakdown order={createOrder({ discount: 0 })} />)
 
-    expect(getValue("Discount")).toHaveTextContent("$0.00")
+    expect(getValue("Discount")).toHaveTextContent("PKR 0.00")
     expect(getValue("Discount")).not.toHaveTextContent("−")
   })
 })

@@ -6,9 +6,8 @@ type CustomerSpentProps = {
 }
 
 /**
- * What a customer has spent, one amount per currency. Amounts of different
- * currencies are never added together, so a customer who ordered in rupees and
- * in dollars shows both lines.
+ * What a customer has spent, one amount per currency as the API reports it.
+ * Rupees are the only currency, so it is a single line.
  */
 export function CustomerSpent({ spentByCurrency }: CustomerSpentProps) {
   if (spentByCurrency.length === 0) {

@@ -32,7 +32,6 @@ const values: ProductFormValues = {
   galleryUrls: ["/images/monitor-side.png", "https://cdn.example.com/m3.jpg"],
   categoryId: "cat-electronics",
   status: "active",
-  currency: "PKR",
   price: 349.99,
   costPrice: null,
   stock: 12,

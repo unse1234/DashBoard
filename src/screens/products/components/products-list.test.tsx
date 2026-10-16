@@ -189,7 +189,7 @@ describe("ProductsList table", () => {
     await renderList()
     const row = within(getRow("Trail Insulated Water Bottle"))
 
-    expect(row.getByText("$24.50")).toBeInTheDocument()
+    expect(row.getByText("PKR 24.50")).toBeInTheDocument()
     expect(row.getByText("1,240")).toBeInTheDocument()
   })
 

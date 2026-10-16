@@ -45,7 +45,6 @@ const values: ProductFormValues = {
   galleryUrls: [],
   categoryId: "cat-home",
   status: "active",
-  currency: "USD",
   price: 10,
   costPrice: null,
   stock: 3,

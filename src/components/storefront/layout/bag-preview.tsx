@@ -8,7 +8,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { routes } from "@/config/routes"
 import { useBag } from "@/hooks/storefront/use-bag"
 import { cn } from "@/utils/cn"
-import { formatStorefrontTotal } from "@/utils/storefront/format-price"
+import { formatStorefrontPrice } from "@/utils/storefront/format-price"
 import { getProductLabel } from "@/utils/storefront/product-label"
 
 export type BagPreviewAction = "view-bag" | "checkout"
@@ -78,7 +78,7 @@ export function BagPreview({ action = "view-bag" }: BagPreviewProps) {
           <p className="mt-7.75 flex items-baseline gap-4 text-xl leading-7">
             <span>Bag Total:</span>
             <span className="font-medium">
-              {formatStorefrontTotal(subtotal, currency)}
+              {formatStorefrontPrice(subtotal, currency)}
             </span>
           </p>
         )}

@@ -49,8 +49,7 @@ export function createOrderItem(overrides: Partial<OrderItem> = {}): OrderItem {
 
 /**
  * A row of the orders list; override fields per test. By default it is an order
- * that predates payment methods and is in USD; a storefront order is
- * `{ paymentMethod: "cod", currency: "PKR" }`.
+ * that predates payment methods; a storefront order is `{ paymentMethod: "cod" }`.
  */
 export function createOrderListItem(
   overrides: Partial<OrderListItem> = {}
@@ -61,7 +60,7 @@ export function createOrderListItem(
     status: "shipped",
     paymentStatus: "paid",
     paymentMethod: null,
-    currency: "USD",
+    currency: "PKR",
     itemCount: 2,
     total: 189.9,
     createdAt: "2026-09-29T08:40:00Z",
@@ -69,7 +68,7 @@ export function createOrderListItem(
   }
 }
 
-/** A whole order: two bottles at $24.50, with shipping and tax. */
+/** A whole order: two bottles at 24.50, with shipping and tax. */
 export function createOrder(overrides: Partial<Order> = {}): Order {
   return {
     ...createOrderListItem({ total: 61.75 }),
