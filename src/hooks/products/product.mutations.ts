@@ -7,7 +7,7 @@ import {
   updateProduct,
 } from "@/services/products/product.api"
 import { productKeys } from "@/hooks/products/product.keys"
-import type { ProductFormValues, Product } from "@/types/product.types"
+import type { ProductWriteValues, Product } from "@/types/product.types"
 
 // A product appears on some page of the list, in its details, and in its edit
 // history. Any change refetches the lists (not awaited: the screen keeps its
@@ -19,7 +19,7 @@ function invalidateLists(queryClient: QueryClient) {
   void queryClient.invalidateQueries({ queryKey: productKeys.lists() })
 }
 
-function cacheChangedProduct(queryClient: QueryClient, product: Product) {
+export function cacheChangedProduct(queryClient: QueryClient, product: Product) {
   queryClient.setQueryData(productKeys.detail(product.id), product)
   void queryClient.invalidateQueries({
     queryKey: productKeys.history(product.id),
@@ -31,7 +31,7 @@ export function useCreateProductMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (values: ProductFormValues) => createProduct(values),
+    mutationFn: (values: ProductWriteValues) => createProduct(values),
     onSuccess: (product) => cacheChangedProduct(queryClient, product),
   })
 }
@@ -48,7 +48,7 @@ export function useUpdateProductMutation() {
       productId: string
       /** The version the values were edited from. */
       version: number
-      values: ProductFormValues
+      values: ProductWriteValues
     }) => updateProduct(productId, version, values),
     onSuccess: (product) => cacheChangedProduct(queryClient, product),
   })
@@ -65,6 +65,7 @@ export function useArchiveProductsMutation() {
       for (const productId of productIds) {
         queryClient.removeQueries({ queryKey: productKeys.detail(productId) })
         queryClient.removeQueries({ queryKey: productKeys.history(productId) })
+        queryClient.removeQueries({ queryKey: productKeys.images(productId) })
       }
       invalidateLists(queryClient)
     },

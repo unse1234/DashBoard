@@ -37,6 +37,7 @@ function record(config: InternalAxiosRequestConfig): RecordedRequest {
   if (config.data === undefined) delete headers["content-type"]
 
   let body: unknown
+  if (config.data instanceof FormData) body = config.data
   if (typeof config.data === "string" && config.data !== "") {
     body = JSON.parse(config.data)
   }

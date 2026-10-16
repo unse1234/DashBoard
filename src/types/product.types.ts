@@ -90,3 +90,11 @@ export type ProductPage = {
   products: Product[]
   totalRecords: number
 }
+
+/** The backend enum spelling, before the service maps it for the UI. */
+export type ApiProduct = Omit<Product, "status"> & {
+  status: "ACTIVE" | "INACTIVE"
+}
+
+export type ProductWriteValues = Omit<ProductFormValues, "imageUrl" | "galleryUrls"> &
+  Partial<Pick<ProductFormValues, "imageUrl" | "galleryUrls">>

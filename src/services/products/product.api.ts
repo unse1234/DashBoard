@@ -1,12 +1,10 @@
-import type { ProductPage, ProductFormValues, Category, Product, ProductHistoryEntry, ProductStatus, ProductStatusFilter, ProductsQuery } from "@/types/product.types"
+import type { ProductPage, ProductWriteValues, ApiProduct, Category, Product, ProductHistoryEntry, ProductStatus, ProductStatusFilter, ProductsQuery } from "@/types/product.types"
 import { apiClient } from "@/lib/api/axios"
 import { ALL_CATEGORIES } from "@/constants/product.constants"
 
 // The API sends enums as stored, in upper case; the UI uses lower case.
 type ApiProductStatus = "ACTIVE" | "INACTIVE"
 type ApiProductStatusFilter = ApiProductStatus | "OUT_OF_STOCK"
-
-type ApiProduct = Omit<Product, "status"> & { status: ApiProductStatus }
 
 type ProductPageResponse = {
   data: ApiProduct[]
@@ -54,7 +52,7 @@ export function buildProductsSearchParams({
 }
 
 /** What the form validated, in the API's spelling. */
-function toProductPayload(values: ProductFormValues) {
+function toProductPayload(values: ProductWriteValues) {
   return { ...values, status: API_STATUSES[values.status] }
 }
 
@@ -103,7 +101,7 @@ export async function listCategories(
   return data.data
 }
 
-export async function createProduct(values: ProductFormValues) {
+export async function createProduct(values: ProductWriteValues) {
   const { data } = await apiClient.post<ApiProduct>(
     "/products",
     toProductPayload(values)
@@ -118,7 +116,7 @@ export async function createProduct(values: ProductFormValues) {
 export async function updateProduct(
   productId: string,
   version: number,
-  values: ProductFormValues
+  values: ProductWriteValues
 ) {
   const { data } = await apiClient.patch<ApiProduct>(productPath(productId), {
     version,

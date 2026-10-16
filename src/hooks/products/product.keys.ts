@@ -14,6 +14,7 @@ export const productKeys = {
   detail: (productId: string) => [...productKeys.details(), productId] as const,
   history: (productId: string) =>
     [...productKeys.all, "history", productId] as const,
+  images: (productId: string) => [...productKeys.all, "images", productId] as const,
 }
 
 export const categoryKeys = {
