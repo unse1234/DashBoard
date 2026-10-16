@@ -7,6 +7,7 @@ import {
   usePreviewImportMutation,
 } from "@/hooks/imports/import.mutations"
 import { categoryKeys, productKeys } from "@/hooks/products/product.keys"
+import { catalogKeys } from "@/hooks/storefront/catalog.keys"
 import { ApiError } from "@/lib/api/api-error"
 import { confirmImport, previewImport } from "@/services/imports/import.api"
 import {
@@ -144,6 +145,7 @@ describe("useConfirmImportMutation", () => {
     )
     const keys = invalidatedKeys(invalidate)
     expect(keys).toContainEqual(productKeys.lists())
+    expect(keys).toContainEqual(catalogKeys.all)
     expect(keys).toContainEqual(categoryKeys.all)
     expect(keys).toContainEqual(importKeys.lists())
   })
@@ -165,6 +167,7 @@ describe("useConfirmImportMutation", () => {
       queryClient.getQueryData(importKeys.detail("IMP-1001"))
     ).toMatchObject({ status: "processing" })
     expect(invalidatedKeys(invalidate)).not.toContainEqual(productKeys.lists())
+    expect(invalidatedKeys(invalidate)).not.toContainEqual(catalogKeys.all)
   })
 
   it("changes nothing when the API refuses", async () => {

@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/hooks/auth/use-auth"
 import { productKeys } from "@/hooks/products/product.keys"
-import { catalogKeys } from "@/hooks/storefront/catalog.keys"
 import { cacheChangedProduct } from "@/hooks/products/product.mutations"
 import {
   deleteProductImage,
@@ -33,8 +32,6 @@ export function useProductImageMutations() {
     ])
     client.setQueryData(productKeys.images(result.product.id), result.data)
     cacheChangedProduct(client, result.product)
-    // The storefront already uses React Query, with freshness/focus refetching.
-    void client.invalidateQueries({ queryKey: catalogKeys.all })
   }
   const upload = useMutation({
     mutationFn: (request: UploadProductImagesRequest) =>

@@ -7,7 +7,6 @@ import {
 } from "@/hooks/products/product-images"
 import { productKeys } from "@/hooks/products/product.keys"
 import { cacheChangedProduct } from "@/hooks/products/product.mutations"
-import { catalogKeys } from "@/hooks/storefront/catalog.keys"
 import { getProductImages } from "@/services/products/product-images.api"
 import { getProduct } from "@/services/products/product.api"
 import type {
@@ -106,7 +105,6 @@ export function useProductImageEditor(productId?: string) {
     ])
     cacheChangedProduct(client, product)
     writtenProduct.current = product
-    void client.invalidateQueries({ queryKey: catalogKeys.all })
     if (uncertain.current) {
       if (signature(currentImages) !== uncertain.current.before) {
         // The response may have been lost after commit. Do not replay that batch.

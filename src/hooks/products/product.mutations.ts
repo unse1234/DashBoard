@@ -7,6 +7,7 @@ import {
   updateProduct,
 } from "@/services/products/product.api"
 import { productKeys } from "@/hooks/products/product.keys"
+import { catalogKeys } from "@/hooks/storefront/catalog.keys"
 import type { ProductWriteValues, Product } from "@/types/product.types"
 
 // A product appears on some page of the list, in its details, and in its edit
@@ -17,9 +18,13 @@ import type { ProductWriteValues, Product } from "@/types/product.types"
 
 function invalidateLists(queryClient: QueryClient) {
   void queryClient.invalidateQueries({ queryKey: productKeys.lists() })
+  void queryClient.invalidateQueries({ queryKey: catalogKeys.all })
 }
 
-export function cacheChangedProduct(queryClient: QueryClient, product: Product) {
+export function cacheChangedProduct(
+  queryClient: QueryClient,
+  product: Product
+) {
   queryClient.setQueryData(productKeys.detail(product.id), product)
   void queryClient.invalidateQueries({
     queryKey: productKeys.history(product.id),

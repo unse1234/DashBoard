@@ -191,14 +191,18 @@ The Orders API integration already present before this structural refactor is pr
 
 ### Money and payment method in the dashboard
 
-The shop sells in rupees while earlier orders and products are in dollars, so no amount is assumed to be in either.
+Products and new sales use PKR. Historical orders retain their recorded currency.
 
 - **An amount is shown in the currency it was recorded in.** `formatCurrency(amount, currency)` requires the currency (there is no default), so a call site that forgets it fails to compile instead of printing a rupee price as `$`. Orders and their lines use the order's `currency`, a customer's recent orders use each order's, and a product's price and cost use the product's. Rupees read `PKR 1,500.00`; the storefront's own `Rs 1,500.00` formatter is separate.
+- **Product writes use PKR.** Creation and edits explicitly send `currency: "PKR"`; CSV imports use the backend's PKR creation policy. Migration `20261016110000_product_currency_pkr` corrects existing product currency labels while keeping the entered amounts unchanged, as those prices were already rupee amounts. Existing orders retain their recorded amounts and currency. Dashboard amounts always show two decimals, independent of browser currency-format defaults.
+- **Shop visibility.** The backend lists active, nonarchived PKR products with a positive selling price. Product creation, edits, archive operations and completed imports invalidate the existing public catalog keys, including when import completion is discovered by polling. This refreshes cached results; it cannot make an ineligible backend record public.
 - **Customer spend is per currency.** `Customer.spentByCurrency` lists one amount per currency and is what the list and details show; `totalSpent` is a bare sum across currencies that the API keeps only so the column can sort.
 - **Margin comes from the API.** `Product.margin` is worked out by the API in exact decimals, so no screen does the arithmetic.
 - **Payment method.** An order's `paymentMethod` is `cod` or `null` (orders that predate payment methods, shown as "Not recorded"). For a cash-on-delivery order the payment control reads "Record cash payment" and names the amount in its currency. Which status changes are allowed stays with the API: a cash-on-delivery order may ship while unpaid, and marking it delivered before the cash is recorded is refused with the API's own message.
 - **Product images.** Product forms select JPEG, PNG and WebP files, preview pending selections, and manage saved images through protected filesystem upload APIs. Cover selection, ordering, safe replacement and deletion use server metadata. See [PRODUCT_IMAGES.md](PRODUCT_IMAGES.md) for the exact contract, limits, create/upload retry behavior and deployment configuration.
 - **Overview is still demo data.** Its cards, chart and table come from fixed sample values and `mocks/overview/data.json`; nothing on it is calculated from orders, customers or products, and its "Total Revenue" is a placeholder. Showing real figures needs an API endpoint that does the aggregation, which does not exist yet.
+
+For deployment, run `npx prisma migrate deploy` against the Render database, including both `20261016090000_pkr_defaults` and `20261016110000_product_currency_pkr`, and redeploy the backend and frontend. Confirm the actual `GET /products/:productId` response has `currency: "PKR"` and an active, positively priced product is returned by `GET /storefront/products`. Staff can inspect the protected `GET /storefront/catalog-readiness` report. The dashboard uses `NEXT_PUBLIC_API_URL`, which requires a Vercel rebuild if changed; `PUBLIC_API_URL` on the backend controls image URLs, not currency.
 
 ### Imports
 

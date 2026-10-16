@@ -12,6 +12,7 @@ import {
   updateProduct,
 } from "@/services/products/product.api"
 import { productKeys } from "@/hooks/products/product.keys"
+import { catalogKeys } from "@/hooks/storefront/catalog.keys"
 import {
   useArchiveProductsMutation,
   useCreateProductMutation,
@@ -23,7 +24,7 @@ import {
   useProductsQuery,
 } from "@/hooks/products/product.queries"
 import { defaultProductsQuery } from "@/screens/products/product.filters"
-import type { ProductFormValues } from "@/types/product.types";
+import type { ProductFormValues } from "@/types/product.types"
 import { createAuthUser } from "@/test-utils/auth-fixtures"
 import {
   createHistoryEntry,
@@ -53,6 +54,8 @@ const values: ProductFormValues = {
 /** A mounted list, details and history next to a mutation, so tests can see what refetches. */
 function renderWithReaders<T>(useMutationUnderTest: () => T) {
   const queryClient = createTestQueryClient()
+  queryClient.setQueryData(catalogKeys.lists(), { data: [], total: 0 })
+  queryClient.setQueryData(catalogKeys.detail("PRD-1001"), mug)
   const rendered = renderHook(
     () => ({
       list: useProductsQuery(defaultProductsQuery),
@@ -107,13 +110,19 @@ describe("useCreateProductMutation", () => {
     expect(queryClient.getQueryData(productKeys.detail("PRD-1500"))).toEqual(
       created
     )
+    expect(queryClient.getQueryState(catalogKeys.lists())?.isInvalidated).toBe(
+      true
+    )
+    expect(
+      queryClient.getQueryState(catalogKeys.detail("PRD-1001"))?.isInvalidated
+    ).toBe(true)
   })
 
   it("leaves the list alone when creating fails", async () => {
     vi.mocked(createProductRequest).mockRejectedValue(
       new ApiError(409, ["A product with this SKU already exists"])
     )
-    const { result } = renderWithReaders(useCreateProductMutation)
+    const { result, queryClient } = renderWithReaders(useCreateProductMutation)
     await readersLoaded(result)
 
     await act(async () => {
@@ -123,6 +132,9 @@ describe("useCreateProductMutation", () => {
     })
 
     expect(listProducts).toHaveBeenCalledTimes(1)
+    expect(queryClient.getQueryState(catalogKeys.lists())?.isInvalidated).toBe(
+      false
+    )
   })
 })
 
@@ -145,6 +157,12 @@ describe("useUpdateProductMutation", () => {
     expect(queryClient.getQueryData(productKeys.detail("PRD-1001"))).toEqual(
       saved
     )
+    expect(queryClient.getQueryState(catalogKeys.lists())?.isInvalidated).toBe(
+      true
+    )
+    expect(
+      queryClient.getQueryState(catalogKeys.detail("PRD-1001"))?.isInvalidated
+    ).toBe(true)
   })
 
   it("refreshes the lists and the product's history, not its details", async () => {
@@ -214,6 +232,9 @@ describe("useArchiveProductsMutation", () => {
     expect(
       queryClient.getQueryData(productKeys.history("PRD-2000"))
     ).toBeUndefined()
+    expect(queryClient.getQueryState(catalogKeys.lists())?.isInvalidated).toBe(
+      true
+    )
   })
 
   it("leaves everything alone when it fails", async () => {

@@ -12,6 +12,7 @@ import {
   useImportTypesQuery,
 } from "@/hooks/imports/import.queries"
 import { productKeys } from "@/hooks/products/product.keys"
+import { catalogKeys } from "@/hooks/storefront/catalog.keys"
 import { defaultImportsQuery } from "@/screens/imports/imports.filters"
 import {
   getImport,
@@ -240,6 +241,7 @@ describe("useImportQuery", () => {
 
     const keys = invalidate.mock.calls.map(([filters]) => filters?.queryKey)
     expect(keys).toContainEqual(productKeys.lists())
+    expect(keys).toContainEqual(catalogKeys.all)
     expect(keys).toContainEqual(importKeys.lists())
   })
 

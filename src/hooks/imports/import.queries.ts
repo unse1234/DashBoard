@@ -7,6 +7,7 @@ import {
 import { useAuth } from "@/hooks/auth/use-auth"
 import { importKeys } from "@/hooks/imports/import.keys"
 import { productKeys } from "@/hooks/products/product.keys"
+import { catalogKeys } from "@/hooks/storefront/catalog.keys"
 import {
   IMPORT_POLL_INTERVAL_MS,
   IMPORT_POLL_WINDOW_MS,
@@ -92,6 +93,7 @@ export function useImportQuery(importId: string) {
         job.status === "completed"
       ) {
         void queryClient.invalidateQueries({ queryKey: productKeys.lists() })
+        void queryClient.invalidateQueries({ queryKey: catalogKeys.all })
         void queryClient.invalidateQueries({ queryKey: importKeys.lists() })
       }
       return job
