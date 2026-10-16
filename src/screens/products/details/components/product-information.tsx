@@ -4,6 +4,7 @@ import { formatDateTime } from "@/utils/format-date"
 import type { Product } from "@/types/product.types"
 import { getProductDisplayStatus } from "@/utils/product.utils"
 import { ProductStatusBadge } from "@/screens/products/components/product-status-badge"
+import { ProductImage } from "@/components/storefront/product-image"
 
 type ProductInformationProps = {
   product: Product
@@ -48,12 +49,15 @@ export function ProductInformation({ product }: ProductInformationProps) {
             {product.imageUrl === null && product.galleryUrls.length === 0 ? (
               <span className="text-muted-foreground">None</span>
             ) : (
-              <ol className="flex flex-col gap-1">
+              <ol className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[product.imageUrl, ...product.galleryUrls]
                   .filter((url): url is string => url !== null)
                   .map((url, index) => (
                     <li key={`${index}-${url}`} className="break-all">
-                      {url}
+                      <div className="relative aspect-square overflow-hidden rounded-md bg-muted">
+                        <ProductImage image={{ url, alt: `${product.name}, image ${index + 1}` }} sizes="(max-width: 640px) 40vw, 180px" />
+                      </div>
+                      <span className="text-xs text-muted-foreground">{index === 0 ? "Cover" : `Image ${index + 1}`}</span>
                     </li>
                   ))}
               </ol>

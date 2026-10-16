@@ -24,8 +24,13 @@ import {
   PRODUCT_STATUS_OPTIONS,
   SKU_TAKEN_MESSAGE,
 } from "@/constants/product.constants"
-import { productFormSchema } from "@/validations/product.schemas";
-import type { ProductFormInput, ProductFormValues, Category, Product } from "@/types/product.types"
+import { productFormSchema } from "@/validations/product.schemas"
+import type {
+  ProductFormInput,
+  ProductFormValues,
+  Category,
+  Product,
+} from "@/types/product.types"
 import { getProductRoute, routes } from "@/config/routes"
 import { cn } from "@/utils/cn"
 
@@ -51,8 +56,8 @@ function getDefaultValues(product: Product): ProductFormInput {
     subtitle: product.subtitle ?? "",
     brand: product.brand ?? "",
     description: product.description ?? "",
-    imageUrl: product.imageUrl ?? "",
-    galleryUrls: product.galleryUrls.join("\n"),
+    imageUrl: "",
+    galleryUrls: "",
     categoryId: product.categoryId,
     status: product.status,
     price: product.price.toFixed(2),
@@ -80,6 +85,10 @@ type ProductFormProps = {
    * what was loaded.
    */
   onReload?: () => void
+  imageEditor?: ReactNode
+  busy?: boolean
+  detailsLocked?: boolean
+  submitLabel?: string
 }
 
 export function ProductForm({
@@ -87,9 +96,14 @@ export function ProductForm({
   categories,
   onSubmit,
   onReload,
+  imageEditor,
+  busy = false,
+  detailsLocked = false,
+  submitLabel: customSubmitLabel,
 }: ProductFormProps) {
   const isEditing = product !== undefined
-  const submitLabel = isEditing ? "Update Product" : "Create Product"
+  const submitLabel =
+    customSubmitLabel ?? (isEditing ? "Update Product" : "Create Product")
   const submittingLabel = isEditing ? "Updating…" : "Creating…"
   const categoryOptions = categories.map(({ id, name }) => ({
     value: id,
@@ -126,7 +140,7 @@ export function ProductForm({
   return (
     <form onSubmit={form.handleSubmit(submit)} noValidate>
       <fieldset
-        disabled={isSubmitting}
+        disabled={isSubmitting || busy}
         className="flex min-w-0 flex-col gap-4 md:gap-6"
       >
         {errors.root && (
@@ -147,151 +161,155 @@ export function ProductForm({
           </div>
         )}
 
-        <ProductFormSection
-          title="Basic information"
-          description="What the product is called and how it is identified."
+        <fieldset
+          disabled={detailsLocked}
+          className="flex min-w-0 flex-col gap-4 md:gap-6"
         >
-          <FormField
-            label="Product Name"
-            autoComplete="off"
-            required
-            error={errors.name?.message}
-            {...form.register("name")}
-          />
-          <div className="grid gap-5 @lg:grid-cols-2">
+          <ProductFormSection
+            title="Basic information"
+            description="What the product is called and how it is identified."
+          >
             <FormField
-              label="SKU"
+              label="Product Name"
               autoComplete="off"
               required
-              error={errors.sku?.message}
-              {...form.register("sku")}
+              error={errors.name?.message}
+              {...form.register("name")}
             />
-            <FormField
-              label="Brand (optional)"
-              autoComplete="off"
-              error={errors.brand?.message}
-              {...form.register("brand")}
+            <div className="grid gap-5 @lg:grid-cols-2">
+              <FormField
+                label="SKU"
+                autoComplete="off"
+                required
+                error={errors.sku?.message}
+                {...form.register("sku")}
+              />
+              <FormField
+                label="Brand (optional)"
+                autoComplete="off"
+                error={errors.brand?.message}
+                {...form.register("brand")}
+              />
+            </div>
+            <FormTextareaField
+              label="Description (optional)"
+              rows={4}
+              error={errors.description?.message}
+              {...form.register("description")}
             />
-          </div>
-          <FormTextareaField
-            label="Description (optional)"
-            rows={4}
-            error={errors.description?.message}
-            {...form.register("description")}
-          />
-        </ProductFormSection>
+          </ProductFormSection>
 
-        <ProductFormSection
-          title="Categorization"
-          description="Where the product is listed and whether it is available."
-        >
-          <div className="grid gap-5 @lg:grid-cols-2">
-            <Controller
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormSelectField
-                  name={field.name}
-                  ref={field.ref}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  onBlur={field.onBlur}
-                  label="Category"
-                  options={categoryOptions}
-                  placeholder="Select a category"
-                  required
-                  disabled={isSubmitting}
-                  error={errors.categoryId?.message}
-                />
-              )}
-            />
-            <Controller
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormSelectField
-                  name={field.name}
-                  ref={field.ref}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  onBlur={field.onBlur}
-                  label="Status"
-                  options={PRODUCT_STATUS_OPTIONS}
-                  required
-                  disabled={isSubmitting}
-                  error={errors.status?.message}
-                />
-              )}
-            />
-          </div>
-        </ProductFormSection>
+          <ProductFormSection
+            title="Categorization"
+            description="Where the product is listed and whether it is available."
+          >
+            <div className="grid gap-5 @lg:grid-cols-2">
+              <Controller
+                control={form.control}
+                name="categoryId"
+                render={({ field }) => (
+                  <FormSelectField
+                    name={field.name}
+                    ref={field.ref}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    onBlur={field.onBlur}
+                    label="Category"
+                    options={categoryOptions}
+                    placeholder="Select a category"
+                    required
+                    disabled={isSubmitting}
+                    error={errors.categoryId?.message}
+                  />
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormSelectField
+                    name={field.name}
+                    ref={field.ref}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    onBlur={field.onBlur}
+                    label="Status"
+                    options={PRODUCT_STATUS_OPTIONS}
+                    required
+                    disabled={isSubmitting}
+                    error={errors.status?.message}
+                  />
+                )}
+              />
+            </div>
+          </ProductFormSection>
 
-        <ProductFormSection
-          title="Pricing and inventory"
-          description="What the product sells for and how many are in stock."
-        >
-          <div className="grid gap-5 @2xl:grid-cols-3">
-            <FormField
-              label="Selling Price (PKR)"
-              inputMode="decimal"
-              placeholder="0.00"
-              autoComplete="off"
-              required
-              error={errors.price?.message}
-              {...form.register("price")}
-            />
-            <FormField
-              label="Cost Price (PKR, optional)"
-              inputMode="decimal"
-              placeholder="0.00"
-              autoComplete="off"
-              error={errors.costPrice?.message}
-              {...form.register("costPrice")}
-            />
-            <FormField
-              label="Stock Quantity"
-              inputMode="numeric"
-              placeholder="0"
-              autoComplete="off"
-              required
-              error={errors.stock?.message}
-              {...form.register("stock")}
-            />
-          </div>
-        </ProductFormSection>
+          <ProductFormSection
+            title="Pricing and inventory"
+            description="What the product sells for and how many are in stock."
+          >
+            <div className="grid gap-5 @2xl:grid-cols-3">
+              <FormField
+                label="Selling Price (PKR)"
+                inputMode="decimal"
+                placeholder="0.00"
+                autoComplete="off"
+                required
+                error={errors.price?.message}
+                {...form.register("price")}
+              />
+              <FormField
+                label="Cost Price (PKR, optional)"
+                inputMode="decimal"
+                placeholder="0.00"
+                autoComplete="off"
+                error={errors.costPrice?.message}
+                {...form.register("costPrice")}
+              />
+              <FormField
+                label="Stock Quantity"
+                inputMode="numeric"
+                placeholder="0"
+                autoComplete="off"
+                required
+                error={errors.stock?.message}
+                {...form.register("stock")}
+              />
+            </div>
+          </ProductFormSection>
 
-        <ProductFormSection
-          title="Online shop listing"
-          description="How the product looks in the shop. Pictures are web addresses, not uploads."
-        >
-          <FormField
-            label="Subtitle (optional)"
-            autoComplete="off"
-            description="A short line shown under the name."
-            error={errors.subtitle?.message}
-            {...form.register("subtitle")}
-          />
-          <FormField
-            label="Main Image (optional)"
-            inputMode="url"
-            autoComplete="off"
-            placeholder="https://example.com/image.jpg"
-            description="An http(s) address, or a path on the shop such as /images/mug.png."
-            error={errors.imageUrl?.message}
-            {...form.register("imageUrl")}
-          />
-          <FormTextareaField
-            label="More Images (optional)"
-            rows={3}
-            description="One address per line, in the order they are shown. Up to 10."
-            error={errors.galleryUrls?.message}
-            {...form.register("galleryUrls")}
-          />
-        </ProductFormSection>
+          <ProductFormSection
+            title="Online shop listing"
+            description="How the product is described in the shop."
+          >
+            <FormField
+              label="Subtitle (optional)"
+              autoComplete="off"
+              description="A short line shown under the name."
+              error={errors.subtitle?.message}
+              {...form.register("subtitle")}
+            />
+          </ProductFormSection>
+        </fieldset>
+
+        {imageEditor && (
+          <ProductFormSection
+            title="Product images"
+            description="Upload pictures, choose a cover, and set the display order."
+            containFields={false}
+          >
+            {imageEditor}
+          </ProductFormSection>
+        )}
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Link
             href={isEditing ? getProductRoute(product.id) : routes.products}
+            aria-disabled={isSubmitting || busy}
+            tabIndex={isSubmitting || busy ? -1 : undefined}
+            onClick={(event) => {
+              if (isSubmitting || busy) event.preventDefault()
+            }}
             className={cn(buttonVariants({ variant: "outline" }))}
           >
             Cancel
@@ -316,12 +334,15 @@ type ProductFormSectionProps = {
   title: string
   description: string
   children: ReactNode
+  /** File fieldsets use their own grid and do not need nested query containers. */
+  containFields?: boolean
 }
 
 function ProductFormSection({
   title,
   description,
   children,
+  containFields = true,
 }: ProductFormSectionProps) {
   return (
     <Card>
@@ -331,8 +352,12 @@ function ProductFormSection({
         </CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent className="@container">
-        <FieldGroup>{children}</FieldGroup>
+      <CardContent className={containFields ? "@container" : undefined}>
+        <FieldGroup
+          style={containFields ? undefined : { containerType: "normal" }}
+        >
+          {children}
+        </FieldGroup>
       </CardContent>
     </Card>
   )

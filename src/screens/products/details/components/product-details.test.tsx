@@ -199,10 +199,10 @@ describe("ProductDetailsTabs overview", () => {
     )
 
     expect(getValue("Subtitle")).toHaveTextContent("Wireless, noise cancelling")
-    expect(getValue("Shop Images")).toHaveTextContent("/images/aurora.png")
-    expect(getValue("Shop Images")).toHaveTextContent(
-      "https://cdn.example.com/aurora-2.jpg"
-    )
+    const images = getValue("Shop Images").querySelectorAll("img")
+    expect(images).toHaveLength(2)
+    expect(images[0].getAttribute("src")).toContain("aurora.png")
+    expect(images[1]).toHaveAttribute("src", "https://cdn.example.com/aurora-2.jpg")
   })
 
   it("marks missing optional details", () => {

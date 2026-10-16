@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 
 import { ProductImage } from "@/components/storefront/product-image"
 
@@ -16,6 +16,14 @@ function renderImage(props: Partial<Parameters<typeof ProductImage>[0]> = {}) {
 }
 
 describe("ProductImage", () => {
+  it("shows the fallback for failed URLs and tries a changed URL", () => {
+    const { rerender, container } = renderImage()
+    fireEvent.error(screen.getByRole("img"))
+    expect(screen.queryByRole("img")).toBeNull()
+    expect(container.querySelector("[aria-hidden='true']")).not.toBeNull()
+    rerender(<ProductImage image={{ url: "http://localhost:3001/uploads/products/new.png", alt: "Replacement" }} sizes="100px" />)
+    expect(screen.getByRole("img", { name: "Replacement" })).toHaveAttribute("src", "http://localhost:3001/uploads/products/new.png")
+  })
   it("names the picture with the API's alt text", () => {
     renderImage()
 

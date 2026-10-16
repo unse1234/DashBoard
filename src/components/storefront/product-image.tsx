@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import Image from "next/image"
 import { ImageOffIcon } from "lucide-react"
 
@@ -22,7 +25,7 @@ type ProductImageProps = {
 // An address on another origin. The API accepts those as well as paths of this
 // site, and the host is not known ahead of time, so it cannot be listed in
 // next.config's `images.remotePatterns`. It is shown as it is, unresized.
-const isAbsoluteUrl = (url: string) => /^https?:\/\//i.test(url)
+const isAbsoluteUrl = (url: string) => /^(https?:\/\/|blob:)/i.test(url)
 
 /**
  * A product picture that fills its (relatively positioned) parent. The API
@@ -37,7 +40,8 @@ export function ProductImage({
   decorative = false,
   className,
 }: ProductImageProps) {
-  if (!image) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null)
+  if (!image || failedUrl === image.url) {
     return (
       <span
         aria-hidden="true"
@@ -59,6 +63,7 @@ export function ProductImage({
       sizes={sizes}
       loading={eager ? "eager" : "lazy"}
       unoptimized={isAbsoluteUrl(image.url)}
+      onError={() => setFailedUrl(image.url)}
       className={cn("object-cover", className)}
     />
   )

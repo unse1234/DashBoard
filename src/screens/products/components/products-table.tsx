@@ -17,6 +17,7 @@ import { getProductRoute } from "@/config/routes"
 import { cn } from "@/utils/cn"
 import { ProductActions } from "@/screens/products/components/product-actions"
 import { ProductStatusBadge } from "@/screens/products/components/product-status-badge"
+import { ProductImage } from "@/components/storefront/product-image"
 
 const COLUMN_COUNT = 9
 const SKELETON_ROW_COUNT = 5
@@ -135,9 +136,12 @@ function ProductRow({ product, selected, onSelectChange }: ProductRowProps) {
         <Link
           href={getProductRoute(product.id)}
           title={product.name}
-          className="block max-w-48 truncate underline-offset-4 hover:underline 2xl:max-w-64"
+          className="flex max-w-48 items-center gap-2 underline-offset-4 hover:underline 2xl:max-w-64"
         >
-          {product.name}
+          <span className="relative size-10 shrink-0 overflow-hidden rounded-md bg-muted">
+            <ProductImage image={product.imageUrl ? { url: product.imageUrl, alt: product.name } : product.galleryUrls[0] ? { url: product.galleryUrls[0], alt: product.name } : null} sizes="40px" decorative />
+          </span>
+          <span className="truncate">{product.name}</span>
         </Link>
       </TableCell>
       <TableCell className="font-mono text-xs text-muted-foreground">

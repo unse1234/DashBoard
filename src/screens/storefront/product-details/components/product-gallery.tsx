@@ -22,7 +22,8 @@ type ProductGalleryProps = {
  * stretches to fill it, so no strip of empty space is left beside it.
  */
 export function ProductGallery({ images }: ProductGalleryProps) {
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [selectedUrl, setSelectedUrl] = useState<string | null>(null)
+  const selectedIndex = Math.max(0, images.findIndex((image) => image.url === selectedUrl))
   const selected = images[selectedIndex] ?? null
 
   return (
@@ -38,14 +39,14 @@ export function ProductGallery({ images }: ProductGalleryProps) {
 
       {/* One picture needs no chooser. */}
       {images.length > 1 && (
-        <ul aria-label="Product images" className="flex gap-4 @md:flex-col">
+        <ul aria-label="Product images" className="flex max-w-full flex-wrap gap-4 @md:flex-col">
           {images.map((image, index) => (
             <li key={`${image.url}-${index}`}>
               <button
                 type="button"
                 aria-label={`Show image ${index + 1} of ${images.length}`}
                 aria-pressed={index === selectedIndex}
-                onClick={() => setSelectedIndex(index)}
+                onClick={() => setSelectedUrl(image.url)}
                 className={cn(
                   "relative block h-14.5 w-12.5 overflow-hidden rounded-store-sm bg-white outline-hidden focus-visible:outline-3 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-store-ink/40",
                   index === selectedIndex && "ring-2 ring-store-ink"

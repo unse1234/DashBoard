@@ -36,6 +36,49 @@ afterEach(() => {
 })
 
 describe("ProductForm (create)", () => {
+  it("renders an image editor slot instead of manual URL fields", () => {
+    renderForm({ imageEditor: <p>Image picker</p> })
+    expect(screen.getByText("Image picker")).toBeInTheDocument()
+    expect(screen.queryByLabelText("Main Image (optional)")).toBeNull()
+    expect(screen.queryByLabelText("More Images (optional)")).toBeNull()
+  })
+
+  it("locks saved details during a create/upload retry while leaving image controls available", () => {
+    renderForm({
+      detailsLocked: true,
+      submitLabel: "Finish image upload",
+      imageEditor: <button type="button">Retry selection</button>,
+    })
+    expect(screen.getByLabelText("Product Name")).toBeDisabled()
+    expect(
+      screen.getByRole("button", { name: "Retry selection" })
+    ).toBeEnabled()
+    expect(
+      screen.getByRole("button", { name: "Finish image upload" })
+    ).toBeEnabled()
+  })
+
+  it("retains typed details when image mutations change the product version", async () => {
+    const product = createProduct()
+    const onSubmit = vi.fn()
+    const { rerender } = render(
+      <ProductForm
+        product={product}
+        categories={categoryFixtures}
+        onSubmit={onSubmit}
+      />
+    )
+    await user.clear(screen.getByLabelText("Product Name"))
+    await user.type(screen.getByLabelText("Product Name"), "Unsaved name")
+    rerender(
+      <ProductForm
+        product={{ ...product, version: product.version + 1 }}
+        categories={categoryFixtures}
+        onSubmit={onSubmit}
+      />
+    )
+    expect(screen.getByLabelText("Product Name")).toHaveValue("Unsaved name")
+  })
   it("groups the fields into labelled sections", () => {
     renderForm()
 
@@ -58,8 +101,6 @@ describe("ProductForm (create)", () => {
       "Cost Price (PKR, optional)",
       "Stock Quantity",
       "Subtitle (optional)",
-      "Main Image (optional)",
-      "More Images (optional)",
     ]) {
       expect(screen.getByLabelText(label)).toBeInTheDocument()
     }
@@ -165,59 +206,6 @@ describe("ProductForm (create)", () => {
       costPrice: null,
       stock: 12,
     })
-  })
-
-  it("names the chosen currency on the amounts, and sends the shop's fields", async () => {
-    const { onSubmit } = renderForm()
-
-    await user.type(screen.getByLabelText("Product Name"), "Studio Monitor")
-    await user.type(screen.getByLabelText("SKU"), "ELC-MON-27")
-    await chooseOption("Category", "Electronics")
-    expect(screen.getByLabelText("Selling Price (PKR)")).toBeInTheDocument()
-    expect(
-      screen.getByLabelText("Cost Price (PKR, optional)")
-    ).toBeInTheDocument()
-
-    await user.type(screen.getByLabelText("Selling Price (PKR)"), "159999")
-    await user.type(screen.getByLabelText("Stock Quantity"), "5")
-    await user.type(screen.getByLabelText("Subtitle (optional)"), "4K, 27 inch")
-    await user.type(
-      screen.getByLabelText("Main Image (optional)"),
-      "/images/monitor.png"
-    )
-    await user.type(
-      screen.getByLabelText("More Images (optional)"),
-      "/images/a.png{Enter}https://cdn.example.com/b.jpg"
-    )
-    await user.click(screen.getByRole("button", { name: "Create Product" }))
-
-    await vi.waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
-    expect(onSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        price: 159999,
-        subtitle: "4K, 27 inch",
-        imageUrl: "/images/monitor.png",
-        galleryUrls: ["/images/a.png", "https://cdn.example.com/b.jpg"],
-      })
-    )
-  })
-
-  it("points out a picture address that is not usable, without submitting", async () => {
-    const { onSubmit } = renderForm()
-
-    await fillRequiredFields()
-    await user.type(
-      screen.getByLabelText("Main Image (optional)"),
-      "javascript:alert(1)"
-    )
-    await user.click(screen.getByRole("button", { name: "Create Product" }))
-
-    expect(
-      await screen.findByText(
-        "Use an http(s) address or a path on the shop that starts with “/”."
-      )
-    ).toBeInTheDocument()
-    expect(onSubmit).not.toHaveBeenCalled()
   })
 
   it("disables the form and shows progress while saving, so it cannot be sent twice", async () => {
@@ -345,9 +333,10 @@ describe("ProductForm (edit)", () => {
     expect(screen.getByLabelText("Description (optional)")).toHaveValue("")
   })
 
-  it("prefills the currency and the shop's fields, and labels the amounts in that currency", () => {
+  it("prefills listing details while images are managed separately", () => {
     renderForm({
       product: createProduct({
+        currency: "PKR",
         price: 159999,
         costPrice: 120000,
         subtitle: "4K, 27 inch",
@@ -365,20 +354,12 @@ describe("ProductForm (edit)", () => {
     expect(screen.getByLabelText("Subtitle (optional)")).toHaveValue(
       "4K, 27 inch"
     )
-    expect(screen.getByLabelText("Main Image (optional)")).toHaveValue(
-      "/images/monitor.png"
-    )
-    expect(screen.getByLabelText("More Images (optional)")).toHaveValue(
-      "/images/a.png\nhttps://cdn.example.com/b.jpg"
-    )
   })
 
   it("leaves the shop's fields empty for a product that has none", () => {
     renderForm({ product })
 
     expect(screen.getByLabelText("Subtitle (optional)")).toHaveValue("")
-    expect(screen.getByLabelText("Main Image (optional)")).toHaveValue("")
-    expect(screen.getByLabelText("More Images (optional)")).toHaveValue("")
   })
 
   it("offers Update Product and cancels back to the product", () => {

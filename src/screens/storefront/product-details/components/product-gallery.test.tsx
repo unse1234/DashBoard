@@ -19,6 +19,14 @@ const mainImageSource = () =>
   decodeURIComponent(screen.getByRole("img").getAttribute("src") ?? "")
 
 describe("ProductGallery", () => {
+  it("keeps the selected image through reordering and falls back to the first when it is deleted", async () => {
+    const { rerender } = render(<ProductGallery images={images} />)
+    await userEvent.click(thumbnails()[2])
+    rerender(<ProductGallery images={[images[2], images[0]]} />)
+    expect(mainImageSource()).toContain("/back.png")
+    rerender(<ProductGallery images={[images[0]]} />)
+    expect(mainImageSource()).toContain("/front.png")
+  })
   it("shows the first picture with its first thumbnail selected", () => {
     render(<ProductGallery images={images} />)
 
